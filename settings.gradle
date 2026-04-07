@@ -1,0 +1,2 @@
+rootProject.name = "Temi Application"
+include ':app'
