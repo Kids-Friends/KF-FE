@@ -35,7 +35,7 @@
         </activity>
         <meta-data
             android:name="com.robotemi.sdk.metadata.SKILL"
-            android:value="TemiApplication"/>
+            android:value="Kids_Friend"/>
     </application>
 
 </manifest>

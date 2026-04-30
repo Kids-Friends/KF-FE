@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Temi Application</string>
+    <string name="app_name">Kids_Friend</string>
     <string name="main_title">Kids Cafe Temi</string>
     <string name="main_subtitle">필요한 기능을 선택해주세요.</string>
     <string name="menu_call">직원 호출</string>
