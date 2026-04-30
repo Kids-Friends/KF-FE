@@ -1,6 +1,7 @@
 package com.example.temiapplication.data.repository;
 
 import com.example.temiapplication.data.api.ApiClient;
+import com.example.temiapplication.data.api.ApiConfig;
 import com.example.temiapplication.data.api.TemiApiService;
 import com.example.temiapplication.data.mock.MockDataSource;
 import com.example.temiapplication.data.model.CallRequest;
@@ -11,14 +12,13 @@ import com.example.temiapplication.data.model.QuizAnswerRequest;
 import com.example.temiapplication.data.model.QuizAnswerResponse;
 import com.example.temiapplication.data.model.QuizQuestion;
 import com.example.temiapplication.data.model.StatisticsSummary;
+import com.example.temiapplication.data.model.VoiceQuestionRequest;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class TemiRepository {
-    private static final boolean USE_MOCK = true;
-
     private final TemiApiService apiService;
     private final MockDataSource mockDataSource;
 
@@ -29,7 +29,7 @@ public class TemiRepository {
 
     public void createCall(String reason, RepositoryCallback<CallResponse> callback) {
         CallRequest request = new CallRequest(reason);
-        if (USE_MOCK) {
+        if (ApiConfig.USE_MOCK) {
             callback.onSuccess(mockDataSource.createCall(request));
             return;
         }
@@ -38,15 +38,24 @@ public class TemiRepository {
 
     public void askQuestion(String question, RepositoryCallback<QuestionResponse> callback) {
         QuestionRequest request = new QuestionRequest(question);
-        if (USE_MOCK) {
+        if (ApiConfig.USE_MOCK) {
             callback.onSuccess(mockDataSource.askQuestion(request));
             return;
         }
         apiService.askQuestion(request).enqueue(toRetrofitCallback(callback));
     }
 
+    public void askVoiceQuestion(String rawText, String reconstructedText, RepositoryCallback<QuestionResponse> callback) {
+        VoiceQuestionRequest request = new VoiceQuestionRequest(rawText, reconstructedText);
+        if (ApiConfig.USE_MOCK) {
+            callback.onSuccess(mockDataSource.askVoiceQuestion(request));
+            return;
+        }
+        apiService.askVoiceQuestion(request).enqueue(toRetrofitCallback(callback));
+    }
+
     public void getCurrentQuiz(RepositoryCallback<QuizQuestion> callback) {
-        if (USE_MOCK) {
+        if (ApiConfig.USE_MOCK) {
             callback.onSuccess(mockDataSource.getCurrentQuiz());
             return;
         }
@@ -55,7 +64,7 @@ public class TemiRepository {
 
     public void submitQuizAnswer(String quizId, String selectedAnswer, RepositoryCallback<QuizAnswerResponse> callback) {
         QuizAnswerRequest request = new QuizAnswerRequest(quizId, selectedAnswer);
-        if (USE_MOCK) {
+        if (ApiConfig.USE_MOCK) {
             callback.onSuccess(mockDataSource.submitQuizAnswer(request));
             return;
         }
@@ -63,7 +72,7 @@ public class TemiRepository {
     }
 
     public void getStatisticsSummary(RepositoryCallback<StatisticsSummary> callback) {
-        if (USE_MOCK) {
+        if (ApiConfig.USE_MOCK) {
             callback.onSuccess(mockDataSource.getStatisticsSummary());
             return;
         }

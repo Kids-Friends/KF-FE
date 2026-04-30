@@ -8,6 +8,7 @@ import com.example.temiapplication.data.model.QuizAnswerRequest;
 import com.example.temiapplication.data.model.QuizAnswerResponse;
 import com.example.temiapplication.data.model.QuizQuestion;
 import com.example.temiapplication.data.model.StatisticsSummary;
+import com.example.temiapplication.data.model.VoiceQuestionRequest;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -20,6 +21,9 @@ public interface TemiApiService {
 
     @POST("api/questions")
     Call<QuestionResponse> askQuestion(@Body QuestionRequest request);
+
+    @POST("api/questions/voice")
+    Call<QuestionResponse> askVoiceQuestion(@Body VoiceQuestionRequest request);
 
     @GET("api/quizzes/current")
     Call<QuizQuestion> getCurrentQuiz();

@@ -36,4 +36,24 @@
     <string name="stat_question_count">질문 수</string>
     <string name="stat_quiz_play_count">퀴즈 참여</string>
     <string name="stat_quiz_correct_count">퀴즈 정답</string>
+    <string name="voice_permission_required">마이크 권한이 필요합니다.</string>
+    <string name="voice_permission_denied">마이크 권한이 없어 음성 모드를 사용할 수 없습니다.</string>
+    <string name="voice_recognition_unavailable">이 기기에서 음성 인식을 사용할 수 없습니다.</string>
+    <string name="voice_wake_standby">대기 상태: \"친구야\"라고 말하면 듣기 모드로 전환됩니다.</string>
+    <string name="voice_wake_detected">Wake Word 감지: 듣기 모드로 전환합니다.</string>
+    <string name="voice_listening">듣기 모드: 질문을 말해주세요.</string>
+    <string name="voice_sending">재구성된 질문을 백엔드 API로 전송 중입니다.</string>
+    <string name="voice_answer_received">답변을 수신했습니다. Temi TTS로 읽습니다.</string>
+    <string name="voice_heard_format">인식 중: %1$s</string>
+    <string name="voice_raw_waiting">STT 원문: 아직 인식된 문장이 없습니다.</string>
+    <string name="voice_reconstructed_waiting">재구성 문장: 아직 생성되지 않았습니다.</string>
+    <string name="voice_button_waiting">음성 대기 시작</string>
+    <string name="voice_button_retry">다시 듣기</string>
+    <string name="menu_approach">인식 후 다가가기</string>
+    <string name="menu_location_guide">위치 안내</string>
+    <string name="menu_tts">TTS 테스트</string>
+    <string name="menu_reward">리워드</string>
+    <string name="menu_photo">사진 촬영</string>
+    <string name="menu_recycling">분리수거</string>
+    <string name="feature_pending_message">아직 구현 예정인 기능입니다.</string>
 </resources>

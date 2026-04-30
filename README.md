@@ -1,133 +1,295 @@
-# Temi Project teem6
+# Kids-Friends API Endpoint Checklist
 
-## 1. 프로젝트 개요
-본 저장소는 한양대학교 「모바일로봇의이해」 수업의 Temi 기반 팀 프로젝트를 위한 개발 저장소입니다.
+---
 
-아직 최종 주제는 확정되지 않았지만, 본 프로젝트는 단순한 안드로이드 앱 제작이 아니라  
-**Temi 모바일 로봇 제어**, **Android Studio + Java 기반 앱 구현**, **센서 및 Arduino 연동**,  
-그리고 **Physical AI / Agentic AI 요소를 포함한 서비스 로봇 시나리오 구현**을 목표로 준비하고 있습니다.
+## 0. 공통 규칙
 
-## 2. 수업과의 연계
-본 수업은 모바일 로봇 이론, Java 및 Android 앱 개발, Temi SDK 기반 로봇 제어,  
-그리고 이후 진행되는 Arduino 및 센서 실습을 바탕으로 팀 프로젝트를 수행하는 구조로 진행됩니다.
+### 공통 요청 필드
 
-따라서 본 프로젝트 역시 아래 흐름을 기준으로 설계합니다.
+| 필드 | 설명 | 예시 |
+|---|---|---|
+| `robotId` | 어떤 Temi에서 발생한 요청인지 | `TEMI_01` |
+| `zoneId` | 어느 구역에서 발생한 요청인지 | `SLIDE_ZONE` |
+| `role` | 사용자 유형 | `CHILD`, `GUARDIAN`, `STAFF` |
+| `sessionId` | 임시 사용자 세션 | `sess-001` |
 
-- 모바일 로봇 이론 이해
-- Android Studio 기반 앱 제어 화면 구현
-- Temi SDK를 통한 로봇 기능 제어
-- Arduino 및 외부 센서 연동
-- 생성형 AI / Agentic AI / 객체 인식 기술 접목
-- 실제 시연 가능한 서비스 로봇 시나리오 구현
+---
 
-## 3. 프로젝트 목표
-- Temi 로봇의 내장 기능을 실제 제어할 수 있는 앱 구조 설계
-- Android Studio + Java 기반 제어 인터페이스 구현
-- ADB 및 Temi SDK 기반 실습 환경 구축
-- Arduino와 외부 센서를 활용한 하드웨어 확장 가능성 검토
-- 서비스 로봇 시나리오에 맞는 센서 선택 및 역할 분리
-- Agentic AI 또는 YOLO 기반 객체 인식 기능의 적용 가능성 탐색
-- 학기 내 데모 가능한 수준의 프로토타입 구현
+## 1. 직원 호출 Call
 
-## 4. 기술 스택
-### Software
-- Java
-- Android Studio
-- Temi SDK
-- ADB (Android Debug Bridge)
+| 체크 | Method | Endpoint | 설명 |
+|---|---|---|---|
+| [ ] | POST | `/api/calls` | 직원 호출 생성 |
+| [ ] | GET | `/api/calls` | 호출 목록 조회 |
+| [ ] | GET | `/api/calls/{callId}` | 호출 상세 조회 |
+| [ ] | PATCH | `/api/calls/{callId}/status` | 호출 상태 변경 |
+| [ ] | GET | `/api/calls/waiting-count` | 대기 중 호출 수 조회 |
 
-### Hardware
-- Temi Robot
-- Arduino
-- Breadboard
-- Jumper Wire
-- LED
-- Temperature / Humidity Sensor
-- Additional Sensor Modules (확정 예정)
+### Request 예시
 
-### AI / Expansion
-- Generative AI
-- Agentic AI
-- YOLO Object Detection
-- Sensor Fusion
+```json
+{
+  "robotId": "TEMI_01",
+  "zoneId": "BALL_POOL",
+  "role": "CHILD",
+  "reason": "도움이 필요해요"
+}
+```
 
-## 5. 시스템 역할 분리
-본 프로젝트는 각 구성요소의 역할을 아래처럼 분리하여 설계합니다.
+---
 
-| 구성요소 | 역할 |
-|---|---|
-| Temi | 이동, 추종, 음성 출력, 내장 센서 기반 동작, 로봇 액션 수행 |
-| Android App | 사용자 입력 처리, 로봇 기능 제어 UI, 상태 전환, 시나리오 실행 |
-| Arduino | 외부 센서 입력 수집, I/O 제어, 간단한 하드웨어 인터페이스 |
-| AI 모듈 | 객체 인식, 대화형 응답, 상황 판단 보조 |
-| Sensor Layer | 환경 정보 수집 및 이벤트 발생 조건 판단 |
+## 2. 질문 대응 Question
 
-## 6. 개발 환경 및 실습 기반
-본 프로젝트는 Temi와 PC의 유선 연결이 아닌 **무선 ADB 연결 환경**을 전제로 하며,  
-Temi SDK 예제 프로젝트를 분석하고 이를 확장하는 방식으로 개발을 진행합니다.
+| 체크 | Method | Endpoint | 설명 |
+|---|---|---|---|
+| [ ] | POST | `/api/questions` | 텍스트 질문 전송 |
+| [ ] | POST | `/api/questions/voice` | 음성 질문 전송 |
+| [ ] | GET | `/api/questions/logs` | 질문 로그 조회 |
+| [ ] | GET | `/api/questions/frequent` | 자주 묻는 질문 조회 |
+| [ ] | GET | `/api/faqs` | FAQ 목록 조회 |
 
-주요 개발 흐름은 다음과 같습니다.
+### Voice Request 예시
 
-1. Android Studio 프로젝트 생성
-2. ADB 환경 설정 및 Temi 연결
-3. Temi SDK 연동
-4. 예제 프로젝트 실행 및 기능 분석
-5. 필요한 화면 및 기능 커스터마이징
-6. Arduino / 센서 연동 확장
+```json
+{
+  "robotId": "TEMI_01",
+  "zoneId": "MAIN_ZONE",
+  "role": "CHILD",
+  "wakeWord": "친구야",
+  "rawText": "미끄럼 어디써",
+  "reconstructedText": "미끄럼틀은 어디 있어?",
+  "inputType": "VOICE"
+}
+```
 
-## 7. 예상 기능 방향
-최종 주제는 미정이지만, 현재는 아래와 같은 기능군을 중심으로 확장 가능성을 검토 중입니다.
+---
 
-- Temi 음성 출력 및 사용자 상호작용
-- 사용자 추종 및 이동 제어
-- 외부 센서 이벤트 기반 동작 수행
-- 객체 인식 기반 서비스 기능
-- Agentic AI 기반 비서형 시나리오
-- 특정 환경에 맞춘 안내 / 보조 / 모니터링 기능
+## 3. 퀴즈 Quiz
 
-## 8. AI 및 센서 확장 방향
-이 프로젝트는 “AI를 붙이는 것” 자체보다,  
-**어떤 정보를 센서로 수집하고, 어떤 판단을 앱 또는 AI가 맡으며, 어떤 행동을 Temi가 수행하는지**를 분명히 하는 방향으로 진행합니다.
+| 체크 | Method | Endpoint | 설명 |
+|---|---|---|---|
+| [ ] | GET | `/api/quizzes/random` | 랜덤 퀴즈 조회 |
+| [ ] | GET | `/api/quizzes/{quizId}` | 퀴즈 상세 조회 |
+| [ ] | POST | `/api/quizzes/{quizId}/answers` | 퀴즈 정답 제출 |
+| [ ] | GET | `/api/quizzes/results/{resultId}` | 퀴즈 결과 조회 |
+| [ ] | GET | `/api/quizzes/statistics` | 퀴즈 참여 통계 조회 |
 
-현재 고려 중인 확장 방향은 다음과 같습니다.
+### Response 예시
 
-- **Agentic AI**
-  - Temi를 비서형 로봇 플랫폼으로 활용
-  - 대화형 기능 및 사용자 맞춤 반응 구현 가능성 검토
+```json
+{
+  "quizId": 1,
+  "question": "키즈카페에서 뛰어다녀도 될까요?",
+  "choices": ["된다", "안 된다"],
+  "answerIndex": 1
+}
+```
 
-- **YOLO 기반 객체 인식**
-  - 물체 위치 파악 및 이벤트 트리거
-  - 서비스 로봇 시나리오에서 시각 정보 활용 가능성 검토
+---
 
-- **Arduino 센서 연동**
-  - LED, 온습도 센서 등 기초 실습 요소부터 시작
-  - 추후 시나리오에 맞는 외부 센서 추가 예정
+## 4. 운영자용 통계 Statistics
 
-## 9. 현재 진행 상태
-- [x] 저장소 생성
-- [x] Android Studio 프로젝트 초기 세팅
-- [ ] Temi ADB 연결
-- [ ] Temi SDK 연동
-- [ ] 예제 프로젝트 분석
-- [ ] 주제 최종 선정
-- [ ] 센서 구성 확정
-- [ ] Arduino 연동
-- [ ] AI 기능 연동 여부 결정
-- [ ] 데모 시나리오 구현
+| 체크 | Method | Endpoint | 설명 |
+|---|---|---|---|
+| [ ] | GET | `/api/admin/statistics` | 전체 운영 통계 조회 |
+| [ ] | GET | `/api/admin/statistics/calls` | 호출 통계 조회 |
+| [ ] | GET | `/api/admin/statistics/questions` | 질문 통계 조회 |
+| [ ] | GET | `/api/admin/statistics/quizzes` | 퀴즈 통계 조회 |
+| [ ] | GET | `/api/admin/statistics/zones` | 구역별 통계 조회 |
 
-## 10. 향후 업데이트 예정
-주제가 확정되면 README를 아래 항목 기준으로 구체화할 예정입니다.
+### Response 예시
 
-- 문제 정의
-- 대상 사용자
-- 사용 환경
-- Temi 활용 기능
-- 외부 센서 구성
-- 앱 화면 구조
-- 시스템 아키텍처
-- 데모 시나리오
-- 역할 분담 계획
+```json
+{
+  "totalCalls": 12,
+  "waitingCalls": 3,
+  "totalQuestions": 28,
+  "quizParticipationCount": 15,
+  "topQuestions": [
+    "미끄럼틀 어디 있어?",
+    "화장실 어디 있어요?",
+    "직원 불러줘"
+  ],
+  "topZones": [
+    "BALL_POOL",
+    "SLIDE_ZONE",
+    "MAIN_ZONE"
+  ]
+}
+```
 
-## 11. Repository Note
-현재 README는 주제 확정 전 작성된 개요 문서입니다.  
-이후 수업 진행에 따라 Temi 기능, 센서 구성, Arduino 연동, AI 적용 방식, 최종 시나리오를 반영하여 지속적으로 업데이트할 예정입니다.
+---
+
+## 확장 기능 Endpoint
+
+---
+
+## 5. 인식해서 다가가기 Approach
+
+> 왕따 모션 정의, 상황 따라가기, 사용자를 인식하고 Temi가 다가가는 기능
+
+| 체크 | Method | Endpoint | 설명 |
+|---|---|---|---|
+| [ ] | POST | `/api/approach-events` | 사용자 인식 이벤트 생성 |
+| [ ] | POST | `/api/robot-actions/approach` | Temi 접근 명령 생성 |
+| [ ] | GET | `/api/motions` | 모션 목록 조회 |
+| [ ] | GET | `/api/motions/{motionId}` | 모션 상세 조회 |
+| [ ] | POST | `/api/motions/{motionId}/execute` | 특정 모션 실행 |
+| [ ] | PATCH | `/api/robot-actions/{actionId}/status` | 로봇 액션 상태 변경 |
+
+### Request 예시
+
+```json
+{
+  "robotId": "TEMI_01",
+  "zoneId": "MAIN_ZONE",
+  "detectedType": "CHILD_ALONE",
+  "confidence": 0.82,
+  "recommendedMotion": "FRIENDLY_APPROACH"
+}
+```
+
+---
+
+## 6. 위치 안내 Location Guide
+
+| 체크 | Method | Endpoint | 설명 |
+|---|---|---|---|
+| [ ] | GET | `/api/locations` | 위치 목록 조회 |
+| [ ] | GET | `/api/locations/{locationId}` | 위치 상세 조회 |
+| [ ] | POST | `/api/guides` | 위치 안내 요청 생성 |
+| [ ] | POST | `/api/robot-actions/goto` | Temi 이동 명령 생성 |
+| [ ] | PATCH | `/api/guides/{guideId}/status` | 안내 상태 변경 |
+
+### Request 예시
+
+```json
+{
+  "robotId": "TEMI_01",
+  "zoneId": "ENTRANCE",
+  "role": "GUARDIAN",
+  "targetLocationId": "RESTROOM"
+}
+```
+
+---
+
+## 7. TTS
+
+> 실제 음성 출력은 Android Temi SDK의 `speak` 계층에서 실행.  
+> BE는 어떤 문장을 말할지 내려주는 역할.
+
+| 체크 | Method | Endpoint | 설명 |
+|---|---|---|---|
+| [ ] | POST | `/api/tts/commands` | TTS 명령 생성 |
+| [ ] | GET | `/api/tts/scripts` | 상황별 TTS 문구 조회 |
+| [ ] | GET | `/api/tts/scripts/{scriptId}` | TTS 문구 상세 조회 |
+| [ ] | POST | `/api/robot-actions/speak` | Temi 발화 명령 생성 |
+| [ ] | GET | `/api/tts/logs` | TTS 실행 로그 조회 |
+
+### Request 예시
+
+```json
+{
+  "robotId": "TEMI_01",
+  "zoneId": "MAIN_ZONE",
+  "speechText": "직원을 불렀어요. 잠시만 기다려주세요.",
+  "expression": "HAPPY"
+}
+```
+
+---
+
+## 8. 리워드 시스템 Reward
+
+> DB를 조회해서 착한 어린이 여부 판단.  
+> 실제 아동 개인정보 대신 `childId`, `sessionId` 사용 권장.
+
+| 체크 | Method | Endpoint | 설명 |
+|---|---|---|---|
+| [ ] | POST | `/api/rewards/events` | 리워드 이벤트 기록 |
+| [ ] | POST | `/api/rewards/evaluate` | 리워드 지급 여부 판단 |
+| [ ] | GET | `/api/rewards/children/{childId}` | 아이별 리워드 조회 |
+| [ ] | GET | `/api/rewards/sessions/{sessionId}` | 세션별 리워드 조회 |
+| [ ] | POST | `/api/rewards` | 리워드 지급 |
+| [ ] | GET | `/api/rewards/statistics` | 리워드 통계 조회 |
+
+### Request 예시
+
+```json
+{
+  "childId": "CHILD_001",
+  "sessionId": "sess-001",
+  "eventType": "QUIZ_CORRECT",
+  "score": 10
+}
+```
+
+---
+
+## 9. 사진 촬영 Photo
+
+> "치즈", "김치"라고 하면 사진 촬영 -> 저장 -> 애니메이션 얼굴 출력.
+
+| 체크 | Method | Endpoint | 설명 |
+|---|---|---|---|
+| [ ] | POST | `/api/photos/sessions` | 사진 촬영 세션 생성 |
+| [ ] | POST | `/api/photos` | 사진 메타데이터 저장 |
+| [ ] | GET | `/api/photos/{photoId}` | 사진 상세 조회 |
+| [ ] | GET | `/api/photos` | 사진 목록 조회 |
+| [ ] | DELETE | `/api/photos/{photoId}` | 사진 삭제 |
+| [ ] | POST | `/api/animations/face` | 애니메이션 얼굴 실행 |
+| [ ] | GET | `/api/animations/face-presets` | 얼굴 애니메이션 목록 조회 |
+
+### Request 예시
+
+```json
+{
+  "robotId": "TEMI_01",
+  "zoneId": "PHOTO_ZONE",
+  "triggerWord": "치즈",
+  "animationType": "SMILE",
+  "saveRequired": true
+}
+```
+
+---
+
+## 10. 분리수거 Recycling
+
+| 체크 | Method | Endpoint | 설명 |
+|---|---|---|---|
+| [ ] | GET | `/api/recycling/categories` | 분리수거 카테고리 조회 |
+| [ ] | POST | `/api/recycling/classifications` | 쓰레기 분류 요청 |
+| [ ] | GET | `/api/recycling/classifications/{classificationId}` | 분류 결과 조회 |
+| [ ] | POST | `/api/recycling/logs` | 분리수거 기록 저장 |
+| [ ] | GET | `/api/recycling/statistics` | 분리수거 통계 조회 |
+
+### Request 예시
+
+```json
+{
+  "robotId": "TEMI_01",
+  "zoneId": "RECYCLING_ZONE",
+  "imageUrl": "https://example.com/trash-image.jpg",
+  "detectedObject": "plastic_bottle"
+}
+```
+
+---
+
+## 최종 구현 우선순위
+
+| 우선순위 | 체크 | 기능 | 대표 Endpoint |
+|---|---|---|---|
+| 1 | [ ] | 직원 호출 | `POST /api/calls` |
+| 2 | [ ] | 질문 대응 | `POST /api/questions` |
+| 3 | [ ] | 음성 질문 | `POST /api/questions/voice` |
+| 4 | [ ] | 퀴즈 | `GET /api/quizzes/random` |
+| 5 | [ ] | 운영자 통계 | `GET /api/admin/statistics` |
+| 6 | [ ] | 위치 안내 | `POST /api/guides` |
+| 7 | [ ] | TTS | `POST /api/tts/commands` |
+| 8 | [ ] | 인식 후 접근 | `POST /api/approach-events` |
+| 9 | [ ] | 리워드 | `POST /api/rewards/evaluate` |
+| 10 | [ ] | 사진 촬영 | `POST /api/photos/sessions` |
+| 11 | [ ] | 분리수거 | `POST /api/recycling/classifications` |

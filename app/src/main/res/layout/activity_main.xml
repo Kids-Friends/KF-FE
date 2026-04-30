@@ -30,6 +30,23 @@
             android:textSize="18sp" />
 
         <LinearLayout
+            style="@style/TemiPanel"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/text_wake_status"
+                style="@style/TemiStatusText"
+                android:layout_marginTop="0dp"
+                android:text="@string/voice_wake_standby" />
+
+            <Button
+                android:id="@+id/button_start_wake_listening"
+                style="@style/TemiSecondaryButton"
+                android:layout_marginTop="12dp"
+                android:text="@string/voice_button_waiting" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
@@ -65,6 +82,63 @@
                 style="@style/TemiMenuButton"
                 android:layout_marginStart="10dp"
                 android:text="@string/menu_statistics" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_approach"
+                style="@style/TemiMenuButton"
+                android:layout_marginEnd="10dp"
+                android:text="@string/menu_approach" />
+
+            <Button
+                android:id="@+id/button_location_guide"
+                style="@style/TemiMenuButton"
+                android:layout_marginStart="10dp"
+                android:text="@string/menu_location_guide" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_tts"
+                style="@style/TemiMenuButton"
+                android:layout_marginEnd="10dp"
+                android:text="@string/menu_tts" />
+
+            <Button
+                android:id="@+id/button_reward"
+                style="@style/TemiMenuButton"
+                android:layout_marginStart="10dp"
+                android:text="@string/menu_reward" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_photo"
+                style="@style/TemiMenuButton"
+                android:layout_marginEnd="10dp"
+                android:text="@string/menu_photo" />
+
+            <Button
+                android:id="@+id/button_recycling"
+                style="@style/TemiMenuButton"
+                android:layout_marginStart="10dp"
+                android:text="@string/menu_recycling" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

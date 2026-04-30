@@ -28,6 +28,35 @@
             style="@style/TemiPanel"
             android:orientation="vertical">
 
+            <TextView
+                android:id="@+id/text_voice_mode"
+                style="@style/TemiStatusText"
+                android:layout_marginTop="0dp"
+                android:text="@string/voice_wake_standby" />
+
+            <TextView
+                android:id="@+id/text_raw_voice"
+                style="@style/TemiVoiceLabel"
+                android:layout_marginTop="14dp"
+                android:text="@string/voice_raw_waiting" />
+
+            <TextView
+                android:id="@+id/text_reconstructed_voice"
+                style="@style/TemiVoiceLabel"
+                android:layout_marginTop="10dp"
+                android:text="@string/voice_reconstructed_waiting" />
+
+            <Button
+                android:id="@+id/button_voice_listen"
+                style="@style/TemiSecondaryButton"
+                android:layout_marginTop="16dp"
+                android:text="@string/voice_button_waiting" />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/TemiPanel"
+            android:orientation="vertical">
+
             <EditText
                 android:id="@+id/edit_question"
                 android:layout_width="match_parent"

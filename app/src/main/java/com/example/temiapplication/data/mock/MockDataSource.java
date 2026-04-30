@@ -8,6 +8,7 @@ import com.example.temiapplication.data.model.QuizAnswerRequest;
 import com.example.temiapplication.data.model.QuizAnswerResponse;
 import com.example.temiapplication.data.model.QuizQuestion;
 import com.example.temiapplication.data.model.StatisticsSummary;
+import com.example.temiapplication.data.model.VoiceQuestionRequest;
 
 import java.util.Arrays;
 
@@ -27,6 +28,16 @@ public class MockDataSource {
         return new QuestionResponse(
                 true,
                 "지금은 mock 응답입니다. Spring Boot API 연결 후 실제 AI 답변으로 교체됩니다.\n\n질문: " + request.question
+        );
+    }
+
+    public QuestionResponse askVoiceQuestion(VoiceQuestionRequest request) {
+        return new QuestionResponse(
+                true,
+                "음성 질문 mock 응답입니다. 재구성된 질문 기준으로 답변합니다.\n\n원문: "
+                        + request.rawText
+                        + "\n재구성: "
+                        + request.reconstructedText
         );
     }
 
