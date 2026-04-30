@@ -1,29 +1,30 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.TemiApplication" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
+    <style name="Theme.TemiApplication" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/button_primary</item>
-        <item name="colorPrimaryVariant">@color/screen_end</item>
+        <item name="colorPrimaryVariant">@color/kid_blue</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_700</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+        <item name="colorSecondary">@color/kid_yellow</item>
+        <item name="colorSecondaryVariant">@color/kid_orange</item>
+        <item name="colorOnSecondary">@color/text_primary</item>
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/screen_start</item>
+        <item name="android:navigationBarColor" tools:targetApi="l">@color/screen_end</item>
     </style>
 
     <style name="TemiMenuButton">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">132dp</item>
+        <item name="android:layout_height">118dp</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:background">@drawable/primary_button</item>
+        <item name="android:background">@drawable/menu_button</item>
+        <item name="android:backgroundTint">@null</item>
+        <item name="android:elevation">4dp</item>
         <item name="android:minHeight">96dp</item>
         <item name="android:padding">18dp</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:textColor">@color/text_primary</item>
-        <item name="android:textSize">24sp</item>
+        <item name="android:textSize">22sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
@@ -31,17 +32,22 @@
         <item name="android:layout_width">140dp</item>
         <item name="android:layout_height">56dp</item>
         <item name="android:background">@drawable/secondary_button</item>
+        <item name="android:backgroundTint">@null</item>
+        <item name="android:elevation">2dp</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColor">@color/kid_blue</item>
         <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="TemiPrimaryButton">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">72dp</item>
         <item name="android:background">@drawable/primary_button</item>
+        <item name="android:backgroundTint">@null</item>
+        <item name="android:elevation">4dp</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColor">@color/white</item>
         <item name="android:textSize">22sp</item>
         <item name="android:textStyle">bold</item>
     </style>
@@ -50,15 +56,20 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">64dp</item>
         <item name="android:background">@drawable/secondary_button</item>
+        <item name="android:backgroundTint">@null</item>
+        <item name="android:elevation">2dp</item>
         <item name="android:textAllCaps">false</item>
-        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColor">@color/kid_blue</item>
         <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="TemiOptionButton">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">72dp</item>
         <item name="android:background">@drawable/option_button</item>
+        <item name="android:backgroundTint">@null</item>
+        <item name="android:elevation">2dp</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:textSize">20sp</item>
@@ -69,6 +80,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">24dp</item>
         <item name="android:background">@drawable/panel_background</item>
+        <item name="android:elevation">6dp</item>
         <item name="android:padding">24dp</item>
     </style>
 
@@ -77,8 +89,9 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">24dp</item>
         <item name="android:textColor">@color/text_primary</item>
-        <item name="android:textSize">32sp</item>
+        <item name="android:textSize">34sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <style name="TemiScreenDescription">
@@ -87,6 +100,7 @@
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:textColor">@color/text_secondary</item>
         <item name="android:textSize">18sp</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <style name="TemiStatusText">
@@ -97,6 +111,7 @@
         <item name="android:padding">18dp</item>
         <item name="android:textColor">@color/text_secondary</item>
         <item name="android:textSize">18sp</item>
+        <item name="android:lineSpacingExtra">2dp</item>
     </style>
 
     <style name="TemiVoiceLabel">

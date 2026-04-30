@@ -7,7 +7,7 @@ android {
     //buildToolsVersion "30.0.3"
 
     defaultConfig {
-        applicationId "com.example.temiapplication"
+        applicationId "com.kidsFriend"
         minSdkVersion 23
         targetSdkVersion 33
         versionCode 1

@@ -5,29 +5,45 @@
     android:layout_height="match_parent"
     android:background="@drawable/screen_background"
     android:fillViewport="true"
+    android:overScrollMode="never"
     tools:context=".MainActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="32dp">
+        android:padding="28dp">
+
+        <ImageView
+            android:layout_width="196dp"
+            android:layout_height="196dp"
+            android:adjustViewBounds="true"
+            android:background="@drawable/logo_badge_background"
+            android:contentDescription="@string/app_name"
+            android:elevation="8dp"
+            android:padding="6dp"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ic_launcher_foreground" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:gravity="center"
             android:text="@string/main_title"
             android:textColor="@color/text_primary"
-            android:textSize="34sp"
+            android:textSize="40sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:gravity="center"
             android:text="@string/main_subtitle"
             android:textColor="@color/text_secondary"
-            android:textSize="18sp" />
+            android:textSize="19sp" />
 
         <LinearLayout
             style="@style/TemiPanel"
@@ -40,10 +56,10 @@
                 android:text="@string/voice_wake_standby" />
 
             <Button
-                android:id="@+id/button_start_wake_listening"
-                style="@style/TemiSecondaryButton"
-                android:layout_marginTop="12dp"
-                android:text="@string/voice_button_waiting" />
+            android:id="@+id/button_start_wake_listening"
+            style="@style/TemiSecondaryButton"
+            android:layout_marginTop="12dp"
+            android:text="@string/voice_button_waiting" />
         </LinearLayout>
 
         <LinearLayout

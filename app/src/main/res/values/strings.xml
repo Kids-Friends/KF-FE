@@ -1,59 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Kids_Friend</string>
-    <string name="main_title">Kids Cafe Temi</string>
-    <string name="main_subtitle">필요한 기능을 선택해주세요.</string>
+    <string name="main_title">Kids_Friend</string>
+    <string name="main_subtitle">친구처럼 도와주는 키즈카페 안내 로봇</string>
+
     <string name="menu_call">직원 호출</string>
     <string name="menu_question">질문하기</string>
     <string name="menu_quiz">퀴즈</string>
-    <string name="menu_statistics">운영자 통계</string>
-    <string name="common_back">뒤로</string>
-    <string name="common_loading">처리 중입니다...</string>
-    <string name="call_title">직원 호출</string>
-    <string name="call_description">상황에 맞는 호출 사유를 선택한 뒤 호출하기를 눌러주세요.</string>
-    <string name="call_reason_help">도움이 필요해요</string>
-    <string name="call_reason_injury">아이가 다쳤어요</string>
-    <string name="call_reason_lost_item">분실물이 있어요</string>
-    <string name="call_reason_etc">기타</string>
-    <string name="call_submit">호출하기</string>
-    <string name="call_waiting_message">호출 사유를 선택해주세요.</string>
-    <string name="call_select_reason_message">먼저 호출 사유를 선택해주세요.</string>
-    <string name="question_title">질문하기</string>
-    <string name="question_description">궁금한 내용을 입력하면 AI 응답 영역에 답변을 표시합니다.</string>
-    <string name="question_hint">예: 화장실은 어디에 있어요?</string>
-    <string name="question_submit">질문 보내기</string>
-    <string name="question_waiting_message">질문을 입력하고 버튼을 눌러주세요.</string>
-    <string name="question_empty_message">질문 내용을 입력해주세요.</string>
-    <string name="quiz_title">퀴즈</string>
-    <string name="quiz_description">아이들이 터치하기 쉬운 객관식 퀴즈 화면입니다.</string>
-    <string name="quiz_submit">정답 확인</string>
-    <string name="quiz_reload">다시 불러오기</string>
-    <string name="quiz_select_answer_message">정답을 하나 선택해주세요.</string>
-    <string name="quiz_load_failed_message">퀴즈를 먼저 불러와주세요.</string>
-    <string name="statistics_title">운영자 통계</string>
-    <string name="statistics_description">호출, 질문, 퀴즈 사용 데이터를 요약해서 확인합니다.</string>
-    <string name="statistics_refresh">통계 새로고침</string>
-    <string name="stat_call_count">직원 호출</string>
-    <string name="stat_question_count">질문 수</string>
-    <string name="stat_quiz_play_count">퀴즈 참여</string>
-    <string name="stat_quiz_correct_count">퀴즈 정답</string>
-    <string name="voice_permission_required">마이크 권한이 필요합니다.</string>
-    <string name="voice_permission_denied">마이크 권한이 없어 음성 모드를 사용할 수 없습니다.</string>
-    <string name="voice_recognition_unavailable">이 기기에서 음성 인식을 사용할 수 없습니다.</string>
-    <string name="voice_wake_standby">대기 상태: \"친구야\"라고 말하면 듣기 모드로 전환됩니다.</string>
-    <string name="voice_wake_detected">Wake Word 감지: 듣기 모드로 전환합니다.</string>
-    <string name="voice_listening">듣기 모드: 질문을 말해주세요.</string>
-    <string name="voice_sending">재구성된 질문을 백엔드 API로 전송 중입니다.</string>
-    <string name="voice_answer_received">답변을 수신했습니다. Temi TTS로 읽습니다.</string>
-    <string name="voice_heard_format">인식 중: %1$s</string>
-    <string name="voice_raw_waiting">STT 원문: 아직 인식된 문장이 없습니다.</string>
-    <string name="voice_reconstructed_waiting">재구성 문장: 아직 생성되지 않았습니다.</string>
-    <string name="voice_button_waiting">음성 대기 시작</string>
-    <string name="voice_button_retry">다시 듣기</string>
+    <string name="menu_statistics">운영 통계</string>
     <string name="menu_approach">인식 후 다가가기</string>
     <string name="menu_location_guide">위치 안내</string>
     <string name="menu_tts">TTS 테스트</string>
     <string name="menu_reward">리워드</string>
     <string name="menu_photo">사진 촬영</string>
     <string name="menu_recycling">분리수거</string>
-    <string name="feature_pending_message">아직 구현 예정인 기능입니다.</string>
+
+    <string name="common_back">뒤로</string>
+    <string name="common_loading">처리 중입니다...</string>
+    <string name="feature_pending_message">아직 준비 중인 기능입니다.</string>
+
+    <string name="call_title">직원 호출</string>
+    <string name="call_description">도움이 필요한 상황을 골라 주세요. 가까운 직원에게 바로 알려요.</string>
+    <string name="call_reason_help">도움이 필요해요</string>
+    <string name="call_reason_injury">아이가 다쳤어요</string>
+    <string name="call_reason_lost_item">분실물이 있어요</string>
+    <string name="call_reason_etc">기타 요청</string>
+    <string name="call_submit">직원 호출하기</string>
+    <string name="call_waiting_message">호출 사유를 선택해 주세요.</string>
+    <string name="call_select_reason_message">먼저 호출 사유를 선택해 주세요.</string>
+
+    <string name="question_title">질문하기</string>
+    <string name="question_description">궁금한 내용을 말하거나 입력하면 Kids_Friend가 답변해요.</string>
+    <string name="question_hint">예: 화장실은 어디에 있어?</string>
+    <string name="question_submit">질문 보내기</string>
+    <string name="question_waiting_message">질문을 입력하고 버튼을 눌러 주세요.</string>
+    <string name="question_empty_message">질문 내용을 입력해 주세요.</string>
+
+    <string name="quiz_title">퀴즈</string>
+    <string name="quiz_description">아이들이 재미있게 참여할 수 있는 짧은 퀴즈예요.</string>
+    <string name="quiz_submit">정답 확인</string>
+    <string name="quiz_reload">다시 불러오기</string>
+    <string name="quiz_select_answer_message">정답을 하나 선택해 주세요.</string>
+    <string name="quiz_load_failed_message">퀴즈를 먼저 불러와 주세요.</string>
+
+    <string name="statistics_title">운영 통계</string>
+    <string name="statistics_description">호출, 질문, 퀴즈 사용 데이터를 한눈에 확인해요.</string>
+    <string name="statistics_refresh">통계 새로고침</string>
+    <string name="stat_call_count">직원 호출</string>
+    <string name="stat_question_count">질문 수</string>
+    <string name="stat_quiz_play_count">퀴즈 참여</string>
+    <string name="stat_quiz_correct_count">퀴즈 정답</string>
+
+    <string name="voice_permission_required">마이크 권한이 필요합니다.</string>
+    <string name="voice_permission_denied">마이크 권한이 없어 음성 모드를 사용할 수 없습니다.</string>
+    <string name="voice_recognition_unavailable">이 기기에서는 음성 인식을 사용할 수 없습니다.</string>
+    <string name="voice_wake_standby">대기 중: "친구야"라고 말하면 질문 모드로 이동합니다.</string>
+    <string name="voice_wake_detected">호출어 감지: 질문 모드로 이동합니다.</string>
+    <string name="voice_listening">듣는 중: 질문을 말해 주세요.</string>
+    <string name="voice_sending">정리한 질문을 서버로 보내는 중입니다.</string>
+    <string name="voice_answer_received">답변을 받았습니다. Kids_Friend가 읽어줄게요.</string>
+    <string name="voice_heard_format">인식 중: %1$s</string>
+    <string name="voice_raw_waiting">STT 원문: 아직 인식된 문장이 없습니다.</string>
+    <string name="voice_reconstructed_waiting">정리한 질문: 아직 생성되지 않았습니다.</string>
+    <string name="voice_button_waiting">음성 대기 시작</string>
+    <string name="voice_button_retry">다시 듣기</string>
 </resources>
