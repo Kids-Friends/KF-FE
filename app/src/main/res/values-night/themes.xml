@@ -1,16 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.TemiApplication" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand color. -->
+    <style name="Theme.TemiApplication" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/button_primary</item>
-        <item name="colorPrimaryVariant">@color/screen_end</item>
+        <item name="colorPrimaryVariant">@color/kid_blue</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_200</item>
-        <item name="colorOnSecondary">@color/black</item>
-        <!-- Status bar color. -->
-        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+        <item name="colorSecondary">@color/kid_yellow</item>
+        <item name="colorSecondaryVariant">@color/kid_orange</item>
+        <item name="colorOnSecondary">@color/text_primary</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/screen_start</item>
+        <item name="android:navigationBarColor" tools:targetApi="l">@color/screen_end</item>
     </style>
 </resources>
