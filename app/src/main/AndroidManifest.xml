@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.temiapplication">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,6 +11,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TemiApplication">
+        <activity
+            android:name=".ui.StatisticsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.QuizActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.QuestionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.CallActivity"
+            android:exported="false" />
         <activity android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
