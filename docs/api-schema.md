@@ -17,8 +17,8 @@ This document defines the API contract between the Android Temi app and the Spri
 | Feature | Method | Path | App Method |
 |---|---:|---|---|
 | Staff call | POST | `/api/calls` | `createCall()` |
-| Text question | POST | `/api/questions` | `askQuestion()` |
-| Voice question | POST | `/api/questions/voice` | `askVoiceQuestion()` |
+| Text question | POST | `/api/ai/chat` | `askQuestion()` |
+| Voice question | POST | `/api/ai/chat` | `askVoiceQuestion()` |
 | Current quiz | GET | `/api/quizzes/current` | `getCurrentQuiz()` |
 | Quiz answer | POST | `/api/quizzes/answers` | `submitQuizAnswer()` |
 | Statistics summary | GET | `/api/statistics/summary` | `getStatisticsSummary()` |
@@ -82,7 +82,7 @@ Allowed app values:
 
 ## 2. Text Question
 
-### `POST /api/questions`
+### `POST /api/ai/chat`
 
 Sends a typed question and receives an answer.
 
@@ -118,7 +118,7 @@ Sends a typed question and receives an answer.
 
 ## 3. Voice Question
 
-### `POST /api/questions/voice`
+### `POST /api/ai/chat`
 
 Sends both the raw STT result and the reconstructed question.
 
@@ -140,7 +140,7 @@ Sends both the raw STT result and the reconstructed question.
 
 ### Response
 
-Same as `POST /api/questions`.
+Same as `POST /api/ai/chat`.
 
 ```json
 {
@@ -253,7 +253,7 @@ Returns simple operator statistics.
 ## Backend Implementation Notes
 
 - Minimum viable BE can implement all endpoints with in-memory data first.
-- `POST /api/questions/voice` should persist both `rawText` and `reconstructedText`.
+- `POST /api/ai/chat` should persist both `rawText` and `reconstructedText`.
 - `answer` is read by Temi TTS, so keep it short and natural.
 - For local Android emulator testing, start Spring Boot on port `8080`.
 - For real Temi device testing, both PC and Temi must be on the same network, and Windows firewall must allow inbound port `8080`.
@@ -261,13 +261,13 @@ Returns simple operator statistics.
 ## Quick Local Test Examples
 
 ```powershell
-curl -X POST http://localhost:8080/api/calls `
+curl -X POST http://localhost:8080/api/ai/chat `
   -H "Content-Type: application/json" `
   -d "{\"reason\":\"도움이 필요해요\"}"
 ```
 
 ```powershell
-curl -X POST http://localhost:8080/api/questions/voice `
+curl -X POST http://localhost:8080/api/ai/chat `
   -H "Content-Type: application/json" `
   -d "{\"rawText\":\"친구야 화장실 어디\",\"reconstructedText\":\"화장실은 어디에 있어?\"}"
 ```

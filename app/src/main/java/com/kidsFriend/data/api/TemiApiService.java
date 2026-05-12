@@ -14,15 +14,16 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 public interface TemiApiService {
     @POST("api/calls")
     Call<CallResponse> createCall(@Body CallRequest request);
 
-    @POST("api/questions")
-    Call<QuestionResponse> askQuestion(@Body QuestionRequest request);
+    @GET("api/ai/chat")
+    Call<QuestionResponse> askQuestion(@Query("message") String message);
 
-    @POST("api/questions/voice")
+    @POST("api/ai/chat")
     Call<QuestionResponse> askVoiceQuestion(@Body VoiceQuestionRequest request);
 
     @GET("api/quizzes/current")

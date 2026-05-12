@@ -42,10 +42,10 @@
 
 | 체크 | Method | Endpoint | 설명 |
 |---|---|---|---|
-| [ ] | POST | `/api/questions` | 텍스트 질문 전송 |
-| [ ] | POST | `/api/questions/voice` | 음성 질문 전송 |
-| [ ] | GET | `/api/questions/logs` | 질문 로그 조회 |
-| [ ] | GET | `/api/questions/frequent` | 자주 묻는 질문 조회 |
+| [ ] | POST | `/api/ai/chat` | 텍스트 질문 전송 |
+| [ ] | POST | `/api/ai/chat` | 음성 질문 전송 |
+| [ ] | GET | `/api/ai/chat/logs` | 질문 로그 조회 |
+| [ ] | GET | `/api/ai/chat/frequent` | 자주 묻는 질문 조회 |
 | [ ] | GET | `/api/faqs` | FAQ 목록 조회 |
 
 ### Voice Request 예시
@@ -283,8 +283,8 @@
 | 우선순위 | 체크 | 기능 | 대표 Endpoint |
 |---|---|---|---|
 | 1 | [ ] | 직원 호출 | `POST /api/calls` |
-| 2 | [ ] | 질문 대응 | `POST /api/questions` |
-| 3 | [ ] | 음성 질문 | `POST /api/questions/voice` |
+| 2 | [ ] | 질문 대응 | `POST /api/ai/chat` |
+| 3 | [ ] | 음성 질문 | `POST /api/ai/chat` |
 | 4 | [ ] | 퀴즈 | `GET /api/quizzes/random` |
 | 5 | [ ] | 운영자 통계 | `GET /api/admin/statistics` |
 | 6 | [ ] | 위치 안내 | `POST /api/guides` |

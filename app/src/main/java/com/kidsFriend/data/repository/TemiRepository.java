@@ -37,12 +37,13 @@ public class TemiRepository {
     }
 
     public void askQuestion(String question, RepositoryCallback<QuestionResponse> callback) {
-        QuestionRequest request = new QuestionRequest(question);
         if (ApiConfig.USE_MOCK) {
+            QuestionRequest request = new QuestionRequest(question);
             callback.onSuccess(mockDataSource.askQuestion(request));
             return;
         }
-        apiService.askQuestion(request).enqueue(toRetrofitCallback(callback));
+
+        apiService.askQuestion(question).enqueue(toRetrofitCallback(callback));
     }
 
     public void askVoiceQuestion(String rawText, String reconstructedText, RepositoryCallback<QuestionResponse> callback) {
