@@ -28,6 +28,14 @@
     <string name="call_submit">직원 호출하기</string>
     <string name="call_waiting_message">호출 사유를 선택해 주세요.</string>
     <string name="call_select_reason_message">먼저 호출 사유를 선택해 주세요.</string>
+    <string name="call_default_reason">직원 호출</string>
+    <string name="call_waiting_title">직원 호출 대기중</string>
+    <string name="call_waiting_description">가까운 직원에게 알렸어요. 잠시만 기다려 주세요.</string>
+    <string name="call_waiting_reason_format">요청 사유: %1$s</string>
+    <string name="call_waiting_status_message">직원이 확인하는 중입니다.</string>
+    <string name="call_waiting_success_title">직원이 이동 중이에요</string>
+    <string name="call_waiting_error_title">호출 전송에 실패했어요</string>
+    <string name="call_retry">다시 호출하기</string>
 
     <string name="question_title">질문하기</string>
     <string name="question_description">궁금한 내용을 말하거나 입력하면 Kids_Friend가 답변해요.</string>
@@ -37,9 +45,9 @@
     <string name="question_empty_message">질문 내용을 입력해 주세요.</string>
 
     <string name="quiz_title">퀴즈</string>
-    <string name="quiz_description">아이들이 재미있게 참여할 수 있는 짧은 퀴즈예요.</string>
+    <string name="quiz_description">아이들이 쉽게 풀 수 있는 O/X 퀴즈예요.</string>
     <string name="quiz_submit">정답 확인</string>
-    <string name="quiz_reload">다시 불러오기</string>
+    <string name="quiz_reload">다음 문제</string>
     <string name="quiz_select_answer_message">정답을 하나 선택해 주세요.</string>
     <string name="quiz_load_failed_message">퀴즈를 먼저 불러와 주세요.</string>
 
@@ -50,6 +58,11 @@
     <string name="stat_question_count">질문 수</string>
     <string name="stat_quiz_play_count">퀴즈 참여</string>
     <string name="stat_quiz_correct_count">퀴즈 정답</string>
+
+    <string name="zone_title">ZONE Mock</string>
+    <string name="zone_description">위치 안내와 접근 기능에서 사용할 구역 Mock 데이터입니다.</string>
+    <string name="zone_reload">구역 다시 불러오기</string>
+    <string name="zone_count_format">Mock 구역 %1$d개를 불러왔습니다.</string>
 
     <string name="voice_permission_required">마이크 권한이 필요합니다.</string>
     <string name="voice_permission_denied">마이크 권한이 없어 음성 모드를 사용할 수 없습니다.</string>

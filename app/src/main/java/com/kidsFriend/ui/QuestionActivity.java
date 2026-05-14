@@ -26,9 +26,9 @@ public class QuestionActivity extends AppCompatActivity {
     public static final String EXTRA_INITIAL_VOICE_TEXT = "initial_voice_text";
     private static final int REQUEST_RECORD_AUDIO = 2001;
 
-    private final TemiRepository repository = new TemiRepository();
     private final TemiSpeechSpeaker temiSpeechSpeaker = new TemiSpeechSpeaker();
 
+    private TemiRepository repository;
     private EditText questionInput;
     private TextView voiceModeText;
     private TextView rawVoiceText;
@@ -42,6 +42,7 @@ public class QuestionActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_question);
+        repository = new TemiRepository(this);
 
         questionInput = findViewById(R.id.edit_question);
         voiceModeText = findViewById(R.id.text_voice_mode);

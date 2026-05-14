@@ -14,8 +14,7 @@ import com.kidsFriend.data.repository.TemiRepository;
 import java.util.Locale;
 
 public class StatisticsActivity extends AppCompatActivity {
-    private final TemiRepository repository = new TemiRepository();
-
+    private TemiRepository repository;
     private TextView callCountText;
     private TextView questionCountText;
     private TextView quizPlayCountText;
@@ -26,6 +25,7 @@ public class StatisticsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statistics);
+        repository = new TemiRepository(this);
 
         callCountText = findViewById(R.id.text_stat_call_count);
         questionCountText = findViewById(R.id.text_stat_question_count);

@@ -1,6 +1,7 @@
 package com.kidsFriend.ui;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -16,9 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QuizActivity extends AppCompatActivity {
-    private final TemiRepository repository = new TemiRepository();
     private final List<Button> optionButtons = new ArrayList<>();
 
+    private TemiRepository repository;
     private TextView questionText;
     private TextView resultText;
     private QuizQuestion currentQuiz;
@@ -28,6 +29,7 @@ public class QuizActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quiz);
+        repository = new TemiRepository(this);
 
         questionText = findViewById(R.id.text_quiz_question);
         resultText = findViewById(R.id.text_quiz_result);
@@ -73,6 +75,7 @@ public class QuizActivity extends AppCompatActivity {
             Button button = optionButtons.get(i);
             if (i < quiz.options.size()) {
                 String option = quiz.options.get(i);
+                button.setVisibility(View.VISIBLE);
                 button.setText(option);
                 button.setEnabled(true);
                 button.setSelected(false);
@@ -80,6 +83,9 @@ public class QuizActivity extends AppCompatActivity {
             } else {
                 button.setText("");
                 button.setEnabled(false);
+                button.setSelected(false);
+                button.setVisibility(View.GONE);
+                button.setOnClickListener(null);
             }
         }
     }

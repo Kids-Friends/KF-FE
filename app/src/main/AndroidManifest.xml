@@ -17,6 +17,9 @@
             android:name=".ui.StatisticsActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.ZoneActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.QuizActivity"
             android:exported="false" />
         <activity
