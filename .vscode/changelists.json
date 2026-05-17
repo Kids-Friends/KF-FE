@@ -1,0 +1,12 @@
+{
+  "changelists": [
+    {
+      "name": "Default",
+      "files": [
+        "docs/api-schema.md",
+        ".vscode/changelists.json"
+      ]
+    }
+  ],
+  "active": "Default"
+}

@@ -23,15 +23,15 @@ This document defines the API contract between the Android Temi app and the Spri
 
 | Feature | Method | Path | App Method |
 |---|---:|---|---|
-| List clients | GET | `/api/clients` | `getClients()` |
-| Client detail | GET | `/api/clients/{id}` | `getClient()` |
+| List clients | GET | `/api/clients` | `getClients()` from 아이 설정 |
+| Client detail | GET | `/api/clients/{id}` | `getClient()` from manual 아이 ID 설정 |
 | Add point | PATCH | `/api/clients/{id}/point` | `addClientPoint()` |
-| Robot status | PATCH | `/api/robots/{id}/status` | `updateRobotStatus()` |
-| Staff call | POST | `/api/calls` | `createCall()` |
-| Call status | PATCH | `/api/calls/{id}/status` | `updateCallStatus()` |
-| AI chat | POST | `/api/chat/ai` | `askAi()` |
-| Chat log | POST | `/api/chat` | `saveChatLog()` |
-| Photo metadata | POST | `/api/photos` | `savePhoto()` |
+| Robot status | PATCH | `/api/robots/{id}/status` | `updateRobotStatus()` from app lifecycle |
+| Staff call | POST | `/api/calls` | `createCall()` from 직원 호출 |
+| Call status | PATCH | `/api/calls/{id}/status` | `updateCallStatus()` from 직원 도착 확인 / 호출 취소 |
+| AI chat | POST | `/api/chat/ai` | `askAi()` from 질문하기 |
+| Chat log | POST | `/api/chat` | `saveChatLog()` after AI reply |
+| Photo metadata | POST | `/api/photos` | `savePhoto()` from 사진 저장 |
 
 ## Common Rules
 
@@ -41,6 +41,7 @@ This document defines the API contract between the Android Temi app and the Spri
 - Quiz, zones, navigation names, and rule/location templates remain mock data in the Android app.
 - The app never sends binary image data to the backend. Send only the uploaded cloud URL.
 - Current MVP does not implement login or authentication.
+- The 운영 통계 and ZONE screens are local/mock utility screens because the current backend contract has no statistics or zone endpoints.
 
 ## 1. Clients
 

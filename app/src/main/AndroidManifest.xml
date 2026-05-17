@@ -28,6 +28,12 @@
         <activity
             android:name=".ui.CallActivity"
             android:exported="false" />
+        <activity
+            android:name=".ApiTestActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.DemoActivity"
+            android:exported="false" />
         <activity android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

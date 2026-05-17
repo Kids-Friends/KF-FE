@@ -105,11 +105,17 @@
                 android:visibility="gone" />
 
             <Button
+                android:id="@+id/button_waiting_done"
+                style="@style/TemiPrimaryButton"
+                android:layout_marginTop="18dp"
+                android:text="@string/call_done" />
+
+            <Button
                 android:id="@+id/button_waiting_back"
                 style="@style/TemiBackButton"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="12dp"
-                android:text="@string/common_back" />
+                android:text="@string/call_cancel" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

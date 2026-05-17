@@ -4,6 +4,10 @@
     <string name="main_title">Kids_Friend</string>
     <string name="main_subtitle">친구처럼 도와주는 키즈카페 안내 로봇</string>
 
+    <string name="launcher_title">Kids_Friend 모드 선택</string>
+    <string name="launcher_api_test">API 테스트</string>
+    <string name="launcher_demo_test">데모 테스트</string>
+
     <string name="menu_call">직원 호출</string>
     <string name="menu_question">질문하기</string>
     <string name="menu_quiz">퀴즈</string>
@@ -12,12 +16,29 @@
     <string name="menu_location_guide">위치 안내</string>
     <string name="menu_tts">TTS 테스트</string>
     <string name="menu_reward">리워드</string>
-    <string name="menu_photo">사진 촬영</string>
+    <string name="menu_photo">사진 저장</string>
     <string name="menu_recycling">분리수거</string>
 
     <string name="common_back">뒤로</string>
     <string name="common_loading">처리 중입니다...</string>
     <string name="feature_pending_message">아직 준비 중인 기능입니다.</string>
+
+    <string name="settings_server_button">서버 설정</string>
+    <string name="settings_client_button">아이 설정</string>
+    <string name="settings_server_title">서버 주소 설정</string>
+    <string name="settings_server_message">IP만 입력하면 http://IP:8080/ 형식으로 저장됩니다.</string>
+    <string name="settings_cancel">취소</string>
+    <string name="settings_save">저장</string>
+    <string name="settings_server_saved">서버 주소가 변경되었습니다.</string>
+    <string name="settings_client_title">아이 ID 설정</string>
+    <string name="settings_client_message">관리자 대시보드에서 등록된 clientId를 입력해 주세요.</string>
+    <string name="settings_client_manual">직접 입력</string>
+    <string name="settings_client_saved">아이 정보가 설정되었습니다.</string>
+    <string name="settings_client_failed">아이 정보를 불러오지 못했습니다.</string>
+    <string name="photo_url_title">사진 URL 저장</string>
+    <string name="photo_url_message">클라우드 업로드 후 생성된 사진 URL을 입력해 주세요.</string>
+    <string name="photo_url_empty">사진 URL을 입력해 주세요.</string>
+    <string name="photo_saved">사진 정보가 저장되었습니다.</string>
 
     <string name="call_title">직원 호출</string>
     <string name="call_description">도움이 필요한 상황을 골라 주세요. 가까운 직원에게 바로 알려요.</string>
@@ -29,13 +50,17 @@
     <string name="call_waiting_message">호출 사유를 선택해 주세요.</string>
     <string name="call_select_reason_message">먼저 호출 사유를 선택해 주세요.</string>
     <string name="call_default_reason">직원 호출</string>
-    <string name="call_waiting_title">직원 호출 대기중</string>
+    <string name="call_waiting_title">직원 호출 대기 중</string>
     <string name="call_waiting_description">가까운 직원에게 알렸어요. 잠시만 기다려 주세요.</string>
     <string name="call_waiting_reason_format">요청 사유: %1$s</string>
     <string name="call_waiting_status_message">직원이 확인하는 중입니다.</string>
     <string name="call_waiting_success_title">직원이 이동 중이에요</string>
     <string name="call_waiting_error_title">호출 전송에 실패했어요</string>
     <string name="call_retry">다시 호출하기</string>
+    <string name="call_done">직원 도착 확인</string>
+    <string name="call_cancel">호출 취소</string>
+    <string name="call_done_message">직원 도착이 확인되었습니다.</string>
+    <string name="call_cancel_message">호출이 취소되었습니다.</string>
 
     <string name="question_title">질문하기</string>
     <string name="question_description">궁금한 내용을 말하거나 입력하면 Kids_Friend가 답변해요.</string>
@@ -45,14 +70,14 @@
     <string name="question_empty_message">질문 내용을 입력해 주세요.</string>
 
     <string name="quiz_title">퀴즈</string>
-    <string name="quiz_description">아이들이 쉽게 풀 수 있는 O/X 퀴즈예요.</string>
+    <string name="quiz_description">아이들이 쉽게 풀 수 있는 O/X 퀴즈예요. 정답이면 포인트가 1점 올라갑니다.</string>
     <string name="quiz_submit">정답 확인</string>
     <string name="quiz_reload">다음 문제</string>
     <string name="quiz_select_answer_message">정답을 하나 선택해 주세요.</string>
     <string name="quiz_load_failed_message">퀴즈를 먼저 불러와 주세요.</string>
 
     <string name="statistics_title">운영 통계</string>
-    <string name="statistics_description">호출, 질문, 퀴즈 사용 데이터를 한눈에 확인해요.</string>
+    <string name="statistics_description">현재 백엔드 통계 API가 없어 앱 내부 테스트 데이터만 표시합니다.</string>
     <string name="statistics_refresh">통계 새로고침</string>
     <string name="stat_call_count">직원 호출</string>
     <string name="stat_question_count">질문 수</string>
@@ -67,10 +92,10 @@
     <string name="voice_permission_required">마이크 권한이 필요합니다.</string>
     <string name="voice_permission_denied">마이크 권한이 없어 음성 모드를 사용할 수 없습니다.</string>
     <string name="voice_recognition_unavailable">이 기기에서는 음성 인식을 사용할 수 없습니다.</string>
-    <string name="voice_wake_standby">대기 중: "친구야"라고 말하면 질문 모드로 이동합니다.</string>
+    <string name="voice_wake_standby">대기 중: \"친구야\"라고 말하면 질문 모드로 이동합니다.</string>
     <string name="voice_wake_detected">호출어 감지: 질문 모드로 이동합니다.</string>
     <string name="voice_listening">듣는 중: 질문을 말해 주세요.</string>
-    <string name="voice_sending">정리한 질문을 서버로 보내는 중입니다.</string>
+    <string name="voice_sending">질문을 서버로 보내는 중입니다.</string>
     <string name="voice_answer_received">답변을 받았습니다. Kids_Friend가 읽어줄게요.</string>
     <string name="voice_heard_format">인식 중: %1$s</string>
     <string name="voice_raw_waiting">STT 원문: 아직 인식된 문장이 없습니다.</string>

@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -44,6 +45,7 @@ public class CallActivity extends AppCompatActivity {
         Button submitButton = findViewById(R.id.button_submit_call);
         Button backButton = findViewById(R.id.button_back);
         Button waitingBackButton = findViewById(R.id.button_waiting_back);
+        Button waitingDoneButton = findViewById(R.id.button_waiting_done);
         retryButton = findViewById(R.id.button_retry_call);
         formPanel = findViewById(R.id.panel_call_form);
         waitingPanel = findViewById(R.id.panel_call_waiting);
@@ -60,6 +62,7 @@ public class CallActivity extends AppCompatActivity {
         retryButton.setOnClickListener(v -> submitCall());
         backButton.setOnClickListener(v -> finish());
         waitingBackButton.setOnClickListener(v -> cancelWaitingCallAndFinish());
+        waitingDoneButton.setOnClickListener(v -> completeWaitingCallAndFinish());
 
         if (getIntent().getBooleanExtra(EXTRA_AUTO_SUBMIT_CALL, false)) {
             selectedReason = getString(R.string.call_default_reason);
@@ -130,12 +133,33 @@ public class CallActivity extends AppCompatActivity {
         repository.updateCallStatus(currentCallId, "CANCELED", new RepositoryCallback<CallResponse>() {
             @Override
             public void onSuccess(CallResponse data) {
+                Toast.makeText(CallActivity.this, R.string.call_cancel_message, Toast.LENGTH_SHORT).show();
                 finish();
             }
 
             @Override
             public void onError(String message) {
                 finish();
+            }
+        });
+    }
+
+    private void completeWaitingCallAndFinish() {
+        if (currentCallId == null || currentCallId.trim().isEmpty()) {
+            finish();
+            return;
+        }
+
+        repository.updateCallStatus(currentCallId, "DONE", new RepositoryCallback<CallResponse>() {
+            @Override
+            public void onSuccess(CallResponse data) {
+                Toast.makeText(CallActivity.this, R.string.call_done_message, Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+            @Override
+            public void onError(String message) {
+                waitingStatusText.setText(message);
             }
         });
     }
