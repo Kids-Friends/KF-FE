@@ -21,8 +21,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.kidsFriend.data.api.RetrofitClient;
-import com.kidsFriend.data.config.AppConfig;
 import com.kidsFriend.data.model.ClientResponse;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
@@ -66,7 +64,6 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
         Button rewardButton = findViewById(R.id.button_reward);
         Button photoButton = findViewById(R.id.button_photo);
         Button recyclingButton = findViewById(R.id.button_recycling);
-        Button serverSettingsButton = findViewById(R.id.button_server_settings);
         Button clientSettingsButton = findViewById(R.id.button_client_settings);
         wakeStatusText = findViewById(R.id.text_wake_status);
         Button wakeButton = findViewById(R.id.button_start_wake_listening);
@@ -83,7 +80,6 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
         rewardButton.setOnClickListener(v -> showPendingFeature());
         photoButton.setOnClickListener(v -> showPhotoUrlDialog());
         recyclingButton.setOnClickListener(v -> showPendingFeature());
-        serverSettingsButton.setOnClickListener(v -> showServerSettingsDialog());
         clientSettingsButton.setOnClickListener(v -> showClientSettingsDialog());
         wakeButton.setOnClickListener(v -> startWakeWordStandby());
 
@@ -102,30 +98,6 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
 
     private void showPendingFeature() {
         Toast.makeText(this, R.string.feature_pending_message, Toast.LENGTH_SHORT).show();
-    }
-
-    private void showServerSettingsDialog() {
-        AppConfig appConfig = AppConfig.init(this);
-        EditText input = new EditText(this);
-        input.setSingleLine(true);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setText(appConfig.getBaseUrl());
-        input.setSelection(input.getText().length());
-        input.setHint("192.168.1.100");
-
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.settings_server_title)
-                .setMessage(R.string.settings_server_message)
-                .setView(input)
-                .setNegativeButton(R.string.settings_cancel, null)
-                .setPositiveButton(R.string.settings_save, (dialog, which) -> {
-                    String newBaseUrl = appConfig.buildBaseUrlFromIp(input.getText().toString());
-                    appConfig.updateBaseUrl(newBaseUrl);
-                    RetrofitClient.resetInstance();
-                    repository = new TemiRepository(this);
-                    Toast.makeText(this, R.string.settings_server_saved, Toast.LENGTH_SHORT).show();
-                })
-                .show();
     }
 
     private void showClientSettingsDialog() {

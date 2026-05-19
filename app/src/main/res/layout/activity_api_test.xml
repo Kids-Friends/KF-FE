@@ -62,12 +62,6 @@
             android:text="@string/voice_button_waiting" />
 
             <Button
-                android:id="@+id/button_server_settings"
-                style="@style/TemiSecondaryButton"
-                android:layout_marginTop="12dp"
-                android:text="@string/settings_server_button" />
-
-            <Button
                 android:id="@+id/button_client_settings"
                 style="@style/TemiSecondaryButton"
                 android:layout_marginTop="12dp"
