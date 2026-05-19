@@ -2,9 +2,11 @@ package com.kidsFriend.data.config;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import com.kidsFriend.BuildConfig;
 
 public class AppConfig {
-    public static final String DEFAULT_BASE_URL = "http://192.168.0.1:8080/";
+    // .env 파일의 API_BASE_URL 값이 빌드 시 주입됩니다
+    public static final String DEFAULT_BASE_URL = BuildConfig.API_BASE_URL;
 
     private static final String PREF_NAME = "kids_friend_app_config";
     private static final String KEY_BASE_URL = "base_url";
