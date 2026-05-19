@@ -5,6 +5,7 @@ import com.kidsFriend.data.config.AppConfig;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -18,6 +19,12 @@ public class RetrofitClient {
     public static synchronized TemiApiService getService() {
         if (retrofit == null) {
             OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .addInterceptor(chain -> {
+                        Request request = chain.request().newBuilder()
+                                .header("ngrok-skip-browser-warning", "true")
+                                .build();
+                        return chain.proceed(request);
+                    })
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(20, TimeUnit.SECONDS)
                     .writeTimeout(20, TimeUnit.SECONDS)

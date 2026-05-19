@@ -91,7 +91,7 @@
 
     <string name="voice_permission_required">마이크 권한이 필요합니다.</string>
     <string name="voice_permission_denied">마이크 권한이 없어 음성 모드를 사용할 수 없습니다.</string>
-    <string name="voice_recognition_unavailable">이 기기에서는 음성 인식을 사용할 수 없습니다.</string>
+    <string name="voice_recognition_unavailable">이 기기에서는 음성 인식을 사용할 수 없습니다. 텍스트 입력으로 진행해주세요.</string>
     <string name="voice_wake_standby">대기 중: \"친구야\"라고 말하면 질문 모드로 이동합니다.</string>
     <string name="voice_wake_detected">호출어 감지: 질문 모드로 이동합니다.</string>
     <string name="voice_listening">듣는 중: 질문을 말해 주세요.</string>

@@ -11,8 +11,10 @@ import com.kidsFriend.data.model.ClientResponse;
 import com.kidsFriend.data.model.PhotoRequest;
 import com.kidsFriend.data.model.PointRequest;
 import com.kidsFriend.data.model.RobotStatusRequest;
+import com.kidsFriend.data.model.SensorEventRequest;
 
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -57,4 +59,10 @@ public interface TemiApiService {
 
     @POST("api/photos")
     Call<ApiResponse<Void>> savePhoto(@Body PhotoRequest request);
+
+    @POST("api/sensor-events")
+    Call<ApiResponse<Map<String, Object>>> postSensorEvent(@Body SensorEventRequest request);
+
+    @GET("api/sensor-events/latest")
+    Call<ApiResponse<Map<String, Object>>> getLatestSensorEvent();
 }

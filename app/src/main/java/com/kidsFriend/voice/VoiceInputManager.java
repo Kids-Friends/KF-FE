@@ -2,17 +2,24 @@ package com.kidsFriend.voice;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.speech.RecognitionListener;
+import android.speech.RecognitionService;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class VoiceInputManager {
+    private static final String TAG = "VoiceInputManager";
+
     public interface Callback {
         void onReady();
 
@@ -38,7 +45,23 @@ public class VoiceInputManager {
     }
 
     public static boolean isRecognitionAvailable(Context context) {
-        return SpeechRecognizer.isRecognitionAvailable(context);
+        boolean speechRecognizerAvailable = SpeechRecognizer.isRecognitionAvailable(context);
+        Intent intent = new Intent(RecognitionService.SERVICE_INTERFACE);
+        List<ResolveInfo> services = context.getPackageManager()
+                .queryIntentServices(intent, PackageManager.MATCH_DEFAULT_ONLY);
+
+        Log.d(TAG, "SpeechRecognizer.isRecognitionAvailable = " + speechRecognizerAvailable);
+        Log.d(TAG, "RecognitionService count = " + services.size());
+        for (ResolveInfo service : services) {
+            if (service.serviceInfo == null) {
+                continue;
+            }
+            Log.d(TAG, "RecognitionService = "
+                    + service.serviceInfo.packageName + "/"
+                    + service.serviceInfo.name);
+        }
+
+        return speechRecognizerAvailable;
     }
 
     public void startSingleListening(Callback callback) {
@@ -73,12 +96,16 @@ public class VoiceInputManager {
         this.stopped = false;
 
         if (!isRecognitionAvailable(context)) {
-            callback.onError("음성 인식을 사용할 수 없습니다.");
+            Log.w(TAG, "Cannot start listening because SpeechRecognizer is unavailable.");
+            if (callback != null) {
+                callback.onError("이 기기에서는 음성 인식을 사용할 수 없습니다. 텍스트 입력으로 진행해주세요.");
+            }
             return;
         }
 
         ensureRecognizer();
         speechRecognizer.cancel();
+        Log.d(TAG, "startListening continuousMode = " + continuousMode);
         speechRecognizer.startListening(createRecognizerIntent());
     }
 
@@ -90,6 +117,7 @@ public class VoiceInputManager {
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
             public void onReadyForSpeech(Bundle params) {
+                Log.d(TAG, "onReadyForSpeech");
                 if (callback != null) {
                     callback.onReady();
                 }
@@ -117,6 +145,7 @@ public class VoiceInputManager {
 
             @Override
             public void onError(int error) {
+                Log.w(TAG, "onError code = " + error + ", message = " + toErrorMessage(error));
                 if (stopped) {
                     return;
                 }
@@ -134,6 +163,7 @@ public class VoiceInputManager {
             @Override
             public void onResults(Bundle results) {
                 String text = firstResult(results);
+                Log.d(TAG, "onResults text = " + text);
                 if (callback != null && !text.isEmpty()) {
                     callback.onResult(text);
                 }
@@ -145,6 +175,7 @@ public class VoiceInputManager {
             @Override
             public void onPartialResults(Bundle partialResults) {
                 String text = firstResult(partialResults);
+                Log.d(TAG, "onPartialResults text = " + text);
                 if (callback != null && !text.isEmpty()) {
                     callback.onPartialResult(text);
                 }
@@ -161,6 +192,7 @@ public class VoiceInputManager {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.KOREA.toLanguageTag());
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "말씀해주세요");
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.getPackageName());
@@ -190,6 +222,7 @@ public class VoiceInputManager {
         handler.postDelayed(() -> {
             if (!stopped && speechRecognizer != null) {
                 speechRecognizer.cancel();
+                Log.d(TAG, "Restarting SpeechRecognizer continuousMode = " + continuousMode);
                 speechRecognizer.startListening(createRecognizerIntent());
             }
         }, RESTART_DELAY_MS);

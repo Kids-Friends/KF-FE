@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -126,10 +127,11 @@ public class QuestionActivity extends AppCompatActivity {
             return;
         }
         if (!VoiceInputManager.isRecognitionAvailable(this)) {
-            voiceModeText.setText(R.string.voice_recognition_unavailable);
+            showVoiceRecognitionUnavailable();
             return;
         }
 
+        voiceButton.setEnabled(true);
         voiceButton.setText(R.string.voice_button_waiting);
         voiceModeText.setText(R.string.voice_wake_standby);
         voiceInputManager.startContinuousListening(new VoiceInputManager.Callback() {
@@ -175,11 +177,12 @@ public class QuestionActivity extends AppCompatActivity {
             return;
         }
         if (!VoiceInputManager.isRecognitionAvailable(this)) {
-            voiceModeText.setText(R.string.voice_recognition_unavailable);
+            showVoiceRecognitionUnavailable();
             return;
         }
 
         voiceInputManager.stopListening();
+        voiceButton.setEnabled(true);
         voiceButton.setText(R.string.voice_button_retry);
         voiceModeText.setText(R.string.voice_listening);
         rawVoiceText.setText(R.string.voice_raw_waiting);
@@ -223,6 +226,14 @@ public class QuestionActivity extends AppCompatActivity {
                 REQUEST_RECORD_AUDIO
         );
         return false;
+    }
+
+    private void showVoiceRecognitionUnavailable() {
+        voiceInputManager.stopListening();
+        voiceModeText.setText(R.string.voice_recognition_unavailable);
+        voiceButton.setEnabled(false);
+        questionInput.setVisibility(View.VISIBLE);
+        questionInput.requestFocus();
     }
 
     private void handleVoiceQuestion(String rawText) {
