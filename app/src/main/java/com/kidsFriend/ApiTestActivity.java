@@ -46,6 +46,8 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
     private TemiRepository repository;
     private VoiceInputManager wakeVoiceInputManager;
     private TextView wakeStatusText;
+    private TextView testResultText;
+    private EditText testClientIdInput;
     private BroadcastReceiver batteryReceiver;
 
     @Override
@@ -68,7 +70,22 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
         wakeStatusText = findViewById(R.id.text_wake_status);
         Button wakeButton = findViewById(R.id.button_start_wake_listening);
 
+        testClientIdInput = findViewById(R.id.edit_test_client_id);
+        testResultText = findViewById(R.id.text_test_result);
+        Button testClientIdSaveButton = findViewById(R.id.button_test_client_id_save);
+        Button testAiChatButton = findViewById(R.id.button_test_ai_chat);
+        Button testCallButton = findViewById(R.id.button_test_call);
+        Button testPointButton = findViewById(R.id.button_test_point);
+        Button testChatLogButton = findViewById(R.id.button_test_chat_log);
+
         wakeVoiceInputManager = new VoiceInputManager(this);
+
+        testClientIdInput.setText(SessionManager.getInstance(this).getCurrentClientId());
+        testClientIdSaveButton.setOnClickListener(v -> saveTestClientId());
+        testAiChatButton.setOnClickListener(v -> showTestAiChatDialog());
+        testCallButton.setOnClickListener(v -> runTestCall());
+        testPointButton.setOnClickListener(v -> runTestAddPoint());
+        testChatLogButton.setOnClickListener(v -> showTestChatLogDialog());
 
         callButton.setOnClickListener(v -> openCallWaitingScreen());
         questionButton.setOnClickListener(v -> openScreen(QuestionActivity.class));
@@ -218,9 +235,125 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
         });
     }
 
+    private void saveTestClientId() {
+        String clientId = testClientIdInput.getText().toString().trim();
+        if (clientId.isEmpty()) {
+            Toast.makeText(this, R.string.settings_client_failed, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        SessionManager.getInstance(this).setCurrentClientId(clientId);
+        Toast.makeText(this, R.string.test_client_id_saved, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showTestAiChatDialog() {
+        EditText input = new EditText(this);
+        input.setSingleLine(true);
+        input.setHint(getString(R.string.test_ai_chat_hint));
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.test_btn_ai_chat)
+                .setView(input)
+                .setNegativeButton(R.string.settings_cancel, null)
+                .setPositiveButton(R.string.settings_save, (dialog, which) -> {
+                    String message = input.getText().toString().trim();
+                    if (message.isEmpty()) return;
+                    setTestResult("AI 대화 요청 중...");
+                    repository.askQuestion(message, new RepositoryCallback<com.kidsFriend.data.model.QuestionResponse>() {
+                        @Override
+                        public void onSuccess(com.kidsFriend.data.model.QuestionResponse data) {
+                            setTestResult("AI 응답: " + data.answer);
+                        }
+                        @Override
+                        public void onError(String message1) {
+                            setTestResult("오류: " + message1);
+                        }
+                    });
+                })
+                .show();
+    }
+
+    private void runTestCall() {
+        setTestResult("호출 요청 중...");
+        repository.createCall("테스트 호출", new RepositoryCallback<com.kidsFriend.data.model.CallResponse>() {
+            @Override
+            public void onSuccess(com.kidsFriend.data.model.CallResponse data) {
+                setTestResult("호출 성공 — callId: " + data.getDisplayCallId());
+            }
+            @Override
+            public void onError(String message) {
+                setTestResult("오류: " + message);
+            }
+        });
+    }
+
+    private void runTestAddPoint() {
+        String clientId = testClientIdInput.getText().toString().trim();
+        if (clientId.isEmpty()) {
+            Toast.makeText(this, R.string.test_client_id_hint, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        setTestResult("포인트 추가 요청 중...");
+        repository.addClientPoint(clientId, 1, new RepositoryCallback<com.kidsFriend.data.model.ClientResponse>() {
+            @Override
+            public void onSuccess(com.kidsFriend.data.model.ClientResponse data) {
+                setTestResult("포인트 추가 성공 — 현재 포인트: " + data.clientPoint);
+            }
+            @Override
+            public void onError(String message) {
+                setTestResult("오류: " + message);
+            }
+        });
+    }
+
+    private void showTestChatLogDialog() {
+        android.widget.LinearLayout container = new android.widget.LinearLayout(this);
+        container.setOrientation(android.widget.LinearLayout.VERTICAL);
+        container.setPadding(48, 16, 48, 0);
+
+        EditText questionInput = new EditText(this);
+        questionInput.setSingleLine(true);
+        questionInput.setHint(getString(R.string.test_chat_log_q_hint));
+
+        EditText answerInput = new EditText(this);
+        answerInput.setSingleLine(true);
+        answerInput.setHint(getString(R.string.test_chat_log_a_hint));
+
+        container.addView(questionInput);
+        container.addView(answerInput);
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.test_btn_chat_log)
+                .setView(container)
+                .setNegativeButton(R.string.settings_cancel, null)
+                .setPositiveButton(R.string.settings_save, (dialog, which) -> {
+                    String q = questionInput.getText().toString().trim();
+                    String a = answerInput.getText().toString().trim();
+                    if (q.isEmpty() || a.isEmpty()) return;
+                    setTestResult("채팅 로그 저장 중...");
+                    repository.saveChatLog(q, a, new RepositoryCallback<Void>() {
+                        @Override
+                        public void onSuccess(Void data) {
+                            setTestResult("채팅 로그 저장 성공");
+                        }
+                        @Override
+                        public void onError(String message) {
+                            setTestResult("오류: " + message);
+                        }
+                    });
+                })
+                .show();
+    }
+
+    private void setTestResult(String result) {
+        runOnUiThread(() -> testResultText.setText(getString(R.string.test_result_prefix) + result));
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
+        if (testClientIdInput != null) {
+            testClientIdInput.setText(SessionManager.getInstance(this).getCurrentClientId());
+        }
         updateRobotStatus("ACTIVE");
         if (hasAudioPermission()) {
             startWakeWordStandby();
