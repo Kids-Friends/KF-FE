@@ -111,9 +111,6 @@ public class CallActivity extends AppCompatActivity {
     }
 
     private String getSuccessMessage(CallResponse data) {
-        if (data != null && data.message != null && !data.message.trim().isEmpty()) {
-            return data.message;
-        }
         return getString(R.string.call_waiting_status_message);
     }
 

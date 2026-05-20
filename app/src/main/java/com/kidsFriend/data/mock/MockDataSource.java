@@ -40,7 +40,7 @@ public class MockDataSource {
     );
 
     public CallResponse createCall(CallRequest request) {
-        CallResponse response = new CallResponse(true, "CALL-MOCK-001", request.reason + " 사유로 직원 호출이 접수되었습니다.");
+        CallResponse response = new CallResponse();
         response.callsId = "CALL-MOCK-001";
         response.robotId = request.robotId;
         response.clientId = request.clientId;

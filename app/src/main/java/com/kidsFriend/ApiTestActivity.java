@@ -222,9 +222,9 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
 
     private void savePhotoUrl(String photoUrl) {
         String photoName = photoUrl.substring(photoUrl.lastIndexOf('/') + 1);
-        repository.savePhoto(photoUrl, photoName, new RepositoryCallback<Void>() {
+        repository.savePhoto(photoUrl, photoName, new RepositoryCallback<com.kidsFriend.data.model.PhotoResponse>() {
             @Override
-            public void onSuccess(Void data) {
+            public void onSuccess(com.kidsFriend.data.model.PhotoResponse data) {
                 Toast.makeText(ApiTestActivity.this, R.string.photo_saved, Toast.LENGTH_SHORT).show();
             }
 
@@ -330,10 +330,11 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
                     String a = answerInput.getText().toString().trim();
                     if (q.isEmpty() || a.isEmpty()) return;
                     setTestResult("채팅 로그 저장 중...");
-                    repository.saveChatLog(q, a, new RepositoryCallback<Void>() {
+                    repository.saveChatLog(q, a, new RepositoryCallback<com.kidsFriend.data.model.ChatResponse>() {
                         @Override
-                        public void onSuccess(Void data) {
-                            setTestResult("채팅 로그 저장 성공");
+                        public void onSuccess(com.kidsFriend.data.model.ChatResponse data) {
+                            String chatId = data != null && data.chatId != null ? " — chatId: " + data.chatId : "";
+                            setTestResult("채팅 로그 저장 성공" + chatId);
                         }
                         @Override
                         public void onError(String message) {

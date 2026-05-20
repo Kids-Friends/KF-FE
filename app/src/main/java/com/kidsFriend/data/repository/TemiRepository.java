@@ -14,8 +14,10 @@ import com.kidsFriend.data.model.CallResponse;
 import com.kidsFriend.data.model.ChatAiRequest;
 import com.kidsFriend.data.model.ChatAiResponse;
 import com.kidsFriend.data.model.ChatLogRequest;
+import com.kidsFriend.data.model.ChatResponse;
 import com.kidsFriend.data.model.ClientResponse;
 import com.kidsFriend.data.model.PhotoRequest;
+import com.kidsFriend.data.model.PhotoResponse;
 import com.kidsFriend.data.model.PointRequest;
 import com.kidsFriend.data.model.QuestionRequest;
 import com.kidsFriend.data.model.QuestionResponse;
@@ -145,7 +147,7 @@ public class TemiRepository {
                 .enqueue(toVoidWrappedRetrofitCallback(callback));
     }
 
-    public void saveChatLog(String question, String answer, RepositoryCallback<Void> callback) {
+    public void saveChatLog(String question, String answer, RepositoryCallback<ChatResponse> callback) {
         ChatLogRequest request = new ChatLogRequest(
                 getCurrentClientId(),
                 getRobotId(),
@@ -153,12 +155,12 @@ public class TemiRepository {
                 answer,
                 "CHAT"
         );
-        apiService().saveChatLog(request).enqueue(toVoidWrappedRetrofitCallback(callback));
+        apiService().saveChatLog(request).enqueue(toWrappedRetrofitCallback(callback));
     }
 
-    public void savePhoto(String photoUrl, String photoName, RepositoryCallback<Void> callback) {
+    public void savePhoto(String photoUrl, String photoName, RepositoryCallback<PhotoResponse> callback) {
         PhotoRequest request = new PhotoRequest(getCurrentClientId(), photoUrl, photoName);
-        apiService().savePhoto(request).enqueue(toVoidWrappedRetrofitCallback(callback));
+        apiService().savePhoto(request).enqueue(toWrappedRetrofitCallback(callback));
     }
 
     private TemiApiService apiService() {
@@ -184,9 +186,9 @@ public class TemiRepository {
                 }
 
                 QuestionResponse questionResponse = new QuestionResponse(true, body.data.reply, body.data.createdAt);
-                saveChatLog(originalQuestion, body.data.reply, new RepositoryCallback<Void>() {
+                saveChatLog(originalQuestion, body.data.reply, new RepositoryCallback<ChatResponse>() {
                     @Override
-                    public void onSuccess(Void data) {
+                    public void onSuccess(ChatResponse data) {
                         callback.onSuccess(questionResponse);
                     }
 

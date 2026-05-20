@@ -8,7 +8,9 @@ import com.kidsFriend.data.model.ChatAiRequest;
 import com.kidsFriend.data.model.ChatAiResponse;
 import com.kidsFriend.data.model.ChatLogRequest;
 import com.kidsFriend.data.model.ClientResponse;
+import com.kidsFriend.data.model.ChatResponse;
 import com.kidsFriend.data.model.PhotoRequest;
+import com.kidsFriend.data.model.PhotoResponse;
 import com.kidsFriend.data.model.PointRequest;
 import com.kidsFriend.data.model.RobotStatusRequest;
 import com.kidsFriend.data.model.SensorEventRequest;
@@ -55,10 +57,10 @@ public interface TemiApiService {
     Call<ApiResponse<ChatAiResponse>> askAi(@Body ChatAiRequest request);
 
     @POST("api/chat")
-    Call<ApiResponse<Void>> saveChatLog(@Body ChatLogRequest request);
+    Call<ApiResponse<ChatResponse>> saveChatLog(@Body ChatLogRequest request);
 
     @POST("api/photos")
-    Call<ApiResponse<Void>> savePhoto(@Body PhotoRequest request);
+    Call<ApiResponse<PhotoResponse>> savePhoto(@Body PhotoRequest request);
 
     @POST("api/sensor-events")
     Call<ApiResponse<Map<String, Object>>> postSensorEvent(@Body SensorEventRequest request);

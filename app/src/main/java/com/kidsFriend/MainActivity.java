@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layoudt.activity_main);
+        setContentView(R.layout.activity_main);
 
         AppConfig.init(this);
         repository = new TemiRepository(this);
