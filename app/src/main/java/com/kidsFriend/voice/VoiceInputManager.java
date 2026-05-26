@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -22,11 +23,8 @@ public class VoiceInputManager {
 
     public interface Callback {
         void onReady();
-
         void onPartialResult(String text);
-
         void onResult(String text);
-
         void onError(String message);
     }
 
@@ -34,14 +32,34 @@ public class VoiceInputManager {
 
     private final Context context;
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private final AudioManager audioManager;
 
     private SpeechRecognizer speechRecognizer;
     private Callback callback;
     private boolean continuousMode;
     private boolean stopped = true;
 
+    // Temi 자체 ASR 시스템이 마이크를 선점하지 못하도록 오디오 포커스를 명시적으로 요청한다.
+    // AUDIOFOCUS_LOSS 이벤트를 수신하면 재시도를 스케줄링한다.
+    private final AudioManager.OnAudioFocusChangeListener audioFocusListener = focusChange -> {
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS
+                || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+            Log.w(TAG, "Audio focus lost (focusChange=" + focusChange + "), scheduling restart.");
+            if (!stopped && continuousMode) {
+                scheduleRestart();
+            }
+        } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+            Log.d(TAG, "Audio focus regained.");
+            if (!stopped && speechRecognizer == null) {
+                ensureRecognizer();
+                speechRecognizer.startListening(createRecognizerIntent());
+            }
+        }
+    };
+
     public VoiceInputManager(Context context) {
         this.context = context.getApplicationContext();
+        this.audioManager = (AudioManager) this.context.getSystemService(Context.AUDIO_SERVICE);
     }
 
     public static boolean isRecognitionAvailable(Context context) {
@@ -53,9 +71,7 @@ public class VoiceInputManager {
         Log.d(TAG, "SpeechRecognizer.isRecognitionAvailable = " + speechRecognizerAvailable);
         Log.d(TAG, "RecognitionService count = " + services.size());
         for (ResolveInfo service : services) {
-            if (service.serviceInfo == null) {
-                continue;
-            }
+            if (service.serviceInfo == null) continue;
             Log.d(TAG, "RecognitionService = "
                     + service.serviceInfo.packageName + "/"
                     + service.serviceInfo.name);
@@ -76,6 +92,7 @@ public class VoiceInputManager {
         stopped = true;
         continuousMode = false;
         handler.removeCallbacksAndMessages(null);
+        releaseAudioFocus();
         if (speechRecognizer != null) {
             speechRecognizer.stopListening();
             speechRecognizer.cancel();
@@ -103,10 +120,24 @@ public class VoiceInputManager {
             return;
         }
 
+        // Temi 시스템 ASR보다 먼저 마이크를 선점한다.
+        // 포커스 획득 실패 시에도 SpeechRecognizer 시작을 시도한다(Temi 환경에서의 호환성).
+        int focusResult = audioManager.requestAudioFocus(
+                audioFocusListener,
+                AudioManager.STREAM_VOICE_CALL,
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
+        );
+        Log.d(TAG, "requestAudioFocus result = " + focusResult
+                + " (GRANTED=" + AudioManager.AUDIOFOCUS_REQUEST_GRANTED + ")");
+
         ensureRecognizer();
         speechRecognizer.cancel();
         Log.d(TAG, "startListening continuousMode = " + continuousMode);
         speechRecognizer.startListening(createRecognizerIntent());
+    }
+
+    private void releaseAudioFocus() {
+        audioManager.abandonAudioFocus(audioFocusListener);
     }
 
     private void ensureRecognizer() {
@@ -118,73 +149,57 @@ public class VoiceInputManager {
             @Override
             public void onReadyForSpeech(Bundle params) {
                 Log.d(TAG, "onReadyForSpeech");
-                if (callback != null) {
-                    callback.onReady();
-                }
+                if (callback != null) callback.onReady();
             }
 
             @Override
-            public void onBeginningOfSpeech() {
-                // no-op
-            }
+            public void onBeginningOfSpeech() {}
 
             @Override
-            public void onRmsChanged(float rmsdB) {
-                // no-op
-            }
+            public void onRmsChanged(float rmsdB) {}
 
             @Override
-            public void onBufferReceived(byte[] buffer) {
-                // no-op
-            }
+            public void onBufferReceived(byte[] buffer) {}
 
             @Override
-            public void onEndOfSpeech() {
-                // no-op
-            }
+            public void onEndOfSpeech() {}
 
             @Override
             public void onError(int error) {
                 Log.w(TAG, "onError code = " + error + ", message = " + toErrorMessage(error));
-                if (stopped) {
-                    return;
-                }
+                if (stopped) return;
 
                 if (continuousMode && isRetryable(error)) {
                     scheduleRestart();
                     return;
                 }
 
-                if (callback != null) {
-                    callback.onError(toErrorMessage(error));
+                // 오디오 포커스를 잃어서 생긴 일시적 오류는 재시도
+                if (error == SpeechRecognizer.ERROR_AUDIO && continuousMode) {
+                    scheduleRestart();
+                    return;
                 }
+
+                if (callback != null) callback.onError(toErrorMessage(error));
             }
 
             @Override
             public void onResults(Bundle results) {
                 String text = firstResult(results);
                 Log.d(TAG, "onResults text = " + text);
-                if (callback != null && !text.isEmpty()) {
-                    callback.onResult(text);
-                }
-                if (continuousMode && !stopped) {
-                    scheduleRestart();
-                }
+                if (callback != null && !text.isEmpty()) callback.onResult(text);
+                if (continuousMode && !stopped) scheduleRestart();
             }
 
             @Override
             public void onPartialResults(Bundle partialResults) {
                 String text = firstResult(partialResults);
                 Log.d(TAG, "onPartialResults text = " + text);
-                if (callback != null && !text.isEmpty()) {
-                    callback.onPartialResult(text);
-                }
+                if (callback != null && !text.isEmpty()) callback.onPartialResult(text);
             }
 
             @Override
-            public void onEvent(int eventType, Bundle params) {
-                // no-op
-            }
+            public void onEvent(int eventType, Bundle params) {}
         });
     }
 
@@ -200,14 +215,9 @@ public class VoiceInputManager {
     }
 
     private String firstResult(Bundle bundle) {
-        if (bundle == null) {
-            return "";
-        }
-
+        if (bundle == null) return "";
         ArrayList<String> matches = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        if (matches == null || matches.isEmpty() || matches.get(0) == null) {
-            return "";
-        }
+        if (matches == null || matches.isEmpty() || matches.get(0) == null) return "";
         return matches.get(0).trim();
     }
 
@@ -226,6 +236,12 @@ public class VoiceInputManager {
                     speechRecognizer.destroy();
                     speechRecognizer = null;
                 }
+                // 재시작 전에도 오디오 포커스를 재요청해 마이크 선점 유지
+                audioManager.requestAudioFocus(
+                        audioFocusListener,
+                        AudioManager.STREAM_VOICE_CALL,
+                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE
+                );
                 Log.d(TAG, "Restarting SpeechRecognizer continuousMode = " + continuousMode);
                 ensureRecognizer();
                 speechRecognizer.startListening(createRecognizerIntent());
