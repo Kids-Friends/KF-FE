@@ -51,6 +51,9 @@
         <meta-data
             android:name="com.robotemi.sdk.metadata.SKILL"
             android:value="Kids_Friend"/>
+        <meta-data
+            android:name="com.robotemi.sdk.metadata.KIOSK"
+            android:value="TRUE"/>
     </application>
 
 </manifest>

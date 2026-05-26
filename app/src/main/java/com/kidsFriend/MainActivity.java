@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         AppConfig.init(this);
         repository = new TemiRepository(this);
         installUnexpectedErrorReporter();
@@ -139,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
             } catch (PackageManager.NameNotFoundException exception) {
                 Log.w(TAG, "Temi activity metadata is not available.", exception);
             }
+            Robot.getInstance().hideTopBar();
         }
         updateRobotStatus(isReady ? "ACTIVE" : "INACTIVE");
     }
