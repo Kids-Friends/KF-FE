@@ -92,6 +92,12 @@ public class QuestionActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        startWakeWordStandby();
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         voiceInputManager.stopListening();

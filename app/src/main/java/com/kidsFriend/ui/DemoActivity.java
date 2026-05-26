@@ -34,8 +34,6 @@ public class DemoActivity extends AppCompatActivity {
         repository = new TemiRepository(this);
         statusText = findViewById(R.id.text_demo_status);
         voiceInputManager = new VoiceInputManager(this);
-
-        startWakeWordStandby();
     }
 
     @Override
