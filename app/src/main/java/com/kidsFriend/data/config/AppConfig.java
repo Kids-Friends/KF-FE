@@ -18,9 +18,7 @@ public class AppConfig {
     private AppConfig(Context context) {
         preferences = context.getApplicationContext()
                 .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        if (!preferences.contains(KEY_BASE_URL)) {
-            preferences.edit().putString(KEY_BASE_URL, DEFAULT_BASE_URL).apply();
-        }
+        preferences.edit().putString(KEY_BASE_URL, DEFAULT_BASE_URL).apply();
     }
 
     public static synchronized AppConfig init(Context context) {
