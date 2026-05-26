@@ -19,8 +19,11 @@ import com.kidsFriend.voice.QuestionReconstructor;
 import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.kidsFriend.voice.VoiceInputManager;
 import com.kidsFriend.voice.WakeWordMatcher;
+import com.robotemi.sdk.NlpResult;
+import com.robotemi.sdk.Robot;
+import com.robotemi.sdk.listeners.OnNlpListener;
 
-public class DemoActivity extends AppCompatActivity {
+public class DemoActivity extends AppCompatActivity implements OnNlpListener {
     private static final int REQUEST_RECORD_AUDIO = 3001;
 
     private final TemiSpeechSpeaker temiSpeechSpeaker = new TemiSpeechSpeaker();
@@ -41,12 +44,16 @@ public class DemoActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // 테미 NLP 인터셉터 등록: DemoActivity가 포그라운드일 때
+        // 테미 기본 대화 UI가 우리 앱 위에 오버레이되는 것을 막음
+        Robot.getInstance().addOnNlpListener(this);
         startWakeWordStandby();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Robot.getInstance().removeOnNlpListener(this);
         voiceInputManager.stopListening();
     }
 
@@ -54,6 +61,16 @@ public class DemoActivity extends AppCompatActivity {
     protected void onDestroy() {
         voiceInputManager.destroy();
         super.onDestroy();
+    }
+
+    /**
+     * 테미 NLP 결과 인터셉터.
+     * DemoActivity가 포그라운드일 때 테미의 음성 인식 결과를 가로채
+     * 기본 응답 UI를 차단한다. 실제 음성 처리는 VoiceInputManager가 담당.
+     */
+    @Override
+    public void onNlpCompleted(NlpResult nlpResult) {
+        // 의도적으로 비워둠 — 테미 기본 응답 차단
     }
 
     private void startWakeWordStandby() {

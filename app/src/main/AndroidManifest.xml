@@ -48,11 +48,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- 테미 런처 스킬 등록 -->
         <meta-data
             android:name="com.robotemi.sdk.metadata.SKILL"
             android:value="Kids_Friend"/>
+        <!-- 키오스크 모드 허용 선언 (테미 런처가 이 앱을 키오스크 후보로 인식) -->
         <meta-data
             android:name="com.robotemi.sdk.metadata.KIOSK"
+            android:value="TRUE"/>
+        <!-- 테미의 기본 NLP/Voice 대화 레이어를 이 앱이 직접 처리하도록 선언 -->
+        <meta-data
+            android:name="com.robotemi.sdk.metadata.OVERRIDE_CONVERSATION_LAYER"
             android:value="TRUE"/>
     </application>
 
