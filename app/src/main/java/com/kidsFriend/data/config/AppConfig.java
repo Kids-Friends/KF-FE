@@ -59,7 +59,7 @@ public class AppConfig {
         }
         if (!normalized.matches("^https://[^/]+/?$") &&
                 !normalized.matches("^https?://[^/]+:\\d+/?$")) {
-            normalized = normalized.replaceAll("/+$", "") + ":8080/";
+            normalized = normalized.replaceAll("/+$", "") + ":8081/";
         }
         if (!normalized.endsWith("/")) {
             normalized = normalized + "/";
