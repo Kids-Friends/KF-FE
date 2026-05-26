@@ -39,6 +39,12 @@ public class DemoActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        startWakeWordStandby();
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         voiceInputManager.stopListening();
@@ -93,6 +99,7 @@ public class DemoActivity extends AppCompatActivity {
             @Override
             public void onError(String message) {
                 statusText.setText(message);
+                statusText.postDelayed(() -> startWakeWordStandby(), 2000);
             }
         });
     }

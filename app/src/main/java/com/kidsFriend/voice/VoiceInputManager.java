@@ -214,15 +214,20 @@ public class VoiceInputManager {
     private boolean isRetryable(int error) {
         return error == SpeechRecognizer.ERROR_NO_MATCH
                 || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT
-                || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY;
+                || error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY
+                || error == SpeechRecognizer.ERROR_CLIENT;
     }
 
     private void scheduleRestart() {
         handler.removeCallbacksAndMessages(null);
         handler.postDelayed(() -> {
-            if (!stopped && speechRecognizer != null) {
-                speechRecognizer.cancel();
+            if (!stopped) {
+                if (speechRecognizer != null) {
+                    speechRecognizer.destroy();
+                    speechRecognizer = null;
+                }
                 Log.d(TAG, "Restarting SpeechRecognizer continuousMode = " + continuousMode);
+                ensureRecognizer();
                 speechRecognizer.startListening(createRecognizerIntent());
             }
         }, RESTART_DELAY_MS);
