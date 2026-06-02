@@ -15,6 +15,7 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.kidsFriend.data.config.AppConfig;
+import com.kidsFriend.data.config.BackendConnectionChecker;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
 import com.kidsFriend.ui.DemoActivity;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         AppConfig.init(this);
+        BackendConnectionChecker.check();
         repository = new TemiRepository(this);
         installUnexpectedErrorReporter();
 

@@ -61,4 +61,7 @@ public interface TemiApiService {
 
     @GET("api/sensor-events/latest")
     Call<ApiResponse<Map<String, Object>>> getLatestSensorEvent();
+
+    @GET("api/health")
+    Call<Map<String, String>> health();
 }
