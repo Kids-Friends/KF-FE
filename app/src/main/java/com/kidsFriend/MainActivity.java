@@ -29,7 +29,13 @@ import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.kidsFriend.voice.VoiceInputManager;
 import com.kidsFriend.voice.WakeWordMatcher;
 import com.robotemi.sdk.Robot;
+import com.robotemi.sdk.constants.Gender;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
+import com.robotemi.sdk.permission.OnRequestPermissionResultListener;
+import com.robotemi.sdk.permission.Permission;
+import com.robotemi.sdk.voice.model.TtsVoice;
+
+import java.util.Collections;
 
 /**
  * 통합 홈 화면.
@@ -37,9 +43,11 @@ import com.robotemi.sdk.listeners.OnRobotReadyListener;
  * - 호출/터치 시: 다음 화면으로 넘어가지 않고 대화를 시작합니다(멀티턴 AI 대화).
  * - 대화 중 "퀴즈 풀고 싶어"처럼 말하면 해당 화면으로 전환합니다.
  */
-public class MainActivity extends AppCompatActivity implements OnRobotReadyListener {
+public class MainActivity extends AppCompatActivity
+        implements OnRobotReadyListener, OnRequestPermissionResultListener {
     private static final String TAG = "MainActivity";
     private static final int REQUEST_RECORD_AUDIO = 2001;
+    private static final int REQUEST_TTS_SETTINGS = 3001;
 
     private enum State { IDLE, CONVERSATION }
 
@@ -66,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
+        robot.addOnRequestPermissionResultListener(this);
 
         faceImage = findViewById(R.id.image_face);
         statusText = findViewById(R.id.text_home_status);
@@ -129,6 +138,29 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
             } catch (Exception e) {
                 Log.w(TAG, "Kiosk mode could not be activated: " + e.getMessage());
             }
+            applyCuteVoice();
+        }
+    }
+
+    /** 어리고 발랄한 캐릭터 톤으로 테미 내장 목소리를 변경합니다. (SETTINGS 권한 필요) */
+    private void applyCuteVoice() {
+        if (robot.checkSelfPermission(Permission.SETTINGS) == Permission.GRANTED) {
+            setCuteVoice();
+        } else {
+            robot.requestPermissions(Collections.singletonList(Permission.SETTINGS), REQUEST_TTS_SETTINGS);
+        }
+    }
+
+    private void setCuteVoice() {
+        // 여성 음색 + 최대 피치(+10) + 경쾌한 속도(1.2) = 높고 귀엽고 활기찬 톤
+        boolean ok = robot.setTtsVoice(new TtsVoice(Gender.FEMALE, 1.2f, 10));
+        Log.d(TAG, "setTtsVoice(cute) result = " + ok);
+    }
+
+    @Override
+    public void onRequestPermissionResult(Permission permission, int grantResult, int requestCode) {
+        if (permission == Permission.SETTINGS && grantResult == Permission.GRANTED) {
+            setCuteVoice();
         }
     }
 
@@ -321,6 +353,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
             robot.toggleWakeup(false);
             robot.setKioskModeOn(false);
             robot.removeOnRobotReadyListener(this);
+            robot.removeOnRequestPermissionResultListener(this);
         } catch (RuntimeException exception) {
             Log.w(TAG, "Temi listener removal failed.", exception);
         }
