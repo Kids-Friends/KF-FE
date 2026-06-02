@@ -301,10 +301,7 @@ public class MainActivity extends AppCompatActivity
             public void onSuccess(QuestionResponse data) {
                 setFace(R.drawable.face_joy);
                 showAnswer(data.answer);
-                speaker.speak(data.answer);
-                if (state == State.CONVERSATION) {
-                    listenInConversation();
-                }
+                speakThenListen(data.answer);
             }
 
             @Override
@@ -321,6 +318,40 @@ public class MainActivity extends AppCompatActivity
     private void showAnswer(String text) {
         answerText.setText(text);
         answerText.setVisibility(View.VISIBLE);
+    }
+
+    /** 발화를 시작하고, 그 발화가 끝나면 다시 듣기를 시작합니다(테미가 자기 음성을 인식하는 문제 방지). */
+    private void speakThenListen(String text) {
+        TtsRequest request = speaker.speak(text);
+        if (request == null) {
+            listenInConversation();
+            return;
+        }
+        pendingListenAfterTtsId = request.getId();
+        uiHandler.removeCallbacks(listenFallback);
+        // 안전장치: 완료 콜백이 오지 않아도 추정 시간 후 듣기 시작
+        long estimatedMs = Math.min(12000L, Math.max(2500L, text.length() * 150L));
+        uiHandler.postDelayed(listenFallback, estimatedMs);
+    }
+
+    @Override
+    public void onTtsStatusChanged(TtsRequest ttsRequest) {
+        if (pendingListenAfterTtsId == null || !pendingListenAfterTtsId.equals(ttsRequest.getId())) {
+            return;
+        }
+        TtsRequest.Status status = ttsRequest.getStatus();
+        if (status == TtsRequest.Status.COMPLETED
+                || status == TtsRequest.Status.ERROR
+                || status == TtsRequest.Status.NOT_ALLOWED
+                || status == TtsRequest.Status.CANCELED) {
+            pendingListenAfterTtsId = null;
+            uiHandler.removeCallbacks(listenFallback);
+            uiHandler.post(() -> {
+                if (state == State.CONVERSATION) {
+                    listenInConversation();
+                }
+            });
+        }
     }
 
     private void setFace(int drawableRes) {
@@ -369,9 +400,11 @@ public class MainActivity extends AppCompatActivity
             robot.setKioskModeOn(false);
             robot.removeOnRobotReadyListener(this);
             robot.removeOnRequestPermissionResultListener(this);
+            robot.removeTtsListener(this);
         } catch (RuntimeException exception) {
             Log.w(TAG, "Temi listener removal failed.", exception);
         }
+        uiHandler.removeCallbacksAndMessages(null);
         if (voiceInputManager != null) {
             voiceInputManager.destroy();
         }
