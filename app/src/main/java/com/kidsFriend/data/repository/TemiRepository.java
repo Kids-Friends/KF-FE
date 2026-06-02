@@ -163,15 +163,16 @@ public class TemiRepository {
                 }
 
                 QuestionResponse questionResponse = new QuestionResponse(true, body.data.reply, body.data.createdAt);
+                // 답변은 즉시 전달하고(발화/표시 지연 제거), 채팅 로그는 백그라운드로 저장
+                callback.onSuccess(questionResponse);
                 saveChatLog(originalQuestion, body.data.reply, new RepositoryCallback<ChatResponse>() {
                     @Override
                     public void onSuccess(ChatResponse data) {
-                        callback.onSuccess(questionResponse);
                     }
 
                     @Override
                     public void onError(String message) {
-                        callback.onSuccess(questionResponse);
+                        Log.w("TemiRepository", "Chat log save failed: " + message);
                     }
                 });
             }

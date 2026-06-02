@@ -74,8 +74,8 @@ public class VoiceInputManager implements Robot.NlpListener {
         robot.addNlpListener(this);
         
         // 테미 전용 STT 시작 (음성 인식 UI 활성화)
-        // 첫 시작 시에는 안내 멘트와 함께 시작
-        robot.askQuestion("말씀해주세요");
+        // 안내 멘트 없이 바로 듣기 시작 (발화 지연/자기음성 간섭 제거)
+        robot.askQuestion("");
         
         if (callback != null) {
             callback.onReady();

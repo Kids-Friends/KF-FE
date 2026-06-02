@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -29,6 +31,7 @@ import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.kidsFriend.voice.VoiceInputManager;
 import com.kidsFriend.voice.WakeWordMatcher;
 import com.robotemi.sdk.Robot;
+import com.robotemi.sdk.TtsRequest;
 import com.robotemi.sdk.constants.Gender;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
 import com.robotemi.sdk.permission.OnRequestPermissionResultListener;
@@ -36,6 +39,7 @@ import com.robotemi.sdk.permission.Permission;
 import com.robotemi.sdk.voice.model.TtsVoice;
 
 import java.util.Collections;
+import java.util.UUID;
 
 /**
  * 통합 홈 화면.
@@ -44,7 +48,7 @@ import java.util.Collections;
  * - 대화 중 "퀴즈 풀고 싶어"처럼 말하면 해당 화면으로 전환합니다.
  */
 public class MainActivity extends AppCompatActivity
-        implements OnRobotReadyListener, OnRequestPermissionResultListener {
+        implements OnRobotReadyListener, OnRequestPermissionResultListener, Robot.TtsListener {
     private static final String TAG = "MainActivity";
     private static final int REQUEST_RECORD_AUDIO = 2001;
     private static final int REQUEST_TTS_SETTINGS = 3001;
@@ -52,6 +56,16 @@ public class MainActivity extends AppCompatActivity
     private enum State { IDLE, CONVERSATION }
 
     private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker();
+    private final Handler uiHandler = new Handler(Looper.getMainLooper());
+
+    // 발화가 끝나면 듣기를 시작하기 위해 추적하는 TTS 요청 id
+    private UUID pendingListenAfterTtsId;
+    private final Runnable listenFallback = () -> {
+        if (pendingListenAfterTtsId != null && state == State.CONVERSATION) {
+            pendingListenAfterTtsId = null;
+            listenInConversation();
+        }
+    };
 
     private TemiRepository repository;
     private VoiceInputManager voiceInputManager;
@@ -75,6 +89,7 @@ public class MainActivity extends AppCompatActivity
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
         robot.addOnRequestPermissionResultListener(this);
+        robot.addTtsListener(this);
 
         faceImage = findViewById(R.id.image_face);
         statusText = findViewById(R.id.text_home_status);
@@ -209,12 +224,12 @@ public class MainActivity extends AppCompatActivity
         state = State.CONVERSATION;
         setFace(R.drawable.face_excited);
         answerText.setVisibility(View.GONE);
-        speaker.speak(getString(R.string.home_wake_detected));
 
         if (!TextUtils.isEmpty(firstUtterance)) {
+            speaker.speak(getString(R.string.home_wake_detected));
             handleUtterance(firstUtterance);
         } else {
-            listenInConversation();
+            speakThenListen(getString(R.string.home_wake_detected));
         }
     }
 
