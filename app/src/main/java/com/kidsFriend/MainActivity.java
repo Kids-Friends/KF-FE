@@ -1,13 +1,9 @@
 package com.kidsFriend;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.os.BatteryManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -21,8 +17,6 @@ import androidx.core.content.ContextCompat;
 
 import com.kidsFriend.data.config.AppConfig;
 import com.kidsFriend.data.config.BackendConnectionChecker;
-import com.kidsFriend.data.repository.RepositoryCallback;
-import com.kidsFriend.data.repository.TemiRepository;
 import com.kidsFriend.ui.MembershipCardActivity;
 import com.kidsFriend.ui.QuestionActivity;
 import com.kidsFriend.ui.QuizActivity;
@@ -40,15 +34,11 @@ import com.robotemi.sdk.listeners.OnRobotReadyListener;
  */
 public class MainActivity extends AppCompatActivity implements OnRobotReadyListener {
     private static final String TAG = "MainActivity";
-    private static final int LOW_BATTERY_PERCENT = 20;
     private static final int REQUEST_RECORD_AUDIO = 2001;
-    private static boolean errorReporterInstalled;
 
     private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker();
 
-    private TemiRepository repository;
     private VoiceInputManager voiceInputManager;
-    private BroadcastReceiver batteryReceiver;
     private Robot robot;
     private TextView statusText;
 
@@ -60,9 +50,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         AppConfig.init(this);
         BackendConnectionChecker.check();
-        repository = new TemiRepository(this);
         voiceInputManager = new VoiceInputManager(this);
-        installUnexpectedErrorReporter();
 
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
@@ -77,9 +65,6 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         });
         operatorMenuButton.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, ApiTestActivity.class)));
-
-        updateRobotStatus("ACTIVE");
-        registerBatteryReceiver();
     }
 
     @Override
@@ -100,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         super.onResume();
         robot.hideTopBar();
         robot.setKioskModeOn(true);
-        updateRobotStatus("ACTIVE");
         startWakeWordStandby();
     }
 
@@ -124,7 +108,6 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
                 Log.w(TAG, "Kiosk mode could not be activated: " + e.getMessage());
             }
         }
-        updateRobotStatus(isReady ? "ACTIVE" : "INACTIVE");
     }
 
     private void startWakeWordStandby() {
@@ -253,56 +236,6 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         }
     }
 
-    private void updateRobotStatus(String status) {
-        if (repository == null) {
-            return;
-        }
-        repository.updateRobotStatus(status, new RepositoryCallback<Void>() {
-            @Override
-            public void onSuccess(Void data) {
-                Log.d(TAG, "Robot status updated: " + status);
-            }
-
-            @Override
-            public void onError(String message) {
-                Log.w(TAG, "Robot status update failed: " + message);
-            }
-        });
-    }
-
-    private void registerBatteryReceiver() {
-        batteryReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-                int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-                if (level < 0 || scale <= 0) {
-                    return;
-                }
-
-                int batteryPercent = Math.round(level * 100f / scale);
-                if (batteryPercent <= LOW_BATTERY_PERCENT) {
-                    updateRobotStatus("INACTIVE");
-                }
-            }
-        };
-        registerReceiver(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-    }
-
-    private void installUnexpectedErrorReporter() {
-        if (errorReporterInstalled) {
-            return;
-        }
-        errorReporterInstalled = true;
-        Thread.UncaughtExceptionHandler previousHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            updateRobotStatus("ERROR");
-            if (previousHandler != null) {
-                previousHandler.uncaughtException(thread, throwable);
-            }
-        });
-    }
-
     @Override
     protected void onDestroy() {
         try {
@@ -314,9 +247,6 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         }
         if (voiceInputManager != null) {
             voiceInputManager.destroy();
-        }
-        if (batteryReceiver != null) {
-            unregisterReceiver(batteryReceiver);
         }
         super.onDestroy();
     }

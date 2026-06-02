@@ -9,7 +9,6 @@ import com.kidsFriend.data.model.ChatResponse;
 import com.kidsFriend.data.model.PhotoRequest;
 import com.kidsFriend.data.model.PhotoResponse;
 import com.kidsFriend.data.model.PointRequest;
-import com.kidsFriend.data.model.RobotStatusRequest;
 import com.kidsFriend.data.model.SensorEventRequest;
 
 import java.util.List;
@@ -39,12 +38,6 @@ public interface TemiApiService {
     Call<ApiResponse<ClientResponse>> addClientPoint(
             @Path("id") String clientId,
             @Body PointRequest request
-    );
-
-    @PATCH("api/robots/{id}/status")
-    Call<ApiResponse<Void>> updateRobotStatus(
-            @Path("id") String robotId,
-            @Body RobotStatusRequest request
     );
 
     @POST("api/chat/ai")

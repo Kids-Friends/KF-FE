@@ -22,7 +22,6 @@ import com.kidsFriend.data.model.QuestionResponse;
 import com.kidsFriend.data.model.QuizAnswerRequest;
 import com.kidsFriend.data.model.QuizAnswerResponse;
 import com.kidsFriend.data.model.QuizQuestion;
-import com.kidsFriend.data.model.RobotStatusRequest;
 import com.kidsFriend.data.model.VoiceQuestionRequest;
 import com.kidsFriend.data.model.ZoneInfo;
 import com.kidsFriend.data.session.SessionManager;
@@ -125,15 +124,6 @@ public class TemiRepository {
                 .enqueue(toWrappedRetrofitCallback(callback));
     }
 
-    public void updateRobotStatus(String status, RepositoryCallback<Void> callback) {
-        if (ApiConfig.USE_MOCK) {
-            callback.onSuccess(null);
-            return;
-        }
-        apiService().updateRobotStatus(getRobotId(), new RobotStatusRequest(status))
-                .enqueue(toVoidWrappedRetrofitCallback(callback));
-    }
-
     public void saveChatLog(String question, String answer, RepositoryCallback<ChatResponse> callback) {
         ChatLogRequest request = new ChatLogRequest(
                 getCurrentClientId(),
@@ -212,24 +202,6 @@ public class TemiRepository {
 
             @Override
             public void onFailure(Call<ApiResponse<T>> call, Throwable t) {
-                callback.onError("API connection failed: " + t.getMessage());
-            }
-        };
-    }
-
-    private Callback<ApiResponse<Void>> toVoidWrappedRetrofitCallback(RepositoryCallback<Void> callback) {
-        return new Callback<ApiResponse<Void>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                if (response.isSuccessful()) {
-                    callback.onSuccess(null);
-                    return;
-                }
-                callback.onError("API response error: " + response.code());
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 callback.onError("API connection failed: " + t.getMessage());
             }
         };
