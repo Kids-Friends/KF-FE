@@ -1,68 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/screen_background"
-    android:fillViewport="true"
-    android:overScrollMode="never"
     tools:context=".MainActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:padding="28dp">
+    <Button
+        android:id="@+id/button_back"
+        style="@style/TemiBackButton"
+        android:layout_margin="28dp"
+        android:text="@string/common_back" />
 
-        <Button
-            android:id="@+id/button_back"
-            style="@style/TemiBackButton"
-            android:layout_gravity="start"
-            android:text="@string/common_back" />
+    <Button
+        android:id="@+id/button_operator_menu"
+        style="@style/TemiBackButton"
+        android:layout_gravity="end"
+        android:layout_margin="28dp"
+        android:layout_width="180dp"
+        android:text="@string/home_operator_menu" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
 
         <ImageView
-            android:layout_width="196dp"
-            android:layout_height="196dp"
-            android:adjustViewBounds="true"
-            android:background="@drawable/logo_badge_background"
+            android:id="@+id/image_face"
+            android:layout_width="280dp"
+            android:layout_height="280dp"
+            android:background="@drawable/face_circle_background"
             android:contentDescription="@string/app_name"
             android:elevation="8dp"
-            android:padding="6dp"
+            android:padding="40dp"
             android:scaleType="fitCenter"
             android:src="@mipmap/ic_launcher_foreground" />
 
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/text_home_status"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:gravity="center"
-            android:text="@string/launcher_title"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/status_background"
+            android:paddingHorizontal="32dp"
+            android:paddingVertical="18dp"
+            android:text="@string/home_idle_hint"
             android:textColor="@color/text_primary"
-            android:textSize="40sp"
+            android:textSize="26sp"
             android:textStyle="bold" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:orientation="vertical"
-            android:paddingHorizontal="100dp">
-
-            <Button
-                android:id="@+id/button_api_test"
-                style="@style/TemiPrimaryButton"
-                android:layout_height="80dp"
-                android:text="@string/launcher_api_test"
-                android:textSize="24sp" />
-
-            <Button
-                android:id="@+id/button_demo_test"
-                style="@style/TemiPrimaryButton"
-                android:layout_height="80dp"
-                android:layout_marginTop="24dp"
-                android:text="@string/launcher_demo_test"
-                android:textSize="24sp" />
-        </LinearLayout>
     </LinearLayout>
-</ScrollView>
+</FrameLayout>

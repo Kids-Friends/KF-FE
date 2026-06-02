@@ -1,5 +1,6 @@
 package com.kidsFriend;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,32 +9,48 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.kidsFriend.data.config.AppConfig;
 import com.kidsFriend.data.config.BackendConnectionChecker;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
-import com.kidsFriend.ui.DemoActivity;
-import com.robotemi.sdk.NlpResult;
+import com.kidsFriend.ui.MembershipCardActivity;
+import com.kidsFriend.ui.QuestionActivity;
+import com.kidsFriend.ui.QuizActivity;
+import com.kidsFriend.voice.IntentRouter;
+import com.kidsFriend.voice.QuestionReconstructor;
+import com.kidsFriend.voice.TemiSpeechSpeaker;
+import com.kidsFriend.voice.VoiceInputManager;
+import com.kidsFriend.voice.WakeWordMatcher;
 import com.robotemi.sdk.Robot;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
 
+/**
+ * 통합 홈 화면. 평소에는 얼굴을 띄우고 "친구야" 호출을 대기하다가,
+ * 아이의 말을 듣고 알맞은 기능(질문/퀴즈/회원카드)으로 자동 이동합니다.
+ */
 public class MainActivity extends AppCompatActivity implements OnRobotReadyListener {
     private static final String TAG = "MainActivity";
     private static final int LOW_BATTERY_PERCENT = 20;
+    private static final int REQUEST_RECORD_AUDIO = 2001;
     private static boolean errorReporterInstalled;
 
+    private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker();
+
     private TemiRepository repository;
+    private VoiceInputManager voiceInputManager;
     private BroadcastReceiver batteryReceiver;
     private Robot robot;
-
-    // 💡 원본 소스코드 Interface 섹션에 있는 Robot.NlpListener 타입을 정확히 매핑
-    private Robot.NlpListener nlpInterceptor;
+    private TextView statusText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,40 +61,196 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         AppConfig.init(this);
         BackendConnectionChecker.check();
         repository = new TemiRepository(this);
+        voiceInputManager = new VoiceInputManager(this);
         installUnexpectedErrorReporter();
 
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
 
-        updateRobotStatus("ACTIVE");
-        registerBatteryReceiver();
-
-        // nlpResult말고 resolvedQuery를 사용합니다.
-        nlpInterceptor = new Robot.NlpListener() {
-            @Override
-            public void onNlpCompleted(NlpResult nlpResult) {
-                if (nlpResult != null) {
-                    Log.d(TAG, "Temi NLP intercepted: " + nlpResult.resolvedQuery);
-                }
-            }
-        };
-
-        Button apiTestButton = findViewById(R.id.button_api_test);
-        Button demoTestButton = findViewById(R.id.button_demo_test);
+        statusText = findViewById(R.id.text_home_status);
         Button backButton = findViewById(R.id.button_back);
-
-        apiTestButton.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, ApiTestActivity.class));
-        });
-
-        demoTestButton.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, DemoActivity.class));
-        });
+        Button operatorMenuButton = findViewById(R.id.button_operator_menu);
 
         backButton.setOnClickListener(v -> {
             robot.setKioskModeOn(false);
             finish();
         });
+        operatorMenuButton.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, ApiTestActivity.class)));
+
+        updateRobotStatus("ACTIVE");
+        registerBatteryReceiver();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            ActivityInfo activityInfo = getPackageManager()
+                    .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+            Robot.getInstance().onStart(activityInfo);
+            Log.d(TAG, "Temi onStart: Sovereignty declared.");
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.w(TAG, "Temi activity metadata is not available.", e);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        robot.hideTopBar();
+        robot.setKioskModeOn(true);
+        updateRobotStatus("ACTIVE");
+        startWakeWordStandby();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        voiceInputManager.stopListening();
+    }
+
+    @Override
+    public void onRobotReady(boolean isReady) {
+        if (isReady) {
+            robot.hideTopBar();
+            robot.toggleWakeup(true);
+            Log.d(TAG, "Temi Wakeup Mode Disabled (true = 차단)");
+            try {
+                robot.requestToBeKioskApp();
+                robot.setKioskModeOn(true);
+                Log.d(TAG, "Kiosk mode activated successfully.");
+            } catch (Exception e) {
+                Log.w(TAG, "Kiosk mode could not be activated: " + e.getMessage());
+            }
+        }
+        updateRobotStatus(isReady ? "ACTIVE" : "INACTIVE");
+    }
+
+    private void startWakeWordStandby() {
+        if (!ensureAudioPermission()) {
+            return;
+        }
+        statusText.setText(R.string.home_idle_hint);
+        voiceInputManager.startContinuousListening(new VoiceInputManager.Callback() {
+            @Override
+            public void onReady() {
+                statusText.setText(R.string.home_idle_hint);
+            }
+
+            @Override
+            public void onPartialResult(String text) {
+                if (!TextUtils.isEmpty(text)) {
+                    statusText.setText(getString(R.string.voice_heard_format, text));
+                }
+            }
+
+            @Override
+            public void onResult(String text) {
+                if (!WakeWordMatcher.containsWakeWord(text)) {
+                    statusText.setText(getString(R.string.voice_heard_format, text));
+                    return;
+                }
+
+                voiceInputManager.stopListening();
+                statusText.setText(R.string.home_wake_detected);
+                String textAfterWakeWord = WakeWordMatcher.textAfterWakeWord(text);
+                if (!TextUtils.isEmpty(textAfterWakeWord)) {
+                    routeIntent(textAfterWakeWord);
+                } else {
+                    startCommandListening();
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                statusText.setText(message);
+            }
+        });
+    }
+
+    private void startCommandListening() {
+        statusText.setText(R.string.voice_listening);
+        voiceInputManager.startSingleListening(new VoiceInputManager.Callback() {
+            @Override
+            public void onReady() {
+                statusText.setText(R.string.voice_listening);
+            }
+
+            @Override
+            public void onPartialResult(String text) {
+                if (!TextUtils.isEmpty(text)) {
+                    statusText.setText(getString(R.string.voice_heard_format, text));
+                }
+            }
+
+            @Override
+            public void onResult(String text) {
+                routeIntent(text);
+            }
+
+            @Override
+            public void onError(String message) {
+                statusText.setText(message);
+            }
+        });
+    }
+
+    private void routeIntent(String command) {
+        IntentRouter.Intent intent = IntentRouter.route(command);
+        switch (intent) {
+            case QUIZ:
+                statusText.setText(R.string.home_routing_quiz);
+                speaker.speak(getString(R.string.home_routing_quiz));
+                startActivity(new Intent(this, QuizActivity.class));
+                break;
+            case MEMBERSHIP:
+                statusText.setText(R.string.home_routing_membership);
+                speaker.speak(getString(R.string.home_routing_membership));
+                startActivity(new Intent(this, MembershipCardActivity.class));
+                break;
+            case CHAT:
+            default:
+                routeToQuestion(command);
+                break;
+        }
+    }
+
+    private void routeToQuestion(String rawText) {
+        statusText.setText(R.string.home_routing_question);
+        speaker.speak(getString(R.string.home_routing_question));
+        String reconstructed = QuestionReconstructor.reconstruct(rawText);
+        Intent intent = new Intent(this, QuestionActivity.class);
+        intent.putExtra(QuestionActivity.EXTRA_INITIAL_VOICE_TEXT,
+                TextUtils.isEmpty(reconstructed) ? rawText : reconstructed);
+        startActivity(intent);
+    }
+
+    private boolean ensureAudioPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        statusText.setText(R.string.voice_permission_required);
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.RECORD_AUDIO},
+                REQUEST_RECORD_AUDIO
+        );
+        return false;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode != REQUEST_RECORD_AUDIO) {
+            return;
+        }
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            startWakeWordStandby();
+        } else {
+            statusText.setText(R.string.voice_permission_denied);
+        }
     }
 
     private void updateRobotStatus(String status) {
@@ -130,85 +303,21 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         });
     }
 
-    // 💡 Robot 클래스에 존재하는 순정 onStart(ActivityInfo) 메서드만 명확히 호출
-    @Override
-    protected void onStart() {
-        super.onStart();
-        try {
-            ActivityInfo activityInfo = getPackageManager()
-                    .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-
-            // getInstance로 호출
-            Robot.getInstance().onStart(activityInfo);
-
-            Log.d(TAG, "Temi onStart: Sovereignty declared.");
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "Temi activity metadata is not available.", e);
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (nlpInterceptor != null) {
-            robot.addNlpListener(nlpInterceptor);
-        }
-
-        // 💡 Robot 클래스 본문에 존재하는 확실한 메서드만 호출
-        robot.hideTopBar();
-        robot.setKioskModeOn(true);
-
-        updateRobotStatus("ACTIVE");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (nlpInterceptor != null) {
-            robot.removeNlpListener(nlpInterceptor);
-        }
-    }
-
-    // 💡 [수정] Robot 클래스에 존재하지 않는 robot.onStop()이 에러를 유발했으므로 액티비티 주권 선언용 오버라이드 제거
-
     @Override
     protected void onDestroy() {
         try {
-            // 💡 [수정] 소스코드 스펙 확인 결과, 깨우기 모드 복구는 toggleWakeup(false)가 맞습니다.
             robot.toggleWakeup(false);
             robot.setKioskModeOn(false);
-            Log.d(TAG, "Temi default functions restored.");
-
             robot.removeOnRobotReadyListener(this);
-            if (nlpInterceptor != null) {
-                robot.removeNlpListener(nlpInterceptor);
-            }
         } catch (RuntimeException exception) {
             Log.w(TAG, "Temi listener removal failed.", exception);
+        }
+        if (voiceInputManager != null) {
+            voiceInputManager.destroy();
         }
         if (batteryReceiver != null) {
             unregisterReceiver(batteryReceiver);
         }
         super.onDestroy();
-    }
-
-    @Override
-    public void onRobotReady(boolean isReady) {
-        if (isReady) {
-            robot.hideTopBar();
-
-            // 💡 [수정] 소스코드 스펙 확인 결과 Kiosk Mode 상태에서 기본 음성 인식을 끄는 마스터 키는 toggleWakeup(true) 입니다.
-            robot.toggleWakeup(true);
-            Log.d(TAG, "Temi Wakeup Mode Disabled (true = 차단)");
-
-            try {
-                robot.requestToBeKioskApp();
-                robot.setKioskModeOn(true);
-                Log.d(TAG, "Kiosk mode activated successfully.");
-            } catch (Exception e) {
-                Log.w(TAG, "Kiosk mode could not be activated: " + e.getMessage());
-            }
-        }
-        updateRobotStatus(isReady ? "ACTIVE" : "INACTIVE");
     }
 }

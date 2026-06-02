@@ -29,4 +29,9 @@
     <color name="kid_green">#FF75CF4F</color>
     <color name="kid_orange">#FFFF9D25</color>
     <color name="kid_purple">#FF8E5CF7</color>
+    <color name="answer_o_bg">#FFEAF4FF</color>
+    <color name="answer_x_bg">#FFFFECEC</color>
+    <color name="quiz_red">#FFE8503A</color>
+    <color name="card_blue_top">#FF3AA0FF</color>
+    <color name="card_blue_bottom">#FF2E86E0</color>
 </resources>

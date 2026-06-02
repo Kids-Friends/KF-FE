@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/screen_background"
-    android:fillViewport="true"
-    android:overScrollMode="never">
+    android:background="@drawable/screen_background">
 
+    <!-- 퀴즈 본문 -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="28dp">
 
@@ -18,56 +17,159 @@
             android:text="@string/common_back" />
 
         <TextView
-            style="@style/TemiScreenTitle"
-            android:text="@string/quiz_title" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/quiz_stars"
+            android:textSize="28sp" />
 
         <TextView
-            style="@style/TemiScreenDescription"
-            android:text="@string/quiz_description" />
+            android:id="@+id/text_quiz_question"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:minHeight="80dp"
+            android:textColor="@color/text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
 
         <LinearLayout
-            style="@style/TemiPanel"
-            android:orientation="vertical">
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/text_quiz_question"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/text_primary"
-                android:textSize="24sp"
+            <Button
+                android:id="@+id/button_answer_o"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:background="@drawable/answer_o_background"
+                android:backgroundTint="@null"
+                android:elevation="4dp"
+                android:text="@string/quiz_answer_o"
+                android:textColor="@color/kid_blue"
+                android:textSize="96sp"
                 android:textStyle="bold" />
 
             <Button
-                android:id="@+id/button_quiz_option_one"
-                style="@style/TemiOptionButton"
-                android:layout_marginTop="20dp" />
-
-            <Button
-                android:id="@+id/button_quiz_option_two"
-                style="@style/TemiOptionButton"
-                android:layout_marginTop="12dp" />
-
-            <Button
-                android:id="@+id/button_quiz_option_three"
-                style="@style/TemiOptionButton"
-                android:layout_marginTop="12dp" />
-
-            <Button
-                android:id="@+id/button_submit_quiz"
-                style="@style/TemiPrimaryButton"
-                android:layout_marginTop="22dp"
-                android:text="@string/quiz_submit" />
-
-            <Button
-                android:id="@+id/button_reload_quiz"
-                style="@style/TemiSecondaryButton"
-                android:layout_marginTop="12dp"
-                android:text="@string/quiz_reload" />
-
-            <TextView
-                android:id="@+id/text_quiz_result"
-                style="@style/TemiStatusText"
-                android:text="@string/common_loading" />
+                android:id="@+id/button_answer_x"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:background="@drawable/answer_x_background"
+                android:backgroundTint="@null"
+                android:elevation="4dp"
+                android:text="@string/quiz_answer_x"
+                android:textColor="@color/quiz_red"
+                android:textSize="96sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
-</ScrollView>
+
+    <!-- 정답 팝업 -->
+    <LinearLayout
+        android:id="@+id/layout_correct"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/screen_background"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="40dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/quiz_correct_title"
+            android:textColor="@color/kid_yellow"
+            android:textSize="80sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/quiz_correct_praise"
+            android:textColor="@color/text_primary"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/quiz_correct_point"
+            android:textColor="@color/kid_blue"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/button_correct_home"
+            style="@style/TemiPrimaryButton"
+            android:layout_width="320dp"
+            android:layout_marginTop="36dp"
+            android:text="@string/quiz_home" />
+    </LinearLayout>
+
+    <!-- 오답 팝업 -->
+    <LinearLayout
+        android:id="@+id/layout_wrong"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/screen_background"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="40dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="❌"
+            android:textSize="72sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/quiz_wrong_title"
+            android:textColor="@color/text_primary"
+            android:textSize="40sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/quiz_wrong_sub"
+            android:textColor="@color/text_secondary"
+            android:textSize="22sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="36dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_wrong_retry"
+                style="@style/TemiSecondaryButton"
+                android:layout_width="220dp"
+                android:layout_marginEnd="12dp"
+                android:text="@string/quiz_retry" />
+
+            <Button
+                android:id="@+id/button_wrong_next"
+                style="@style/TemiPrimaryButton"
+                android:layout_width="220dp"
+                android:layout_marginStart="12dp"
+                android:text="@string/quiz_next" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

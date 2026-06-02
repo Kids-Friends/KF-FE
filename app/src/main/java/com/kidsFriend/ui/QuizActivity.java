@@ -18,19 +18,17 @@ import com.kidsFriend.data.repository.TemiRepository;
 import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.robotemi.sdk.Robot;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class QuizActivity extends AppCompatActivity {
     private static final String TAG = "QuizActivity";
-    private final List<Button> optionButtons = new ArrayList<>();
 
     private TemiRepository repository;
     private TemiSpeechSpeaker speaker;
     private TextView questionText;
-    private TextView resultText;
+    private Button answerOButton;
+    private Button answerXButton;
+    private View correctLayout;
+    private View wrongLayout;
     private QuizQuestion currentQuiz;
-    private String selectedAnswer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,21 +38,21 @@ public class QuizActivity extends AppCompatActivity {
         speaker = new TemiSpeechSpeaker();
 
         questionText = findViewById(R.id.text_quiz_question);
-        resultText = findViewById(R.id.text_quiz_result);
-        Button optionOneButton = findViewById(R.id.button_quiz_option_one);
-        Button optionTwoButton = findViewById(R.id.button_quiz_option_two);
-        Button optionThreeButton = findViewById(R.id.button_quiz_option_three);
-        Button submitButton = findViewById(R.id.button_submit_quiz);
-        Button reloadButton = findViewById(R.id.button_reload_quiz);
+        answerOButton = findViewById(R.id.button_answer_o);
+        answerXButton = findViewById(R.id.button_answer_x);
+        correctLayout = findViewById(R.id.layout_correct);
+        wrongLayout = findViewById(R.id.layout_wrong);
         Button backButton = findViewById(R.id.button_back);
+        Button correctHomeButton = findViewById(R.id.button_correct_home);
+        Button wrongRetryButton = findViewById(R.id.button_wrong_retry);
+        Button wrongNextButton = findViewById(R.id.button_wrong_next);
 
-        optionButtons.add(optionOneButton);
-        optionButtons.add(optionTwoButton);
-        optionButtons.add(optionThreeButton);
-
-        submitButton.setOnClickListener(v -> submitAnswer());
-        reloadButton.setOnClickListener(v -> loadQuiz());
+        answerOButton.setOnClickListener(v -> submitAnswer("O"));
+        answerXButton.setOnClickListener(v -> submitAnswer("X"));
         backButton.setOnClickListener(v -> finish());
+        correctHomeButton.setOnClickListener(v -> finish());
+        wrongRetryButton.setOnClickListener(v -> hidePopups());
+        wrongNextButton.setOnClickListener(v -> loadQuiz());
 
         loadQuiz();
     }
@@ -66,79 +64,43 @@ public class QuizActivity extends AppCompatActivity {
             ActivityInfo activityInfo = getPackageManager()
                     .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
             Robot.getInstance().onStart(activityInfo);
-
-            Log.d(TAG, "Temi onStart: Sovereignty declared.");
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "Temi activity metadata is not available.", e);
         }
     }
 
     private void loadQuiz() {
-        selectedAnswer = null;
-        resultText.setText(R.string.common_loading);
+        hidePopups();
         repository.getCurrentQuiz(new RepositoryCallback<QuizQuestion>() {
             @Override
             public void onSuccess(QuizQuestion data) {
                 currentQuiz = data;
-                bindQuiz(data);
-                resultText.setText(R.string.quiz_select_answer_message);
+                questionText.setText(data.question);
+                speaker.speak(data.question);
             }
 
             @Override
             public void onError(String message) {
-                resultText.setText(message);
+                questionText.setText(message);
             }
         });
     }
 
-    private void bindQuiz(QuizQuestion quiz) {
-        questionText.setText(quiz.question);
-        for (int i = 0; i < optionButtons.size(); i++) {
-            Button button = optionButtons.get(i);
-            if (i < quiz.options.size()) {
-                String option = quiz.options.get(i);
-                button.setVisibility(View.VISIBLE);
-                button.setText(option);
-                button.setEnabled(true);
-                button.setSelected(false);
-                button.setOnClickListener(v -> selectAnswer((Button) v));
-            } else {
-                button.setText("");
-                button.setEnabled(false);
-                button.setSelected(false);
-                button.setVisibility(View.GONE);
-                button.setOnClickListener(null);
-            }
-        }
-    }
-
-    private void selectAnswer(Button selectedButton) {
-        selectedAnswer = selectedButton.getText().toString();
-        for (Button button : optionButtons) {
-            button.setSelected(false);
-        }
-        selectedButton.setSelected(true);
-        resultText.setText(selectedAnswer + " 선택됨");
-    }
-
-    private void submitAnswer() {
+    private void submitAnswer(String selectedAnswer) {
         if (currentQuiz == null) {
-            resultText.setText(R.string.quiz_load_failed_message);
             return;
         }
-
-        if (selectedAnswer == null) {
-            resultText.setText(R.string.quiz_select_answer_message);
-            return;
-        }
-
-        resultText.setText(R.string.common_loading);
+        setAnswerEnabled(false);
         repository.submitQuizAnswer(currentQuiz.quizId, selectedAnswer, new RepositoryCallback<QuizAnswerResponse>() {
             @Override
             public void onSuccess(QuizAnswerResponse data) {
-                resultText.setText(data.message);
-                if (data.message != null && speaker != null) {
-                    // 이모지는 발화 시 어색할 수 있으므로 제거 후 테미가 읽어줌
+                setAnswerEnabled(true);
+                if (data.correct) {
+                    correctLayout.setVisibility(View.VISIBLE);
+                } else {
+                    wrongLayout.setVisibility(View.VISIBLE);
+                }
+                if (data.message != null) {
                     String speechText = data.message.replaceAll("[^가-힣a-zA-Z0-9\\s.!?]", "").trim();
                     speaker.speak(speechText);
                 }
@@ -146,8 +108,20 @@ public class QuizActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
-                resultText.setText(message);
+                setAnswerEnabled(true);
+                questionText.setText(message);
             }
         });
+    }
+
+    private void hidePopups() {
+        correctLayout.setVisibility(View.GONE);
+        wrongLayout.setVisibility(View.GONE);
+        setAnswerEnabled(true);
+    }
+
+    private void setAnswerEnabled(boolean enabled) {
+        answerOButton.setEnabled(enabled);
+        answerXButton.setEnabled(enabled);
     }
 }

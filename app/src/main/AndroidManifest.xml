@@ -32,7 +32,7 @@
             android:name=".ApiTestActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.DemoActivity"
+            android:name=".ui.MembershipCardActivity"
             android:exported="false" />
         <activity android:name=".MainActivity"
             android:exported="true">
