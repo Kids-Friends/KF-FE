@@ -79,12 +79,14 @@
     <string name="test_result_prefix">결과: </string>
     <string name="test_result_waiting">결과가 여기에 표시됩니다.</string>
 
-    <string name="home_idle_hint">\"친구야\"라고 불러줘!</string>
-    <string name="home_wake_detected">응! 무엇을 도와줄까?</string>
+    <string name="home_idle_hint">\"친구야\" 하고 부르거나 화면을 터치해줘!</string>
+    <string name="home_wake_detected">응! 무슨 얘기 할까?</string>
+    <string name="home_listening">듣고 있어요 👂</string>
+    <string name="home_thinking">음… 생각하고 있어요</string>
+    <string name="home_bye">안녕! 또 부르면 올게.</string>
     <string name="home_operator_menu">운영자 메뉴</string>
-    <string name="home_routing_quiz">퀴즈를 시작할게!</string>
+    <string name="home_routing_quiz">퀴즈 풀러 가자!</string>
     <string name="home_routing_membership">회원카드를 보여줄게!</string>
-    <string name="home_routing_question">궁금한 걸 알아볼게!</string>
 
     <string name="quiz_stars">⭐ ⭐ ⭐</string>
     <string name="quiz_answer_o">O</string>

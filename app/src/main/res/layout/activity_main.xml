@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/screen_background"
+    android:clickable="true"
+    android:focusable="true"
     tools:context=".MainActivity">
 
     <Button
@@ -29,12 +32,12 @@
 
         <ImageView
             android:id="@+id/image_face"
-            android:layout_width="280dp"
-            android:layout_height="280dp"
+            android:layout_width="240dp"
+            android:layout_height="240dp"
             android:background="@drawable/face_circle_background"
             android:contentDescription="@string/app_name"
             android:elevation="8dp"
-            android:padding="40dp"
+            android:padding="36dp"
             android:scaleType="fitCenter"
             android:src="@mipmap/ic_launcher_foreground" />
 
@@ -42,7 +45,7 @@
             android:id="@+id/text_home_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="32dp"
             android:background="@drawable/status_background"
             android:paddingHorizontal="32dp"
             android:paddingVertical="18dp"
@@ -50,5 +53,19 @@
             android:textColor="@color/text_primary"
             android:textSize="26sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/text_home_answer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/panel_background"
+            android:maxWidth="760dp"
+            android:paddingHorizontal="28dp"
+            android:paddingVertical="20dp"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
+            android:lineSpacingExtra="4dp"
+            android:visibility="gone" />
     </LinearLayout>
 </FrameLayout>

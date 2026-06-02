@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -17,11 +18,12 @@ import androidx.core.content.ContextCompat;
 
 import com.kidsFriend.data.config.AppConfig;
 import com.kidsFriend.data.config.BackendConnectionChecker;
+import com.kidsFriend.data.model.QuestionResponse;
+import com.kidsFriend.data.repository.RepositoryCallback;
+import com.kidsFriend.data.repository.TemiRepository;
 import com.kidsFriend.ui.MembershipCardActivity;
-import com.kidsFriend.ui.QuestionActivity;
 import com.kidsFriend.ui.QuizActivity;
 import com.kidsFriend.voice.IntentRouter;
-import com.kidsFriend.voice.QuestionReconstructor;
 import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.kidsFriend.voice.VoiceInputManager;
 import com.kidsFriend.voice.WakeWordMatcher;
@@ -29,18 +31,25 @@ import com.robotemi.sdk.Robot;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
 
 /**
- * 통합 홈 화면. 평소에는 얼굴을 띄우고 "친구야" 호출을 대기하다가,
- * 아이의 말을 듣고 알맞은 기능(질문/퀴즈/회원카드)으로 자동 이동합니다.
+ * 통합 홈 화면.
+ * - 평소: 얼굴을 띄우고 "친구야" 호출 또는 화면 터치를 대기합니다.
+ * - 호출/터치 시: 다음 화면으로 넘어가지 않고 대화를 시작합니다(멀티턴 AI 대화).
+ * - 대화 중 "퀴즈 풀고 싶어"처럼 말하면 해당 화면으로 전환합니다.
  */
 public class MainActivity extends AppCompatActivity implements OnRobotReadyListener {
     private static final String TAG = "MainActivity";
     private static final int REQUEST_RECORD_AUDIO = 2001;
 
+    private enum State { IDLE, CONVERSATION }
+
     private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker();
 
+    private TemiRepository repository;
     private VoiceInputManager voiceInputManager;
     private Robot robot;
     private TextView statusText;
+    private TextView answerText;
+    private State state = State.IDLE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,14 +59,24 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         AppConfig.init(this);
         BackendConnectionChecker.check();
+        repository = new TemiRepository(this);
         voiceInputManager = new VoiceInputManager(this);
 
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
 
         statusText = findViewById(R.id.text_home_status);
+        answerText = findViewById(R.id.text_home_answer);
         Button backButton = findViewById(R.id.button_back);
         Button operatorMenuButton = findViewById(R.id.button_operator_menu);
+
+        // 화면을 터치하면 대화를 시작합니다.
+        findViewById(R.id.root_main).setOnClickListener(v -> {
+            if (state == State.IDLE) {
+                voiceInputManager.stopListening();
+                startConversation(null);
+            }
+        });
 
         backButton.setOnClickListener(v -> {
             robot.setKioskModeOn(false);
@@ -85,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         super.onResume();
         robot.hideTopBar();
         robot.setKioskModeOn(true);
-        startWakeWordStandby();
+        enterIdle();
     }
 
     @Override
@@ -110,11 +129,15 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         }
     }
 
-    private void startWakeWordStandby() {
+    /** 대기 상태: 얼굴 + "친구야 불러줘" 안내, 호출어 대기. */
+    private void enterIdle() {
         if (!ensureAudioPermission()) {
             return;
         }
+        state = State.IDLE;
         statusText.setText(R.string.home_idle_hint);
+        answerText.setVisibility(View.GONE);
+
         voiceInputManager.startContinuousListening(new VoiceInputManager.Callback() {
             @Override
             public void onReady() {
@@ -134,15 +157,8 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
                     statusText.setText(getString(R.string.voice_heard_format, text));
                     return;
                 }
-
                 voiceInputManager.stopListening();
-                statusText.setText(R.string.home_wake_detected);
-                String textAfterWakeWord = WakeWordMatcher.textAfterWakeWord(text);
-                if (!TextUtils.isEmpty(textAfterWakeWord)) {
-                    routeIntent(textAfterWakeWord);
-                } else {
-                    startCommandListening();
-                }
+                startConversation(WakeWordMatcher.textAfterWakeWord(text));
             }
 
             @Override
@@ -152,12 +168,26 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         });
     }
 
-    private void startCommandListening() {
-        statusText.setText(R.string.voice_listening);
+    /** 대화 시작. 호출어 뒤에 바로 말이 붙어 있으면 그 말부터 처리합니다. */
+    private void startConversation(String firstUtterance) {
+        state = State.CONVERSATION;
+        answerText.setVisibility(View.GONE);
+        speaker.speak(getString(R.string.home_wake_detected));
+
+        if (!TextUtils.isEmpty(firstUtterance)) {
+            handleUtterance(firstUtterance);
+        } else {
+            listenInConversation();
+        }
+    }
+
+    /** 대화 중 한 마디 듣기: "듣고 있어요" 화면을 띄웁니다. */
+    private void listenInConversation() {
+        statusText.setText(R.string.home_listening);
         voiceInputManager.startSingleListening(new VoiceInputManager.Callback() {
             @Override
             public void onReady() {
-                statusText.setText(R.string.voice_listening);
+                statusText.setText(R.string.home_listening);
             }
 
             @Override
@@ -169,44 +199,78 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
             @Override
             public void onResult(String text) {
-                routeIntent(text);
+                handleUtterance(text);
             }
 
             @Override
             public void onError(String message) {
-                statusText.setText(message);
+                // 알아듣지 못하면 대화를 마치고 대기 상태로 돌아갑니다.
+                enterIdle();
             }
         });
     }
 
-    private void routeIntent(String command) {
-        IntentRouter.Intent intent = IntentRouter.route(command);
+    /** 들은 말의 의도를 판단해 화면 전환 또는 AI 대화를 이어갑니다. */
+    private void handleUtterance(String text) {
+        if (isEndPhrase(text)) {
+            speaker.speak(getString(R.string.home_bye));
+            enterIdle();
+            return;
+        }
+
+        IntentRouter.Intent intent = IntentRouter.route(text);
         switch (intent) {
             case QUIZ:
-                statusText.setText(R.string.home_routing_quiz);
                 speaker.speak(getString(R.string.home_routing_quiz));
+                statusText.setText(R.string.home_routing_quiz);
                 startActivity(new Intent(this, QuizActivity.class));
                 break;
             case MEMBERSHIP:
-                statusText.setText(R.string.home_routing_membership);
                 speaker.speak(getString(R.string.home_routing_membership));
+                statusText.setText(R.string.home_routing_membership);
                 startActivity(new Intent(this, MembershipCardActivity.class));
                 break;
             case CHAT:
             default:
-                routeToQuestion(command);
+                answerWithAi(text);
                 break;
         }
     }
 
-    private void routeToQuestion(String rawText) {
-        statusText.setText(R.string.home_routing_question);
-        speaker.speak(getString(R.string.home_routing_question));
-        String reconstructed = QuestionReconstructor.reconstruct(rawText);
-        Intent intent = new Intent(this, QuestionActivity.class);
-        intent.putExtra(QuestionActivity.EXTRA_INITIAL_VOICE_TEXT,
-                TextUtils.isEmpty(reconstructed) ? rawText : reconstructed);
-        startActivity(intent);
+    /** AI에게 묻고 답을 화면+음성으로 보여준 뒤, 다시 듣기로 대화를 이어갑니다. */
+    private void answerWithAi(String question) {
+        statusText.setText(R.string.home_thinking);
+        repository.askQuestion(question, new RepositoryCallback<QuestionResponse>() {
+            @Override
+            public void onSuccess(QuestionResponse data) {
+                showAnswer(data.answer);
+                speaker.speak(data.answer);
+                if (state == State.CONVERSATION) {
+                    listenInConversation();
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                showAnswer(message);
+                if (state == State.CONVERSATION) {
+                    listenInConversation();
+                }
+            }
+        });
+    }
+
+    private void showAnswer(String text) {
+        answerText.setText(text);
+        answerText.setVisibility(View.VISIBLE);
+    }
+
+    private boolean isEndPhrase(String text) {
+        String normalized = text == null ? "" : text.replaceAll("\\s+", "");
+        return normalized.contains("그만")
+                || normalized.contains("안녕")
+                || normalized.contains("됐어")
+                || normalized.contains("끝");
     }
 
     private boolean ensureAudioPermission() {
@@ -230,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
             return;
         }
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            startWakeWordStandby();
+            enterIdle();
         } else {
             statusText.setText(R.string.voice_permission_denied);
         }
