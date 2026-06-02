@@ -1,11 +1,9 @@
 package com.kidsFriend.ui;
 
 import android.Manifest;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,16 +21,13 @@ import com.kidsFriend.voice.QuestionReconstructor;
 import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.kidsFriend.voice.VoiceInputManager;
 import com.kidsFriend.voice.WakeWordMatcher;
-import com.robotemi.sdk.Robot;
 
 public class QuestionActivity extends AppCompatActivity {
-    private static final String TAG = "QuestionActivity";
     public static final String EXTRA_START_VOICE_LISTENING = "start_voice_listening";
     public static final String EXTRA_INITIAL_VOICE_TEXT = "initial_voice_text";
     private static final int REQUEST_RECORD_AUDIO = 2001;
 
     private final TemiSpeechSpeaker temiSpeechSpeaker = new TemiSpeechSpeaker();
-    private final Robot robot = Robot.getInstance();
 
     private TemiRepository repository;
     private EditText questionInput;

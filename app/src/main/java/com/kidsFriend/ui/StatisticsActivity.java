@@ -58,7 +58,6 @@ public class StatisticsActivity extends AppCompatActivity {
             Log.w(TAG, "Temi activity metadata is not available.", e);
         }
     }
-
     private void loadStatistics() {
         summaryText.setText(R.string.common_loading);
         repository.getStatisticsSummary(new RepositoryCallback<StatisticsSummary>() {

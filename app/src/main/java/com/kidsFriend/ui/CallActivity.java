@@ -88,7 +88,6 @@ public class CallActivity extends AppCompatActivity {
             Log.w(TAG, "Temi activity metadata is not available.", e);
         }
     }
-
     private void selectReason(String reason, Button selectedButton) {
         selectedReason = reason;
         helpButton.setSelected(false);

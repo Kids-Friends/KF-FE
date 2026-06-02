@@ -69,7 +69,6 @@ public class QuizActivity extends AppCompatActivity {
             Log.w(TAG, "Temi activity metadata is not available.", e);
         }
     }
-
     private void loadQuiz() {
         selectedAnswer = null;
         resultText.setText(R.string.common_loading);

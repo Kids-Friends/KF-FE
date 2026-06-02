@@ -52,7 +52,6 @@ public class ZoneActivity extends AppCompatActivity {
             Log.w(TAG, "Temi activity metadata is not available.", e);
         }
     }
-
     private void loadZones() {
         zoneStatusText.setText(R.string.common_loading);
         repository.getZones(new RepositoryCallback<List<ZoneInfo>>() {
