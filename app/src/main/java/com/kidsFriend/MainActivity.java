@@ -31,7 +31,6 @@ import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.kidsFriend.voice.VoiceInputManager;
 import com.kidsFriend.voice.WakeWordMatcher;
 import com.robotemi.sdk.Robot;
-import com.robotemi.sdk.TtsRequest;
 import com.robotemi.sdk.constants.Gender;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
 import com.robotemi.sdk.permission.OnRequestPermissionResultListener;
@@ -39,7 +38,6 @@ import com.robotemi.sdk.permission.Permission;
 import com.robotemi.sdk.voice.model.TtsVoice;
 
 import java.util.Collections;
-import java.util.UUID;
 
 /**
  * 통합 홈 화면.
@@ -48,7 +46,7 @@ import java.util.UUID;
  * - 대화 중 "퀴즈 풀고 싶어"처럼 말하면 해당 화면으로 전환합니다.
  */
 public class MainActivity extends AppCompatActivity
-        implements OnRobotReadyListener, OnRequestPermissionResultListener, Robot.TtsListener {
+        implements OnRobotReadyListener, OnRequestPermissionResultListener {
     private static final String TAG = "MainActivity";
     private static final int REQUEST_RECORD_AUDIO = 2001;
     private static final int REQUEST_TTS_SETTINGS = 3001;
@@ -58,11 +56,9 @@ public class MainActivity extends AppCompatActivity
     private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker();
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    // 발화가 끝나면 듣기를 시작하기 위해 추적하는 TTS 요청 id
-    private UUID pendingListenAfterTtsId;
-    private final Runnable listenFallback = () -> {
-        if (pendingListenAfterTtsId != null && state == State.CONVERSATION) {
-            pendingListenAfterTtsId = null;
+    // 발화(TTS)가 끝날 무렵 다시 듣기를 시작합니다.
+    private final Runnable listenRunnable = () -> {
+        if (state == State.CONVERSATION) {
             listenInConversation();
         }
     };
@@ -89,7 +85,6 @@ public class MainActivity extends AppCompatActivity
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
         robot.addOnRequestPermissionResultListener(this);
-        robot.addTtsListener(this);
 
         faceImage = findViewById(R.id.image_face);
         statusText = findViewById(R.id.text_home_status);
@@ -320,38 +315,13 @@ public class MainActivity extends AppCompatActivity
         answerText.setVisibility(View.VISIBLE);
     }
 
-    /** 발화를 시작하고, 그 발화가 끝나면 다시 듣기를 시작합니다(테미가 자기 음성을 인식하는 문제 방지). */
+    /** 발화를 시작하고, 발화가 끝날 무렵 다시 듣기를 시작합니다(테미가 자기 음성을 인식하는 문제 방지). */
     private void speakThenListen(String text) {
-        TtsRequest request = speaker.speak(text);
-        if (request == null) {
-            listenInConversation();
-            return;
-        }
-        pendingListenAfterTtsId = request.getId();
-        uiHandler.removeCallbacks(listenFallback);
-        // 안전장치: 완료 콜백이 오지 않아도 추정 시간 후 듣기 시작
+        speaker.speak(text);
+        uiHandler.removeCallbacks(listenRunnable);
+        // 발화 길이를 글자 수로 추정해 그만큼 기다린 뒤 듣기 시작
         long estimatedMs = Math.min(12000L, Math.max(2500L, text.length() * 150L));
-        uiHandler.postDelayed(listenFallback, estimatedMs);
-    }
-
-    @Override
-    public void onTtsStatusChanged(TtsRequest ttsRequest) {
-        if (pendingListenAfterTtsId == null || !pendingListenAfterTtsId.equals(ttsRequest.getId())) {
-            return;
-        }
-        TtsRequest.Status status = ttsRequest.getStatus();
-        if (status == TtsRequest.Status.COMPLETED
-                || status == TtsRequest.Status.ERROR
-                || status == TtsRequest.Status.NOT_ALLOWED
-                || status == TtsRequest.Status.CANCELED) {
-            pendingListenAfterTtsId = null;
-            uiHandler.removeCallbacks(listenFallback);
-            uiHandler.post(() -> {
-                if (state == State.CONVERSATION) {
-                    listenInConversation();
-                }
-            });
-        }
+        uiHandler.postDelayed(listenRunnable, estimatedMs);
     }
 
     private void setFace(int drawableRes) {
@@ -400,7 +370,6 @@ public class MainActivity extends AppCompatActivity
             robot.setKioskModeOn(false);
             robot.removeOnRobotReadyListener(this);
             robot.removeOnRequestPermissionResultListener(this);
-            robot.removeTtsListener(this);
         } catch (RuntimeException exception) {
             Log.w(TAG, "Temi listener removal failed.", exception);
         }
