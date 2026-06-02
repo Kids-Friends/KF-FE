@@ -147,13 +147,6 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
     @Override
     public void onRobotReady(boolean isReady) {
         if (isReady) {
-            try {
-                ActivityInfo activityInfo = getPackageManager()
-                        .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-                Robot.getInstance().onStart(activityInfo);
-            } catch (PackageManager.NameNotFoundException exception) {
-                Log.w(TAG, "Temi activity metadata is not available.", exception);
-            }
             Robot.getInstance().hideTopBar();
         }
         updateRobotStatus(isReady ? "ACTIVE" : "INACTIVE");
