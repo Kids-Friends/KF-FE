@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
             return;
         }
         state = State.IDLE;
-        setFace(R.drawable.face_smile);
+        setFace(R.drawable.face_peaceful);
         statusText.setText(R.string.home_idle_hint);
         answerText.setVisibility(View.GONE);
 
@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
     /** 대화 시작. 호출어 뒤에 바로 말이 붙어 있으면 그 말부터 처리합니다. */
     private void startConversation(String firstUtterance) {
         state = State.CONVERSATION;
-        setFace(R.drawable.face_hello);
+        setFace(R.drawable.face_excited);
         answerText.setVisibility(View.GONE);
         speaker.speak(getString(R.string.home_wake_detected));
 
@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
     /** 대화 중 한 마디 듣기: "듣고 있어요" 화면을 띄웁니다. */
     private void listenInConversation() {
-        setFace(R.drawable.face_wonder);
+        setFace(R.drawable.face_excited);
         statusText.setText(R.string.home_listening);
         voiceInputManager.startSingleListening(new VoiceInputManager.Callback() {
             @Override
@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
     /** AI에게 묻고 답을 화면+음성으로 보여준 뒤, 다시 듣기로 대화를 이어갑니다. */
     private void answerWithAi(String question) {
-        setFace(R.drawable.face_curious);
+        setFace(R.drawable.face_peaceful);
         statusText.setText(R.string.home_thinking);
         repository.askQuestion(question, new RepositoryCallback<QuestionResponse>() {
             @Override
@@ -262,6 +262,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
             @Override
             public void onError(String message) {
+                setFace(R.drawable.face_sadness);
                 showAnswer(message);
                 if (state == State.CONVERSATION) {
                     listenInConversation();

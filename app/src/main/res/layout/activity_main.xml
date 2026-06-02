@@ -4,10 +4,19 @@
     android:id="@+id/root_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/screen_background"
+    android:background="@color/kid_blue"
     android:clickable="true"
     android:focusable="true"
     tools:context=".MainActivity">
+
+    <!-- 화면을 가득 채우는 뽀로로 표정 -->
+    <ImageView
+        android:id="@+id/image_face"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/app_name"
+        android:scaleType="centerCrop"
+        android:src="@drawable/face_peaceful" />
 
     <Button
         android:id="@+id/button_back"
@@ -23,26 +32,33 @@
         android:layout_width="180dp"
         android:text="@string/home_operator_menu" />
 
+    <!-- 하단에 상태/답변 오버레이 -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_gravity="bottom|center_horizontal"
         android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="32dp">
 
-        <ImageView
-            android:id="@+id/image_face"
-            android:layout_width="260dp"
-            android:layout_height="260dp"
-            android:contentDescription="@string/app_name"
-            android:scaleType="fitCenter"
-            android:src="@drawable/face_smile" />
+        <TextView
+            android:id="@+id/text_home_answer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/panel_background"
+            android:maxWidth="900dp"
+            android:paddingHorizontal="28dp"
+            android:paddingVertical="20dp"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp"
+            android:lineSpacingExtra="4dp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/text_home_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
             android:background="@drawable/status_background"
             android:paddingHorizontal="32dp"
             android:paddingVertical="18dp"
@@ -50,19 +66,5 @@
             android:textColor="@color/text_primary"
             android:textSize="26sp"
             android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/text_home_answer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/panel_background"
-            android:maxWidth="760dp"
-            android:paddingHorizontal="28dp"
-            android:paddingVertical="20dp"
-            android:textColor="@color/text_primary"
-            android:textSize="22sp"
-            android:lineSpacingExtra="4dp"
-            android:visibility="gone" />
     </LinearLayout>
 </FrameLayout>
