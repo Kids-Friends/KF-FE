@@ -35,19 +35,6 @@ public class ZoneActivity extends AppCompatActivity {
         loadZones();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        try {
-            ActivityInfo activityInfo = getPackageManager()
-                    .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-            robot.onStart(activityInfo);
-            Log.d(TAG, "Temi onStart: Sovereignty declared.");
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "Temi activity metadata is not available.", e);
-        }
-    }
-
     private void loadZones() {
         zoneStatusText.setText(R.string.common_loading);
         repository.getZones(new RepositoryCallback<List<ZoneInfo>>() {

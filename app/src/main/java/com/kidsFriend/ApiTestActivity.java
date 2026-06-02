@@ -350,19 +350,6 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        try {
-            ActivityInfo activityInfo = getPackageManager()
-                    .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-            Robot.getInstance().onStart(activityInfo);
-            Log.d(TAG, "Temi onStart: Sovereignty declared.");
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "Temi activity metadata is not available.", e);
-        }
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         if (testClientIdInput != null) {
