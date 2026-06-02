@@ -18,7 +18,6 @@ import com.kidsFriend.data.config.AppConfig;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
 import com.kidsFriend.ui.DemoActivity;
-import com.robotemi.sdk.NlpResult;
 import com.robotemi.sdk.Robot;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
 
@@ -29,10 +28,6 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
     private TemiRepository repository;
     private BroadcastReceiver batteryReceiver;
-    private Robot robot;
-
-    // 💡 원본 소스코드 Interface 섹션에 있는 Robot.NlpListener 타입을 정확히 매핑
-    private Robot.NlpListener nlpInterceptor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,22 +38,9 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         AppConfig.init(this);
         repository = new TemiRepository(this);
         installUnexpectedErrorReporter();
-
-        robot = Robot.getInstance();
-        robot.addOnRobotReadyListener(this);
-
+        Robot.getInstance().addOnRobotReadyListener(this);
         updateRobotStatus("ACTIVE");
         registerBatteryReceiver();
-
-        // 💡 [수정] nlpResult.getText() 대신 실제 변수인 resolvedQuery를 사용합니다.
-        nlpInterceptor = new Robot.NlpListener() {
-            @Override
-            public void onNlpCompleted(NlpResult nlpResult) {
-                if (nlpResult != null) {
-                    Log.d(TAG, "Temi NLP intercepted: " + nlpResult.resolvedQuery);
-                }
-            }
-        };
 
         Button apiTestButton = findViewById(R.id.button_api_test);
         Button demoTestButton = findViewById(R.id.button_demo_test);
@@ -122,56 +104,21 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         });
     }
 
-    // 💡 Robot 클래스에 존재하는 순정 onStart(ActivityInfo) 메서드만 명확히 호출
-    @Override
-    protected void onStart() {
-        super.onStart();
-        try {
-            ActivityInfo activityInfo = getPackageManager()
-                    .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-            robot.onStart(activityInfo);
-            Log.d(TAG, "Temi onStart: Sovereignty declared.");
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "Temi activity metadata is not available.", e);
-        }
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        if (nlpInterceptor != null) {
-            robot.addNlpListener(nlpInterceptor);
-        }
-
-        // 💡 Robot 클래스 본문에 존재하는 확실한 메서드만 호출
-        robot.hideTopBar();
-        robot.setKioskModeOn(true);
-
         updateRobotStatus("ACTIVE");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (nlpInterceptor != null) {
-            robot.removeNlpListener(nlpInterceptor);
-        }
     }
-
-    // 💡 [수정] Robot 클래스에 존재하지 않는 robot.onStop()이 에러를 유발했으므로 액티비티 주권 선언용 오버라이드 제거
 
     @Override
     protected void onDestroy() {
         try {
-            // 💡 [수정] 소스코드 스펙 확인 결과, 깨우기 모드 복구는 toggleWakeup(false)가 맞습니다.
-            robot.toggleWakeup(false);
-            robot.setKioskModeOn(false);
-            Log.d(TAG, "Temi default functions restored.");
-
-            robot.removeOnRobotReadyListener(this);
-            if (nlpInterceptor != null) {
-                robot.removeNlpListener(nlpInterceptor);
-            }
+            Robot.getInstance().removeOnRobotReadyListener(this);
         } catch (RuntimeException exception) {
             Log.w(TAG, "Temi listener removal failed.", exception);
         }
@@ -184,19 +131,14 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
     @Override
     public void onRobotReady(boolean isReady) {
         if (isReady) {
-            robot.hideTopBar();
-
-            // 💡 [수정] 소스코드 스펙 확인 결과 Kiosk Mode 상태에서 기본 음성 인식을 끄는 마스터 키는 toggleWakeup(true) 입니다.
-            robot.toggleWakeup(true);
-            Log.d(TAG, "Temi Wakeup Mode Disabled (true = 차단)");
-
             try {
-                robot.requestToBeKioskApp();
-                robot.setKioskModeOn(true);
-                Log.d(TAG, "Kiosk mode activated successfully.");
-            } catch (Exception e) {
-                Log.w(TAG, "Kiosk mode could not be activated: " + e.getMessage());
+                ActivityInfo activityInfo = getPackageManager()
+                        .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+                Robot.getInstance().onStart(activityInfo);
+            } catch (PackageManager.NameNotFoundException exception) {
+                Log.w(TAG, "Temi activity metadata is not available.", exception);
             }
+            Robot.getInstance().hideTopBar();
         }
         updateRobotStatus(isReady ? "ACTIVE" : "INACTIVE");
     }
