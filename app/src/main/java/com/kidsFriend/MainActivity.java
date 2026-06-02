@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -47,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
     private TemiRepository repository;
     private VoiceInputManager voiceInputManager;
     private Robot robot;
+    private ImageView faceImage;
     private TextView statusText;
     private TextView answerText;
     private State state = State.IDLE;
@@ -65,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
 
+        faceImage = findViewById(R.id.image_face);
         statusText = findViewById(R.id.text_home_status);
         answerText = findViewById(R.id.text_home_answer);
         Button backButton = findViewById(R.id.button_back);
@@ -135,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
             return;
         }
         state = State.IDLE;
+        setFace(R.drawable.face_smile);
         statusText.setText(R.string.home_idle_hint);
         answerText.setVisibility(View.GONE);
 
@@ -171,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
     /** 대화 시작. 호출어 뒤에 바로 말이 붙어 있으면 그 말부터 처리합니다. */
     private void startConversation(String firstUtterance) {
         state = State.CONVERSATION;
+        setFace(R.drawable.face_hello);
         answerText.setVisibility(View.GONE);
         speaker.speak(getString(R.string.home_wake_detected));
 
@@ -183,6 +188,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
     /** 대화 중 한 마디 듣기: "듣고 있어요" 화면을 띄웁니다. */
     private void listenInConversation() {
+        setFace(R.drawable.face_wonder);
         statusText.setText(R.string.home_listening);
         voiceInputManager.startSingleListening(new VoiceInputManager.Callback() {
             @Override
@@ -221,11 +227,13 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         IntentRouter.Intent intent = IntentRouter.route(text);
         switch (intent) {
             case QUIZ:
+                setFace(R.drawable.face_joy);
                 speaker.speak(getString(R.string.home_routing_quiz));
                 statusText.setText(R.string.home_routing_quiz);
                 startActivity(new Intent(this, QuizActivity.class));
                 break;
             case MEMBERSHIP:
+                setFace(R.drawable.face_joy);
                 speaker.speak(getString(R.string.home_routing_membership));
                 statusText.setText(R.string.home_routing_membership);
                 startActivity(new Intent(this, MembershipCardActivity.class));
@@ -239,10 +247,12 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
     /** AI에게 묻고 답을 화면+음성으로 보여준 뒤, 다시 듣기로 대화를 이어갑니다. */
     private void answerWithAi(String question) {
+        setFace(R.drawable.face_curious);
         statusText.setText(R.string.home_thinking);
         repository.askQuestion(question, new RepositoryCallback<QuestionResponse>() {
             @Override
             public void onSuccess(QuestionResponse data) {
+                setFace(R.drawable.face_joy);
                 showAnswer(data.answer);
                 speaker.speak(data.answer);
                 if (state == State.CONVERSATION) {
@@ -263,6 +273,10 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
     private void showAnswer(String text) {
         answerText.setText(text);
         answerText.setVisibility(View.VISIBLE);
+    }
+
+    private void setFace(int drawableRes) {
+        faceImage.setImageResource(drawableRes);
     }
 
     private boolean isEndPhrase(String text) {

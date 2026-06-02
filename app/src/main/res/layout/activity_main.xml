@@ -32,14 +32,11 @@
 
         <ImageView
             android:id="@+id/image_face"
-            android:layout_width="240dp"
-            android:layout_height="240dp"
-            android:background="@drawable/face_circle_background"
+            android:layout_width="260dp"
+            android:layout_height="260dp"
             android:contentDescription="@string/app_name"
-            android:elevation="8dp"
-            android:padding="36dp"
             android:scaleType="fitCenter"
-            android:src="@mipmap/ic_launcher_foreground" />
+            android:src="@drawable/face_smile" />
 
         <TextView
             android:id="@+id/text_home_status"
