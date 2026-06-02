@@ -10,8 +10,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import android.util.Log;
+
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -61,6 +64,7 @@ public class RetrofitClient {
                                 .build();
                         return chain.proceed(request);
                     })
+                    .addInterceptor(buildLoggingInterceptor())
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(20, TimeUnit.SECONDS)
                     .writeTimeout(20, TimeUnit.SECONDS)
@@ -75,11 +79,23 @@ public class RetrofitClient {
                                 .build();
                         return chain.proceed(request);
                     })
+                    .addInterceptor(buildLoggingInterceptor())
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(20, TimeUnit.SECONDS)
                     .writeTimeout(20, TimeUnit.SECONDS)
                     .build();
         }
+    }
+
+    /**
+     * 모든 API 요청/응답(URL, 메서드, 헤더, 본문, 상태코드)을 Logcat에 출력합니다.
+     * Android Studio Logcat에서 "KF_HTTP" 태그로 필터링하면 통신 과정을 볼 수 있습니다.
+     */
+    private static HttpLoggingInterceptor buildLoggingInterceptor() {
+        HttpLoggingInterceptor interceptor =
+                new HttpLoggingInterceptor(message -> Log.d("KF_HTTP", message));
+        interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        return interceptor;
     }
 
     private static String getConfiguredBaseUrl() {
