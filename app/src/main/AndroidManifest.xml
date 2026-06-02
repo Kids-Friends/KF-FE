@@ -20,9 +20,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TemiApplication">
         <activity
-            android:name=".ui.StatisticsActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.ZoneActivity"
             android:exported="false" />
         <activity
@@ -30,9 +27,6 @@
             android:exported="false" />
         <activity
             android:name=".ui.QuestionActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.CallActivity"
             android:exported="false" />
         <activity
             android:name=".ApiTestActivity"

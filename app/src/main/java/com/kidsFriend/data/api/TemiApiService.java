@@ -1,9 +1,6 @@
 package com.kidsFriend.data.api;
 
 import com.kidsFriend.data.model.ApiResponse;
-import com.kidsFriend.data.model.CallStatusRequest;
-import com.kidsFriend.data.model.CallRequest;
-import com.kidsFriend.data.model.CallResponse;
 import com.kidsFriend.data.model.ChatAiRequest;
 import com.kidsFriend.data.model.ChatAiResponse;
 import com.kidsFriend.data.model.ChatLogRequest;
@@ -24,10 +21,16 @@ import retrofit2.http.GET;
 import retrofit2.http.PATCH;
 import retrofit2.http.Path;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 public interface TemiApiService {
     @GET("api/clients")
     Call<ApiResponse<List<ClientResponse>>> getClients();
+
+    @GET("api/clients")
+    Call<ApiResponse<List<ClientResponse>>> getClientsByName(
+            @Query("name") String name
+    );
 
     @GET("api/clients/{id}")
     Call<ApiResponse<ClientResponse>> getClient(@Path("id") String clientId);
@@ -42,15 +45,6 @@ public interface TemiApiService {
     Call<ApiResponse<Void>> updateRobotStatus(
             @Path("id") String robotId,
             @Body RobotStatusRequest request
-    );
-
-    @POST("api/calls")
-    Call<ApiResponse<CallResponse>> createCall(@Body CallRequest request);
-
-    @PATCH("api/calls/{id}/status")
-    Call<ApiResponse<CallResponse>> updateCallStatus(
-            @Path("id") String callsId,
-            @Body CallStatusRequest request
     );
 
     @POST("api/chat/ai")

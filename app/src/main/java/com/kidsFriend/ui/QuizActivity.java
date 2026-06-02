@@ -15,6 +15,7 @@ import com.kidsFriend.data.model.QuizAnswerResponse;
 import com.kidsFriend.data.model.QuizQuestion;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
+import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.robotemi.sdk.Robot;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class QuizActivity extends AppCompatActivity {
     private final List<Button> optionButtons = new ArrayList<>();
 
     private TemiRepository repository;
+    private TemiSpeechSpeaker speaker;
     private TextView questionText;
     private TextView resultText;
     private QuizQuestion currentQuiz;
@@ -35,6 +37,7 @@ public class QuizActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quiz);
         repository = new TemiRepository(this);
+        speaker = new TemiSpeechSpeaker();
 
         questionText = findViewById(R.id.text_quiz_question);
         resultText = findViewById(R.id.text_quiz_result);
@@ -134,6 +137,11 @@ public class QuizActivity extends AppCompatActivity {
             @Override
             public void onSuccess(QuizAnswerResponse data) {
                 resultText.setText(data.message);
+                if (data.message != null && speaker != null) {
+                    // 이모지는 발화 시 어색할 수 있으므로 제거 후 테미가 읽어줌
+                    String speechText = data.message.replaceAll("[^가-힣a-zA-Z0-9\\s.!?]", "").trim();
+                    speaker.speak(speechText);
+                }
             }
 
             @Override

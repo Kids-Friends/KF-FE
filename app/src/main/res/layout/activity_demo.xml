@@ -12,6 +12,12 @@
         android:scaleType="fitCenter"
         android:src="@mipmap/ic_launcher_foreground" />
 
+    <Button
+        android:id="@+id/button_back"
+        style="@style/TemiBackButton"
+        android:layout_margin="28dp"
+        android:text="@string/common_back" />
+
     <TextView
         android:id="@+id/text_demo_status"
         android:layout_width="wrap_content"

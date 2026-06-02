@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
         Button apiTestButton = findViewById(R.id.button_api_test);
         Button demoTestButton = findViewById(R.id.button_demo_test);
+        Button backButton = findViewById(R.id.button_back);
 
         apiTestButton.setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, ApiTestActivity.class));
@@ -69,6 +70,11 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
 
         demoTestButton.setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, DemoActivity.class));
+        });
+
+        backButton.setOnClickListener(v -> {
+            robot.setKioskModeOn(false);
+            finish();
         });
     }
 
