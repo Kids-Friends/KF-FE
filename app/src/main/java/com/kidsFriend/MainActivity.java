@@ -56,12 +56,6 @@ public class MainActivity extends AppCompatActivity
     private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker();
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    // 발화(TTS)가 끝날 무렵 다시 듣기를 시작합니다.
-    private final Runnable listenRunnable = () -> {
-        if (state == State.CONVERSATION) {
-            listenInConversation();
-        }
-    };
 
     private TemiRepository repository;
     private VoiceInputManager voiceInputManager;
@@ -70,6 +64,13 @@ public class MainActivity extends AppCompatActivity
     private TextView statusText;
     private TextView answerText;
     private State state = State.IDLE;
+
+    // 발화(TTS)가 끝날 무렵 다시 듣기를 시작합니다.
+    private final Runnable listenRunnable = () -> {
+        if (state == State.CONVERSATION) {
+            listenInConversation();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -275,10 +276,26 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(this, QuizActivity.class));
                 break;
             case MEMBERSHIP:
+            case REWARD:
                 setFace(R.drawable.face_joy);
                 speaker.speak(getString(R.string.home_routing_membership));
                 statusText.setText(R.string.home_routing_membership);
                 startActivity(new Intent(this, MembershipCardActivity.class));
+                break;
+            case CALL:
+                setFace(R.drawable.face_excited);
+                speaker.speak("선생님을 호출할게요! 잠시만 기다려주세요.");
+                // 실제 호출 로직은 여기에 구현 (예: 서버 알림 등)
+                break;
+            case HOME:
+                setFace(R.drawable.face_peaceful);
+                speaker.speak("메인 메뉴로 돌아갈게요.");
+                enterIdle();
+                break;
+            case FOLLOW:
+                setFace(R.drawable.face_joy);
+                speaker.speak("좋아요! 친구를 졸졸 따라갈게요.");
+                robot.beWithMe();
                 break;
             case CHAT:
             default:

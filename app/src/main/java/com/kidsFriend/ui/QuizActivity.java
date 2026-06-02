@@ -44,6 +44,7 @@ public class QuizActivity extends AppCompatActivity {
         wrongLayout = findViewById(R.id.layout_wrong);
         Button backButton = findViewById(R.id.button_back);
         Button correctHomeButton = findViewById(R.id.button_correct_home);
+        Button correctNextButton = findViewById(R.id.button_correct_next);
         Button wrongRetryButton = findViewById(R.id.button_wrong_retry);
         Button wrongNextButton = findViewById(R.id.button_wrong_next);
 
@@ -51,6 +52,7 @@ public class QuizActivity extends AppCompatActivity {
         answerXButton.setOnClickListener(v -> submitAnswer("X"));
         backButton.setOnClickListener(v -> finish());
         correctHomeButton.setOnClickListener(v -> finish());
+        correctNextButton.setOnClickListener(v -> loadQuiz());
         wrongRetryButton.setOnClickListener(v -> hidePopups());
         wrongNextButton.setOnClickListener(v -> loadQuiz());
 
