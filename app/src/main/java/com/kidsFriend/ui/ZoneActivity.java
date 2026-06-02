@@ -1,6 +1,9 @@
 package com.kidsFriend.ui;
 
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -10,10 +13,12 @@ import com.kidsFriend.R;
 import com.kidsFriend.data.model.ZoneInfo;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
+import com.robotemi.sdk.Robot;
 
 import java.util.List;
 
 public class ZoneActivity extends AppCompatActivity {
+    private static final String TAG = "ZoneActivity";
     private TemiRepository repository;
     private TextView zoneListText;
     private TextView zoneStatusText;
@@ -41,7 +46,7 @@ public class ZoneActivity extends AppCompatActivity {
         try {
             ActivityInfo activityInfo = getPackageManager()
                     .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-            robot.onStart(activityInfo);
+            Robot.getInstance().onStart(activityInfo);
             Log.d(TAG, "Temi onStart: Sovereignty declared.");
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "Temi activity metadata is not available.", e);

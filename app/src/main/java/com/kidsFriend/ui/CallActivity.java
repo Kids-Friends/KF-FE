@@ -1,6 +1,9 @@
 package com.kidsFriend.ui;
 
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -13,9 +16,11 @@ import com.kidsFriend.R;
 import com.kidsFriend.data.model.CallResponse;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
+import com.robotemi.sdk.Robot;
 
 public class CallActivity extends AppCompatActivity {
     public static final String EXTRA_AUTO_SUBMIT_CALL = "com.kidsFriend.ui.CallActivity.EXTRA_AUTO_SUBMIT_CALL";
+    private static final String TAG = "CallActivity";
 
     private TemiRepository repository;
     private Button helpButton;
@@ -31,6 +36,7 @@ public class CallActivity extends AppCompatActivity {
     private TextView waitingStatusText;
     private String selectedReason;
     private String currentCallId;
+    private Robot robot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +82,7 @@ public class CallActivity extends AppCompatActivity {
         try {
             ActivityInfo activityInfo = getPackageManager()
                     .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-            robot.onStart(activityInfo);
+            Robot.getInstance().onStart(activityInfo);
             Log.d(TAG, "Temi onStart: Sovereignty declared.");
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "Temi activity metadata is not available.", e);

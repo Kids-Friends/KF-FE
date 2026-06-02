@@ -1,9 +1,11 @@
 package com.kidsFriend.ui;
 
 import android.Manifest;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -19,9 +21,11 @@ import com.kidsFriend.voice.QuestionReconstructor;
 import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.kidsFriend.voice.VoiceInputManager;
 import com.kidsFriend.voice.WakeWordMatcher;
+import com.robotemi.sdk.Robot;
 
 public class DemoActivity extends AppCompatActivity {
     private static final int REQUEST_RECORD_AUDIO = 3001;
+    private static final String TAG = "DemoActivity";
 
     private final TemiSpeechSpeaker temiSpeechSpeaker = new TemiSpeechSpeaker();
     private TemiRepository repository;
@@ -44,7 +48,8 @@ public class DemoActivity extends AppCompatActivity {
         try {
             ActivityInfo activityInfo = getPackageManager()
                     .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-            robot.onStart(activityInfo);
+            Robot.getInstance().onStart(activityInfo);
+
             Log.d(TAG, "Temi onStart: Sovereignty declared.");
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "Temi activity metadata is not available.", e);

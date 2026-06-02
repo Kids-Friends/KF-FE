@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         updateRobotStatus("ACTIVE");
         registerBatteryReceiver();
 
-        // 💡 [수정] nlpResult.getText() 대신 실제 변수인 resolvedQuery를 사용합니다.
+        // nlpResult말고 resolvedQuery를 사용합니다.
         nlpInterceptor = new Robot.NlpListener() {
             @Override
             public void onNlpCompleted(NlpResult nlpResult) {
@@ -129,7 +129,10 @@ public class MainActivity extends AppCompatActivity implements OnRobotReadyListe
         try {
             ActivityInfo activityInfo = getPackageManager()
                     .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
-            robot.onStart(activityInfo);
+
+            // getInstance로 호출
+            Robot.getInstance().onStart(activityInfo);
+
             Log.d(TAG, "Temi onStart: Sovereignty declared.");
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "Temi activity metadata is not available.", e);

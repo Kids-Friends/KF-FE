@@ -279,15 +279,3 @@ public class QuestionActivity extends AppCompatActivity {
         });
     }
 }
-nswer);
-                temiSpeechSpeaker.speak(data.answer);
-            }
-
-            @Override
-            public void onError(String message) {
-                voiceModeText.setText(message);
-                answerText.setText(message);
-            }
-        });
-    }
-}
