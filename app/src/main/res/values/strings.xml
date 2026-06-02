@@ -8,16 +8,12 @@
     <string name="launcher_api_test">API 테스트</string>
     <string name="launcher_demo_test">데모 테스트</string>
 
-    <string name="menu_call">직원 호출</string>
     <string name="menu_question">질문하기</string>
     <string name="menu_quiz">퀴즈</string>
-    <string name="menu_statistics">운영 통계</string>
     <string name="menu_approach">인식 후 다가가기</string>
     <string name="menu_location_guide">위치 안내</string>
-    <string name="menu_tts">TTS 테스트</string>
     <string name="menu_reward">리워드</string>
     <string name="menu_photo">사진 저장</string>
-    <string name="menu_recycling">분리수거</string>
 
     <string name="common_back">뒤로</string>
     <string name="common_loading">처리 중입니다...</string>
@@ -40,28 +36,6 @@
     <string name="photo_url_empty">사진 URL을 입력해 주세요.</string>
     <string name="photo_saved">사진 정보가 저장되었습니다.</string>
 
-    <string name="call_title">직원 호출</string>
-    <string name="call_description">도움이 필요한 상황을 골라 주세요. 가까운 직원에게 바로 알려요.</string>
-    <string name="call_reason_help">도움이 필요해요</string>
-    <string name="call_reason_injury">아이가 다쳤어요</string>
-    <string name="call_reason_lost_item">분실물이 있어요</string>
-    <string name="call_reason_etc">기타 요청</string>
-    <string name="call_submit">직원 호출하기</string>
-    <string name="call_waiting_message">호출 사유를 선택해 주세요.</string>
-    <string name="call_select_reason_message">먼저 호출 사유를 선택해 주세요.</string>
-    <string name="call_default_reason">직원 호출</string>
-    <string name="call_waiting_title">직원 호출 대기 중</string>
-    <string name="call_waiting_description">가까운 직원에게 알렸어요. 잠시만 기다려 주세요.</string>
-    <string name="call_waiting_reason_format">요청 사유: %1$s</string>
-    <string name="call_waiting_status_message">직원이 확인하는 중입니다.</string>
-    <string name="call_waiting_success_title">직원이 이동 중이에요</string>
-    <string name="call_waiting_error_title">호출 전송에 실패했어요</string>
-    <string name="call_retry">다시 호출하기</string>
-    <string name="call_done">직원 도착 확인</string>
-    <string name="call_cancel">호출 취소</string>
-    <string name="call_done_message">직원 도착이 확인되었습니다.</string>
-    <string name="call_cancel_message">호출이 취소되었습니다.</string>
-
     <string name="question_title">질문하기</string>
     <string name="question_description">궁금한 내용을 말하거나 입력하면 Kids_Friend가 답변해요.</string>
     <string name="question_hint">예: 화장실은 어디에 있어?</string>
@@ -75,14 +49,6 @@
     <string name="quiz_reload">다음 문제</string>
     <string name="quiz_select_answer_message">정답을 하나 선택해 주세요.</string>
     <string name="quiz_load_failed_message">퀴즈를 먼저 불러와 주세요.</string>
-
-    <string name="statistics_title">운영 통계</string>
-    <string name="statistics_description">현재 백엔드 통계 API가 없어 앱 내부 테스트 데이터만 표시합니다.</string>
-    <string name="statistics_refresh">통계 새로고침</string>
-    <string name="stat_call_count">직원 호출</string>
-    <string name="stat_question_count">질문 수</string>
-    <string name="stat_quiz_play_count">퀴즈 참여</string>
-    <string name="stat_quiz_correct_count">퀴즈 정답</string>
 
     <string name="zone_title">ZONE Mock</string>
     <string name="zone_description">위치 안내와 접근 기능에서 사용할 구역 Mock 데이터입니다.</string>
@@ -109,7 +75,6 @@
     <string name="test_client_id_save">ID 저장</string>
     <string name="test_client_id_saved">테스트 회원 ID가 저장되었습니다.</string>
     <string name="test_btn_ai_chat">AI 대화 테스트</string>
-    <string name="test_btn_call">직원 호출 테스트</string>
     <string name="test_btn_point">포인트 +1</string>
     <string name="test_btn_chat_log">채팅 로그 저장</string>
     <string name="test_ai_chat_hint">질문 메시지 입력</string>

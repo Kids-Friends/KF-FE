@@ -1,13 +1,10 @@
 package com.kidsFriend.data.mock;
 
-import com.kidsFriend.data.model.CallRequest;
-import com.kidsFriend.data.model.CallResponse;
 import com.kidsFriend.data.model.QuestionRequest;
 import com.kidsFriend.data.model.QuestionResponse;
 import com.kidsFriend.data.model.QuizAnswerRequest;
 import com.kidsFriend.data.model.QuizAnswerResponse;
 import com.kidsFriend.data.model.QuizQuestion;
-import com.kidsFriend.data.model.StatisticsSummary;
 import com.kidsFriend.data.model.VoiceQuestionRequest;
 import com.kidsFriend.data.model.ZoneInfo;
 
@@ -39,16 +36,6 @@ public class MockDataSource {
             new ZoneInfo("STAFF_DESK", "직원 데스크", "직원 호출과 결제 문의를 처리하는 구역입니다.", "입구, 카페 존", "보통", "긴급 요청이나 분실물 질문이 들어오면 안내합니다.")
     );
 
-    public CallResponse createCall(CallRequest request) {
-        CallResponse response = new CallResponse();
-        response.callsId = "CALL-MOCK-001";
-        response.robotId = request.robotId;
-        response.clientId = request.clientId;
-        response.reason = request.reason;
-        response.status = "WAITING";
-        return response;
-    }
-
     public QuestionResponse askQuestion(QuestionRequest request) {
         return new QuestionResponse(true, "지금은 mock 답변입니다. 실제 환경에서는 Spring Boot AI API 응답으로 교체됩니다.\n\n질문: " + request.question);
     }
@@ -76,10 +63,6 @@ public class MockDataSource {
                 ? "와우! 정답이에요! 🎉 " + quiz.explanation
                 : "아쉬워요. 정답은 " + quiz.correctAnswer + "였어요. " + quiz.explanation + " 🤔";
         return new QuizAnswerResponse(correct, message);
-    }
-
-    public StatisticsSummary getStatisticsSummary() {
-        return new StatisticsSummary(12, 27, 18, 14, "현재 통계 API가 없어 앱 내부 테스트 데이터를 표시합니다.");
     }
 
     public List<ZoneInfo> getZones() {

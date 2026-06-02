@@ -1,9 +1,6 @@
 package com.kidsFriend.data.api;
 
 import com.kidsFriend.data.model.ApiResponse;
-import com.kidsFriend.data.model.CallStatusRequest;
-import com.kidsFriend.data.model.CallRequest;
-import com.kidsFriend.data.model.CallResponse;
 import com.kidsFriend.data.model.ChatAiRequest;
 import com.kidsFriend.data.model.ChatAiResponse;
 import com.kidsFriend.data.model.ChatLogRequest;
@@ -24,47 +21,44 @@ import retrofit2.http.GET;
 import retrofit2.http.PATCH;
 import retrofit2.http.Path;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 public interface TemiApiService {
-    @GET("api/clients/")
+    @GET("api/clients")
     Call<ApiResponse<List<ClientResponse>>> getClients();
 
-    @GET("api/clients/{id}/")
+    @GET("api/clients")
+    Call<ApiResponse<List<ClientResponse>>> getClientsByName(
+            @Query("name") String name
+    );
+
+    @GET("api/clients/{id}")
     Call<ApiResponse<ClientResponse>> getClient(@Path("id") String clientId);
 
-    @PATCH("api/clients/{id}/point/")
+    @PATCH("api/clients/{id}/point")
     Call<ApiResponse<ClientResponse>> addClientPoint(
             @Path("id") String clientId,
             @Body PointRequest request
     );
 
-    @PATCH("api/robots/{id}/status/")
+    @PATCH("api/robots/{id}/status")
     Call<ApiResponse<Void>> updateRobotStatus(
             @Path("id") String robotId,
             @Body RobotStatusRequest request
     );
 
-    @POST("api/calls/")
-    Call<ApiResponse<CallResponse>> createCall(@Body CallRequest request);
-
-    @PATCH("api/calls/{id}/status/")
-    Call<ApiResponse<CallResponse>> updateCallStatus(
-            @Path("id") String callsId,
-            @Body CallStatusRequest request
-    );
-
-    @POST("api/chat/ai/")
+    @POST("api/chat/ai")
     Call<ApiResponse<ChatAiResponse>> askAi(@Body ChatAiRequest request);
 
-    @POST("api/chat/")
+    @POST("api/chat")
     Call<ApiResponse<ChatResponse>> saveChatLog(@Body ChatLogRequest request);
 
-    @POST("api/photos/")
+    @POST("api/photos")
     Call<ApiResponse<PhotoResponse>> savePhoto(@Body PhotoRequest request);
 
-    @POST("api/sensor-events/")
+    @POST("api/sensor-events")
     Call<ApiResponse<Map<String, Object>>> postSensorEvent(@Body SensorEventRequest request);
 
-    @GET("api/sensor-events/latest/")
+    @GET("api/sensor-events/latest")
     Call<ApiResponse<Map<String, Object>>> getLatestSensorEvent();
 }

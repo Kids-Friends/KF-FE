@@ -25,10 +25,8 @@ import com.kidsFriend.data.model.ClientResponse;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
 import com.kidsFriend.data.session.SessionManager;
-import com.kidsFriend.ui.CallActivity;
 import com.kidsFriend.ui.QuestionActivity;
 import com.kidsFriend.ui.QuizActivity;
-import com.kidsFriend.ui.StatisticsActivity;
 import com.kidsFriend.ui.ZoneActivity;
 import com.kidsFriend.voice.VoiceInputManager;
 import com.kidsFriend.voice.WakeWordMatcher;
@@ -56,16 +54,13 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
         setContentView(R.layout.activity_api_test);
         repository = new TemiRepository(this);
         
-        Button callButton = findViewById(R.id.button_call);
+        Button backButton = findViewById(R.id.button_back);
         Button questionButton = findViewById(R.id.button_question);
         Button quizButton = findViewById(R.id.button_quiz);
-        Button statisticsButton = findViewById(R.id.button_statistics);
         Button approachButton = findViewById(R.id.button_approach);
         Button locationGuideButton = findViewById(R.id.button_location_guide);
-        Button ttsButton = findViewById(R.id.button_tts);
         Button rewardButton = findViewById(R.id.button_reward);
         Button photoButton = findViewById(R.id.button_photo);
-        Button recyclingButton = findViewById(R.id.button_recycling);
         Button clientSettingsButton = findViewById(R.id.button_client_settings);
         wakeStatusText = findViewById(R.id.text_wake_status);
         Button wakeButton = findViewById(R.id.button_start_wake_listening);
@@ -74,29 +69,24 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
         testResultText = findViewById(R.id.text_test_result);
         Button testClientIdSaveButton = findViewById(R.id.button_test_client_id_save);
         Button testAiChatButton = findViewById(R.id.button_test_ai_chat);
-        Button testCallButton = findViewById(R.id.button_test_call);
         Button testPointButton = findViewById(R.id.button_test_point);
         Button testChatLogButton = findViewById(R.id.button_test_chat_log);
 
         wakeVoiceInputManager = new VoiceInputManager(this);
 
+        backButton.setOnClickListener(v -> finish());
         testClientIdInput.setText(SessionManager.getInstance(this).getCurrentClientId());
         testClientIdSaveButton.setOnClickListener(v -> saveTestClientId());
         testAiChatButton.setOnClickListener(v -> showTestAiChatDialog());
-        testCallButton.setOnClickListener(v -> runTestCall());
         testPointButton.setOnClickListener(v -> runTestAddPoint());
         testChatLogButton.setOnClickListener(v -> showTestChatLogDialog());
 
-        callButton.setOnClickListener(v -> openCallWaitingScreen());
         questionButton.setOnClickListener(v -> openScreen(QuestionActivity.class));
         quizButton.setOnClickListener(v -> openScreen(QuizActivity.class));
-        statisticsButton.setOnClickListener(v -> openScreen(StatisticsActivity.class));
         approachButton.setOnClickListener(v -> showPendingFeature());
         locationGuideButton.setOnClickListener(v -> openScreen(ZoneActivity.class));
-        ttsButton.setOnClickListener(v -> showPendingFeature());
         rewardButton.setOnClickListener(v -> showPendingFeature());
         photoButton.setOnClickListener(v -> showPhotoUrlDialog());
-        recyclingButton.setOnClickListener(v -> showPendingFeature());
         clientSettingsButton.setOnClickListener(v -> showClientSettingsDialog());
         wakeButton.setOnClickListener(v -> startWakeWordStandby());
 
@@ -105,12 +95,6 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
 
     private void openScreen(Class<?> activityClass) {
         startActivity(new Intent(this, activityClass));
-    }
-
-    private void openCallWaitingScreen() {
-        Intent intent = new Intent(this, CallActivity.class);
-        intent.putExtra(CallActivity.EXTRA_AUTO_SUBMIT_CALL, true);
-        startActivity(intent);
     }
 
     private void showPendingFeature() {
@@ -270,20 +254,6 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
                     });
                 })
                 .show();
-    }
-
-    private void runTestCall() {
-        setTestResult("호출 요청 중...");
-        repository.createCall("테스트 호출", new RepositoryCallback<com.kidsFriend.data.model.CallResponse>() {
-            @Override
-            public void onSuccess(com.kidsFriend.data.model.CallResponse data) {
-                setTestResult("호출 성공 — callId: " + data.getDisplayCallId());
-            }
-            @Override
-            public void onError(String message) {
-                setTestResult("오류: " + message);
-            }
-        });
     }
 
     private void runTestAddPoint() {

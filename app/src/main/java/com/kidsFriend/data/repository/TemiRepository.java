@@ -9,9 +9,6 @@ import com.kidsFriend.data.api.TemiApiService;
 import com.kidsFriend.data.config.AppConfig;
 import com.kidsFriend.data.mock.MockDataSource;
 import com.kidsFriend.data.model.ApiResponse;
-import com.kidsFriend.data.model.CallStatusRequest;
-import com.kidsFriend.data.model.CallRequest;
-import com.kidsFriend.data.model.CallResponse;
 import com.kidsFriend.data.model.ChatAiRequest;
 import com.kidsFriend.data.model.ChatAiResponse;
 import com.kidsFriend.data.model.ChatLogRequest;
@@ -26,7 +23,6 @@ import com.kidsFriend.data.model.QuizAnswerRequest;
 import com.kidsFriend.data.model.QuizAnswerResponse;
 import com.kidsFriend.data.model.QuizQuestion;
 import com.kidsFriend.data.model.RobotStatusRequest;
-import com.kidsFriend.data.model.StatisticsSummary;
 import com.kidsFriend.data.model.VoiceQuestionRequest;
 import com.kidsFriend.data.model.ZoneInfo;
 import com.kidsFriend.data.session.SessionManager;
@@ -52,20 +48,6 @@ public class TemiRepository {
         this.sessionManager = null;
     }
 
-    public void createCall(String reason, RepositoryCallback<CallResponse> callback) {
-        CallRequest request = new CallRequest(getRobotId(), getCurrentClientId(), reason);
-        if (ApiConfig.USE_MOCK) {
-            callback.onSuccess(mockDataSource.createCall(request));
-            return;
-        }
-        apiService().createCall(request).enqueue(toWrappedRetrofitCallback(callback));
-    }
-
-    public void updateCallStatus(String callsId, String status, RepositoryCallback<CallResponse> callback) {
-        apiService().updateCallStatus(callsId, new CallStatusRequest(status))
-                .enqueue(toWrappedRetrofitCallback(callback));
-    }
-
     public void askQuestion(String question, RepositoryCallback<QuestionResponse> callback) {
         if (ApiConfig.USE_MOCK) {
             QuestionRequest request = new QuestionRequest(question);
@@ -75,7 +57,7 @@ public class TemiRepository {
 
         String clientId = getCurrentClientId();
         // 기본 Guest ID인 경우 서버에 clientId를 보내지 않거나 선택적으로 처리
-        ChatAiRequest request = new ChatAiRequest(question, clientId);
+        ChatAiRequest request = new ChatAiRequest(question);
         apiService().askAi(request).enqueue(toQuestionCallback(question, callback));
     }
 
@@ -87,7 +69,7 @@ public class TemiRepository {
         }
         
         String clientId = getCurrentClientId();
-        ChatAiRequest request = new ChatAiRequest(rawText, clientId);
+        ChatAiRequest request = new ChatAiRequest(rawText);
         apiService().askAi(request).enqueue(toQuestionCallback(rawText, callback));
     }
 
@@ -118,20 +100,16 @@ public class TemiRepository {
         });
     }
 
-    public void getStatisticsSummary(RepositoryCallback<StatisticsSummary> callback) {
-        if (ApiConfig.USE_MOCK) {
-            callback.onSuccess(mockDataSource.getStatisticsSummary());
-            return;
-        }
-        callback.onSuccess(mockDataSource.getStatisticsSummary());
-    }
-
     public void getZones(RepositoryCallback<List<ZoneInfo>> callback) {
         callback.onSuccess(mockDataSource.getZones());
     }
 
     public void getClients(RepositoryCallback<List<ClientResponse>> callback) {
         apiService().getClients().enqueue(toWrappedRetrofitCallback(callback));
+    }
+
+    public void getClientsByName(String name, RepositoryCallback<List<ClientResponse>> callback) {
+        apiService().getClientsByName(name).enqueue(toWrappedRetrofitCallback(callback));
     }
 
     public void getClient(String clientId, RepositoryCallback<ClientResponse> callback) {
