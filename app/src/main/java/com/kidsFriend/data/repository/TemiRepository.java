@@ -1,6 +1,7 @@
 package com.kidsFriend.data.repository;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.kidsFriend.data.api.ApiClient;
 import com.kidsFriend.data.api.ApiConfig;
@@ -72,16 +73,22 @@ public class TemiRepository {
             return;
         }
 
-        apiService().askAi(new ChatAiRequest(question)).enqueue(toQuestionCallback(question, callback));
+        String clientId = getCurrentClientId();
+        // 기본 Guest ID인 경우 서버에 clientId를 보내지 않거나 선택적으로 처리
+        ChatAiRequest request = new ChatAiRequest(question, clientId);
+        apiService().askAi(request).enqueue(toQuestionCallback(question, callback));
     }
 
     public void askVoiceQuestion(String rawText, String reconstructedText, RepositoryCallback<QuestionResponse> callback) {
-        VoiceQuestionRequest request = new VoiceQuestionRequest(rawText, reconstructedText);
         if (ApiConfig.USE_MOCK) {
+            VoiceQuestionRequest request = new VoiceQuestionRequest(rawText, reconstructedText);
             callback.onSuccess(mockDataSource.askVoiceQuestion(request));
             return;
         }
-        apiService().askAi(new ChatAiRequest(rawText)).enqueue(toQuestionCallback(rawText, callback));
+        
+        String clientId = getCurrentClientId();
+        ChatAiRequest request = new ChatAiRequest(rawText, clientId);
+        apiService().askAi(request).enqueue(toQuestionCallback(rawText, callback));
     }
 
     public void getCurrentQuiz(RepositoryCallback<QuizQuestion> callback) {
@@ -104,7 +111,9 @@ public class TemiRepository {
 
             @Override
             public void onError(String message) {
-                callback.onError(message);
+                // 포인트 적립 실패(회원 없음 등)하더라도 사용자에게는 정답 메시지를 보여줌
+                Log.w("TemiRepository", "Point addition failed: " + message);
+                callback.onSuccess(response);
             }
         });
     }

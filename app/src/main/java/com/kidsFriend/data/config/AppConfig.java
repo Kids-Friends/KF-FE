@@ -5,8 +5,8 @@ import android.content.SharedPreferences;
 import com.kidsFriend.BuildConfig;
 
 public class AppConfig {
-    // .env 파일의 API_BASE_URL 값이 빌드 시 주입됩니다
-    public static final String DEFAULT_BASE_URL = BuildConfig.API_BASE_URL;
+    // .env 파일의 API_BASE_URL 값이 빌드 시 주입되지만, 수동으로 ngrok 주소를 우선 적용합니다.
+    public static final String DEFAULT_BASE_URL = "https://avengeful-shaunte-revolvingly.ngrok-free.dev/";
 
     private static final String PREF_NAME = "kids_friend_app_config";
     private static final String KEY_BASE_URL = "base_url";
@@ -18,6 +18,7 @@ public class AppConfig {
     private AppConfig(Context context) {
         preferences = context.getApplicationContext()
                 .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        // 앱 시작 시 항상 최신 ngrok 주소로 초기화하도록 강제함 (빌드 캐시 문제 해결)
         preferences.edit().putString(KEY_BASE_URL, DEFAULT_BASE_URL).apply();
     }
 
@@ -52,13 +53,24 @@ public class AppConfig {
         if (normalized.isEmpty()) {
             normalized = DEFAULT_BASE_URL;
         }
+        
         if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
             normalized = "http://" + normalized;
         }
-        if (!normalized.matches("^https://[^/]+/?$") &&
-                !normalized.matches("^https?://[^/]+:\\d+/?$")) {
+
+        // ngrok URL인 경우 포트 8081을 붙이지 않도록 예외 처리
+        if (normalized.contains("ngrok-free.dev") || normalized.contains("ngrok.io")) {
+            if (!normalized.endsWith("/")) {
+                normalized += "/";
+            }
+            return normalized;
+        }
+
+        // 일반 IP 주소인 경우에만 포트 8081을 자동으로 붙임
+        if (!normalized.matches("^https?://[^/]+:\\d+/?$")) {
             normalized = normalized.replaceAll("/+$", "") + ":8081/";
         }
+        
         if (!normalized.endsWith("/")) {
             normalized = normalized + "/";
         }

@@ -5,7 +5,7 @@
 This document defines the API contract between the Android Temi app and the Spring Boot backend.
 
 - Client: Android Java app using Retrofit2, OkHttp, Gson
-- Default base URL: `http://192.168.0.1:8080/`
+- Default base URL: `http://192.168.0.1:8081/`
 - Runtime base URL: configurable in the app server settings dialog
 - Temi real device base URL: use the Spring Boot server IP on the same network
 - Content type: `application/json`
@@ -226,25 +226,25 @@ Saves only uploaded photo metadata.
 1. On the Spring Boot server PC, run `ipconfig` on Windows or `ifconfig` on Mac/Linux.
 2. Find the WiFi IPv4 address, for example `192.168.1.100`.
 3. Open the Temi app and tap `서버 설정`.
-4. Enter `192.168.1.100` or `http://192.168.1.100:8080/`.
+4. Enter `192.168.1.100` or `http://192.168.1.100:8081/`.
 5. Tap `저장`.
 
 The app saves the base URL in SharedPreferences and calls `RetrofitClient.resetInstance()`. All future API calls use the new URL without rebuilding the APK.
 
 ```powershell
-curl -X PATCH http://<YOUR_SERVER_IP>:8080/api/robots/00000000-0000-0000-0000-000000000001/status `
+curl -X PATCH http://<YOUR_SERVER_IP>:8081/api/robots/00000000-0000-0000-0000-000000000001/status `
   -H "Content-Type: application/json" `
   -d "{\"status\":\"ACTIVE\"}"
 ```
 
 ```powershell
-curl -X POST http://<YOUR_SERVER_IP>:8080/api/chat/ai `
+curl -X POST http://<YOUR_SERVER_IP>:8081/api/chat/ai `
   -H "Content-Type: application/json" `
   -d "{\"message\":\"화장실은 어디에 있어요?\"}"
 ```
 
 ```powershell
-curl -X POST http://<YOUR_SERVER_IP>:8080/api/calls `
+curl -X POST http://<YOUR_SERVER_IP>:8081/api/calls `
   -H "Content-Type: application/json" `
   -d "{\"robotId\":\"00000000-0000-0000-0000-000000000001\",\"clientId\":\"00000000-0000-0000-0000-000000000101\",\"reason\":\"도움이 필요해요\"}"
 ```

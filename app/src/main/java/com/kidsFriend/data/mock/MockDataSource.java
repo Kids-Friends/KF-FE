@@ -68,13 +68,13 @@ public class MockDataSource {
     public QuizAnswerResponse submitQuizAnswer(QuizAnswerRequest request) {
         MockQuiz quiz = findQuiz(request.quizId);
         if (quiz == null) {
-            return new QuizAnswerResponse(false, "문제를 다시 불러와 주세요.");
+            return new QuizAnswerResponse(false, "음... 문제를 못 찾겠어. 다시 불러와줄래? 🤔");
         }
 
         boolean correct = quiz.correctAnswer.equals(request.selectedAnswer);
         String message = correct
-                ? "정답이에요. " + quiz.explanation
-                : "아쉬워요. 정답은 " + quiz.correctAnswer + "입니다. " + quiz.explanation;
+                ? "와우! 정답이에요! 🎉 " + quiz.explanation
+                : "아쉬워요. 정답은 " + quiz.correctAnswer + "였어요. " + quiz.explanation + " 🤔";
         return new QuizAnswerResponse(correct, message);
     }
 
