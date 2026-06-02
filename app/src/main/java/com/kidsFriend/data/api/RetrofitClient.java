@@ -12,8 +12,10 @@ import javax.net.ssl.X509TrustManager;
 
 import android.util.Log;
 
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -64,6 +66,7 @@ public class RetrofitClient {
                                 .build();
                         return chain.proceed(request);
                     })
+                    .addInterceptor(buildResultLoggingInterceptor())
                     .addInterceptor(buildLoggingInterceptor())
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(20, TimeUnit.SECONDS)
@@ -79,6 +82,7 @@ public class RetrofitClient {
                                 .build();
                         return chain.proceed(request);
                     })
+                    .addInterceptor(buildResultLoggingInterceptor())
                     .addInterceptor(buildLoggingInterceptor())
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .readTimeout(20, TimeUnit.SECONDS)
@@ -96,6 +100,30 @@ public class RetrofitClient {
                 new HttpLoggingInterceptor(message -> Log.d("KF_HTTP", message));
         interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         return interceptor;
+    }
+
+    /**
+     * API 호출 성공/실패를 한 줄로 요약해 Logcat에 출력합니다.
+     * Android Studio Logcat에서 "KF_API" 태그로 필터링하면 어떤 API가 성공했는지 바로 확인됩니다.
+     * 예) ✅ API 성공: POST /api/chat/ai (200)
+     */
+    private static Interceptor buildResultLoggingInterceptor() {
+        return chain -> {
+            Request request = chain.request();
+            String endpoint = request.method() + " " + request.url().encodedPath();
+            try {
+                Response response = chain.proceed(request);
+                if (response.isSuccessful()) {
+                    Log.i("KF_API", "✅ API 성공: " + endpoint + " (" + response.code() + ")");
+                } else {
+                    Log.w("KF_API", "❌ API 실패: " + endpoint + " (" + response.code() + ")");
+                }
+                return response;
+            } catch (java.io.IOException e) {
+                Log.w("KF_API", "❌ API 연결 실패: " + endpoint + " - " + e.getMessage());
+                throw e;
+            }
+        };
     }
 
     private static String getConfiguredBaseUrl() {
