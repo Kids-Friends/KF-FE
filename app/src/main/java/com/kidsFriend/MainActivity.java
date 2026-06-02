@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity
     private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker();
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
 
+    private State state = State.IDLE;
+
     // 발화(TTS)가 끝날 무렵 다시 듣기를 시작합니다.
     private final Runnable listenRunnable = () -> {
         if (state == State.CONVERSATION) {
@@ -69,7 +71,6 @@ public class MainActivity extends AppCompatActivity
     private ImageView faceImage;
     private TextView statusText;
     private TextView answerText;
-    private State state = State.IDLE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
