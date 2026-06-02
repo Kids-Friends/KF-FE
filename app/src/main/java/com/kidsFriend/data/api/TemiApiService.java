@@ -6,6 +6,8 @@ import com.kidsFriend.data.model.ChatAiResponse;
 import com.kidsFriend.data.model.ChatLogRequest;
 import com.kidsFriend.data.model.ClientResponse;
 import com.kidsFriend.data.model.ChatResponse;
+import com.kidsFriend.data.model.IntentRequest;
+import com.kidsFriend.data.model.IntentResponse;
 import com.kidsFriend.data.model.PhotoRequest;
 import com.kidsFriend.data.model.PhotoResponse;
 import com.kidsFriend.data.model.PointRequest;
@@ -42,6 +44,9 @@ public interface TemiApiService {
 
     @POST("api/chat/ai")
     Call<ApiResponse<ChatAiResponse>> askAi(@Body ChatAiRequest request);
+
+    @POST("api/intent")
+    Call<ApiResponse<IntentResponse>> resolveIntent(@Body IntentRequest request);
 
     @POST("api/chat")
     Call<ApiResponse<ChatResponse>> saveChatLog(@Body ChatLogRequest request);

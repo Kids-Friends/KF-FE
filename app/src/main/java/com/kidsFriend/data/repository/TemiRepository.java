@@ -14,6 +14,8 @@ import com.kidsFriend.data.model.ChatAiResponse;
 import com.kidsFriend.data.model.ChatLogRequest;
 import com.kidsFriend.data.model.ChatResponse;
 import com.kidsFriend.data.model.ClientResponse;
+import com.kidsFriend.data.model.IntentRequest;
+import com.kidsFriend.data.model.IntentResponse;
 import com.kidsFriend.data.model.PhotoRequest;
 import com.kidsFriend.data.model.PhotoResponse;
 import com.kidsFriend.data.model.PointRequest;
