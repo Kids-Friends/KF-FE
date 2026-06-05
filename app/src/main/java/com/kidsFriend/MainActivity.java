@@ -192,15 +192,17 @@ public class MainActivity extends AppCompatActivity
         robot.hideTopBar();
         robot.setKioskModeOn(true);
         sensorEventPoller.start();
+        uiHandler.post(systemWatchdog);
         enterIdle();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        disarmConversationWatchdog();
         sensorEventPoller.stop();
         voiceInputManager.stopListening();
+        uiHandler.removeCallbacks(systemWatchdog);
+    }
     }
 
     @Override
@@ -456,6 +458,22 @@ public class MainActivity extends AppCompatActivity
         try {
             if (resilienceManager != null) {
                 resilienceManager.unregister();
+            }
+            robot.toggleWakeup(false);
+            robot.setKioskModeOn(false);
+            robot.removeOnRobotReadyListener(this);
+            robot.removeOnRequestPermissionResultListener(this);
+        } catch (RuntimeException exception) {
+            Log.w(TAG, "Temi listener removal failed.", exception);
+        }
+        uiHandler.removeCallbacksAndMessages(null);
+        if (voiceInputManager != null) {
+            voiceInputManager.destroy();
+        }
+        super.onDestroy();
+    }
+}
+();
             }
             robot.toggleWakeup(false);
             robot.setKioskModeOn(false);
