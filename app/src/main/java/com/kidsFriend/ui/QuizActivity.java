@@ -75,6 +75,7 @@ public class QuizActivity extends AppCompatActivity {
         repository.getCurrentQuiz(new RepositoryCallback<QuizQuestion>() {
             @Override
             public void onSuccess(QuizQuestion data) {
+                if (isFinishing() || isDestroyed()) return;
                 currentQuiz = data;
                 questionText.setText(data.question);
                 speaker.speak(data.question);
@@ -82,6 +83,7 @@ public class QuizActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
+                if (isFinishing() || isDestroyed()) return;
                 questionText.setText(message);
             }
         });
@@ -98,6 +100,7 @@ public class QuizActivity extends AppCompatActivity {
         repository.submitQuizAnswer(currentQuiz.quizId, selectedAnswer, new RepositoryCallback<QuizAnswerResponse>() {
             @Override
             public void onSuccess(QuizAnswerResponse data) {
+                if (isFinishing() || isDestroyed()) return;
                 setAnswerEnabled(true);
                 if (data.correct) {
                     correctLayout.setVisibility(View.VISIBLE);
@@ -112,6 +115,7 @@ public class QuizActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
+                if (isFinishing() || isDestroyed()) return;
                 setAnswerEnabled(true);
                 questionText.setText(message);
             }

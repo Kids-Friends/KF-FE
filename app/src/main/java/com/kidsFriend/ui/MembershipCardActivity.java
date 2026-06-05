@@ -58,6 +58,7 @@ public class MembershipCardActivity extends AppCompatActivity {
         repository.getClient(clientId, new RepositoryCallback<ClientResponse>() {
             @Override
             public void onSuccess(ClientResponse data) {
+                if (isFinishing() || isDestroyed()) return;
                 nameText.setText(data.childName);
                 pointText.setText(String.valueOf(data.clientPoint));
                 speaker.speak(getString(R.string.membership_speak_format, data.childName, data.clientPoint));
@@ -65,6 +66,7 @@ public class MembershipCardActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
+                if (isFinishing() || isDestroyed()) return;
                 nameText.setText(R.string.membership_load_failed);
                 pointText.setText("-");
             }

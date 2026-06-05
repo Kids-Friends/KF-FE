@@ -82,9 +82,27 @@ public class VoiceInputManager implements Robot.NlpListener {
         }
     }
 
+    private int rapidFailCount = 0;
+    private long lastNlpTime = 0;
+
     @Override
     public void onNlpCompleted(NlpResult nlpResult) {
         if (stopped || callback == null) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (now - lastNlpTime < 1000) {
+            rapidFailCount++;
+        } else {
+            rapidFailCount = 0;
+        }
+        lastNlpTime = now;
+
+        // [방어 코드] 1초 이내에 실패가 5번 이상 반복되면 하드웨어/마이크 고장으로 간주하고 연속 듣기를 강제 중단 (ANR 방지)
+        if (rapidFailCount > 5) {
+            Log.e(TAG, "onNlpCompleted: Circuit Breaker triggered! STT hardware might be broken. Stopping infinite loop.");
+            stopListening();
             return;
         }
 
@@ -101,14 +119,13 @@ public class VoiceInputManager implements Robot.NlpListener {
         }
 
         if (continuousMode && !stopped) {
-            // 지속 모드인 경우 약간의 지연 후 다시 인식 시작
+            // 지속 모드인 경우 지연 후 다시 인식 시작 (무한 루프 방지를 위해 최소 1초 대기)
             handler.postDelayed(() -> {
                 if (!stopped) {
                     Log.d(TAG, "Restarting askQuestion for continuous mode.");
-                    // 지속 모드에서는 안내 멘트 없이 바로 듣기 시작 (UI만 표시)
                     robot.askQuestion(""); 
                 }
-            }, 500);
+            }, 1000);
         } else if (!continuousMode) {
             stopListening();
         }

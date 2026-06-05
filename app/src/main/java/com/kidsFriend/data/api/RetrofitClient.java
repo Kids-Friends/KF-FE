@@ -127,10 +127,18 @@ public class RetrofitClient {
     }
 
     private static String getConfiguredBaseUrl() {
+        String url = ApiConfig.DEFAULT_API_BASE_URL;
         try {
-            return AppConfig.getInstance().getBaseUrl();
-        } catch (IllegalStateException exception) {
-            return ApiConfig.DEFAULT_API_BASE_URL;
+            String configured = AppConfig.getInstance().getBaseUrl();
+            if (configured != null && !configured.trim().isEmpty() && configured.startsWith("http")) {
+                url = configured;
+            }
+        } catch (Exception exception) {
+            Log.w("KF_API", "AppConfig URL fetch failed. Using fallback: " + url);
         }
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+        return url;
     }
 }

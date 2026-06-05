@@ -7,6 +7,7 @@ import com.robotemi.sdk.TtsRequest;
 
 public class TemiSpeechSpeaker {
     private static final String TAG = "TemiSpeechSpeaker";
+    private long lastSpeakTime = 0;
 
     /**
      * 발화를 요청하고 생성된 {@link TtsRequest}를 반환합니다.
@@ -16,6 +17,13 @@ public class TemiSpeechSpeaker {
         if (text == null || text.trim().isEmpty()) {
             return null;
         }
+
+        // [방어 코드] 다중 센서 동시 발동으로 인한 TTS 스팸/겹침 방지 (3초 쿨다운)
+        if (System.currentTimeMillis() - lastSpeakTime < 3000) {
+            Log.w(TAG, "speak: Ignored to prevent TTS spamming. Text: " + text);
+            return null;
+        }
+        lastSpeakTime = System.currentTimeMillis();
 
         try {
             TtsRequest request = TtsRequest.create(
