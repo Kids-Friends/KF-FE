@@ -27,7 +27,7 @@ public class TemiSpeechSpeaker {
             );
             Robot.getInstance().speak(request);
             return request;
-        } catch (RuntimeException exception) {
+        } catch (Exception exception) {
             Log.w(TAG, "Temi TTS is not available in this environment.", exception);
             return null;
         }

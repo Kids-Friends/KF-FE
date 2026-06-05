@@ -343,8 +343,16 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private long lastRouteTime = 0;
+
     /** 들은 말의 의도를 판단해 화면 전환 또는 AI 대화를 이어갑니다. */
     private void handleUtterance(String text) {
+        if (System.currentTimeMillis() - lastRouteTime < 2000) {
+            Log.w(TAG, "handleUtterance: Ignoring rapid utterance to prevent multi-launch.");
+            return;
+        }
+        lastRouteTime = System.currentTimeMillis();
+
         if (isEndPhrase(text)) {
             speaker.speak(getString(R.string.home_bye));
             enterIdle();
@@ -367,6 +375,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             case CHAT:
             default:
+                lastRouteTime = 0; // 채팅은 딜레이 면제 (연속 대화 허용)
                 answerWithAi(text);
                 break;
         }

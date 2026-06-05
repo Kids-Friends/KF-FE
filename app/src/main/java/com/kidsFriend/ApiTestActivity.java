@@ -86,7 +86,11 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
         ensureAudioPermission();
     }
 
+    private long lastOpenScreenTime = 0;
+
     private void openScreen(Class<?> activityClass) {
+        if (System.currentTimeMillis() - lastOpenScreenTime < 1000) return;
+        lastOpenScreenTime = System.currentTimeMillis();
         startActivity(new Intent(this, activityClass));
     }
 
