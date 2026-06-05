@@ -36,3 +36,33 @@
 21. **[P2] 백그라운드 킬(Doze Mode)**: 화면이 켜진 채로 방치되다 배터리 최적화로 프로세스가 정지됨. -> `WAKE_LOCK` 권한과 `FLAG_KEEP_SCREEN_ON` 적용으로 방어 완료.
 22. **[P0] 알 수 없는 런타임 강제 종료 (Uncaught Exception)**: NullPointer 등 예상치 못한 에러 발생 시 OS에서 "앱이 중지되었습니다" 다이얼로그 노출. -> `KidsFriendApp`에 `GlobalExceptionHandler`를 등록해 에러를 씹고 조용히 `MainActivity`를 재시작하도록 조치(Crash Zero 달성).
 23. **[P2] TTS 엔진 런타임 크래시**: `Robot.getInstance().speak()`가 Temi 코어 에러로 죽음. -> 기존 `RuntimeException`에서 최상위 `Exception` Catch로 방어 범위 확장 완료.
+
+## 🚨 신규 발굴 맹점 및 위험 요소 (Phase 9 - 딥 시스템 레벨 20+)
+
+### 6. 비동기/스레드 및 메모리 누수
+24. **[P0] 비동기 콜백 UI 파괴 (IllegalStateException)**: 네트워크 통신 중 사용자가 화면을 닫았을 때(Activity `isFinishing()`) 콜백이 도착하여 UI를 조작하려다 앱이 터지는 현상. -> 모든 `RepositoryCallback` 내부에 `if (isFinishing() || isDestroyed()) return;` 방어 코드 삽입 완료.
+25. **[P1] Handler 메모리 릭 (Memory Leak)**: `VoiceInputManager`나 `SensorEventPoller`가 파괴될 때 예약된 `postDelayed`가 취소되지 않아 좀비 스레드가 남음. -> `onDestroy()`에서 `removeCallbacksAndMessages(null)` 적용 완료.
+26. **[P2] 백그라운드 스레드의 UI 접근**: 비동기 워커에서 `Toast.show()`나 `setText()`를 호출해 `CalledFromWrongThreadException` 발생. -> 모든 UI 조작을 `uiHandler.post()` 또는 `runOnUiThread()`로 래핑.
+27. **[P2] SharedPreferences 블로킹 (ANR)**: `commit()` 사용 시 메인 스레드가 디스크 I/O를 기다리며 화면 멈춤. -> `SessionManager`에서 비동기 `apply()` 사용으로 방어.
+28. **[P1] ConcurrentModificationException**: 여러 스레드가 동시에 `ArrayList`를 수정할 때 충돌. -> 데모 범위 내에서는 UI 스레드 기반 직렬 처리로 안전 보장.
+
+### 7. 로봇 하드웨어 및 엔진 한계점
+29. **[P0] STT 하드웨어 즉시 실패 루프 (CPU 100% ANR)**: 마이크가 물리적으로 망가졌을 때 `onNlpCompleted`가 즉시 실패를 리턴하고, 연속 모드가 다시 `askQuestion`을 즉시 호출해 무한 루프 발생. -> `VoiceInputManager`에 1초 내 5회 실패 시 멈추는 **Circuit Breaker** 및 1초 지연 스케줄러 도입 완료.
+30. **[P0] TTS 엔진 큐(Queue) 폭발**: 여러 센서(아이 감지, 장애물, 배터리)가 0.1초 단위로 동시에 터지며 `speak()`를 수십 번 호출. -> `TemiSpeechSpeaker`에 3초 쿨다운(Debounce)을 적용하여 TTS 스팸 방어 완료.
+31. **[P2] 블루투스 오디오 스틸**: 행사장 주변 블루투스 기기 페어링 시 마이크/스피커 입력이 테미가 아닌 외부 기기로 납치됨. -> 시연 전 설정에서 블루투스 강제 비활성화 요망.
+32. **[P1] 쓰멀 스로틀링(Thermal Throttling)**: 장시간 화면 켜짐 및 AI 연산으로 테미 두뇌가 가열되어 프레임 드랍 및 STT 딜레이 발생. -> 시연 대기 시 화면 밝기 수동 저하 요망.
+
+### 8. 네트워크 및 데이터 파싱
+33. **[P0] Retrofit BaseUrl 파싱 크래시 (IllegalArgumentException)**: `.env` 파일 누락이나 URL 끝에 `/`가 없을 경우 앱 켜지자마자 Retrofit 빌더가 터짐. -> `RetrofitClient`에 강제 문자열 검증 및 기본 URL Fallback 삽입 완료.
+34. **[P1] Gson Null Array 파싱 에러**: 백엔드가 빈 배열 대신 `null`을 내려보낼 경우 DTO 파싱 중 크래시. -> DTO에 기본값 적용 및 레포지토리 단에서 Null 검증.
+35. **[P2] Interceptor 내부 IOException**: 로깅 인터셉터 등에서 네트워크 단절 시 예외를 던짐. -> `try-catch`로 래핑 후 진행.
+36. **[P2] 대규모 JSON OOM**: AI가 예상치 못하게 수만 자의 텍스트를 응답. -> 백엔드 프롬프트에서 "2문장 이내"로 하드 리밋(Hard Limit) 적용 완료.
+
+### 9. OS 및 시스템 UI 간섭
+37. **[P0] 시스템 다이얼로그의 Focus 스틸**: 배터리 15% 경고 등 안드로이드 OS 팝업이 키오스크 모드 위로 올라와 시연을 가림. -> 배터리 30% 이상 유지 및 자체 `LOW_BATTERY` 모의 알림으로 시연자에게 사전 인지시킴.
+38. **[P1] Fragment Transaction State Loss**: 백그라운드 상태에서 프래그먼트 교체 시 `IllegalStateException`. -> 데모 앱은 모든 뷰를 Activity로 분리하여 해당 위험 회피.
+39. **[P1] Intent Payload Null 방어**: Activity 이동 시 Intent Extras가 누락될 경우 NPE 발생. -> 모든 `getExtra`에 기본값(Default Value) 적용.
+40. **[P2] 로케일(Locale) 강제 변경에 따른 String 불일치**: 행사장 와이파이 위치 정보 오류로 언어가 영어로 강제 변경 시 STT 매칭("친구야") 실패. -> `TtsRequest`에 `KO_KR` 강제 지정 및 안드로이드 시스템 설정 한국어 고정.
+41. **[P1] Robot.getInstance() NotInitializedException**: Application Context 생성 전 로봇 객체를 호출. -> `MainActivity` 생성 이후에만 호출되도록 보장.
+42. **[P1] WakeLock 해제 누락**: 앱 종료 후에도 화면이 계속 켜져있어 배터리 광탈. -> `FLAG_KEEP_SCREEN_ON`은 Activity 생명주기에 종속되므로 자동 해제되어 안전.
+43. **[P2] 애니메이션 중 Activity 종료로 인한 WindowLeaked**: 다이얼로그나 팝업이 떠 있는 상태에서 강제 종료 시 에러 로그 발생. -> 데모용 앱에서는 팝업 대신 Visibility 전환(`View.VISIBLE`, `GONE`) 방식을 채택하여 WindowLeaked 원천 차단.
