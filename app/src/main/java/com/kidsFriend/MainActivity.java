@@ -157,6 +157,15 @@ public class MainActivity extends AppCompatActivity
         Button backButton = findViewById(R.id.button_back);
         Button operatorMenuButton = findViewById(R.id.button_operator_menu);
 
+        // 데모용 비밀 트리거 5: 오퍼레이터 메뉴 버튼을 길게 누르면 강제로 "퀴즈 풀고 싶어" STT 결과 주입
+        // 행사장 소음으로 마이크가 안 먹힐 때 최후의 수단
+        operatorMenuButton.setOnLongClickListener(v -> {
+            Log.d(TAG, "Secret Trigger: Mock STT Injection (Quiz)");
+            voiceInputManager.stopListening();
+            startConversation("퀴즈 풀고 싶어");
+            return true;
+        });
+
         // 화면을 터치하면 대화를 시작합니다.
         findViewById(R.id.root_main).setOnClickListener(v -> {
             if (state == State.IDLE) {
@@ -201,6 +210,8 @@ public class MainActivity extends AppCompatActivity
         super.onPause();
         sensorEventPoller.stop();
         voiceInputManager.stopListening();
+        uiHandler.removeCallbacks(systemWatchdog);
+    }
         uiHandler.removeCallbacks(systemWatchdog);
     }
     }
