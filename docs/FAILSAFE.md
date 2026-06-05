@@ -10,6 +10,8 @@
 | **물리 볼륨 0%** | 소리 안남 | 10초마다 `systemWatchdog`이 볼륨 80% 강제 원복 | 데모 자동 보호 |
 | **로봇 센서 죽음** | HW 고장 | 로봇 화면 터치 이벤트를 통한 Mock Event 생성 | 얼굴(아이), 답변텍스트(장애물), 상태텍스트(기울어짐) |
 | **백엔드/API 죽음** | 네트워크 장애 | `TemiRepository`에서 Mock Success 응답 강제 생성 | 사용자는 정상 동작으로 인지 (귀여운 에러 멘트 TTS) |
+| **예기치 못한 앱 Crash** | NullPointerException 등 | `KidsFriendApp`의 전역 예외 처리기가 에러를 낚아채어 앱을 메인화면으로 강제 롤백 | 안드로이드 "앱이 중지되었습니다" 팝업 원천 차단 |
+| **화면 다중/연속 클릭** | 앱 크래시/OOM | 버튼 및 라우팅 클릭 시 1~2초 Debounce(딜레이) 적용 | 화면이 여러 장 겹치지 않고 무시됨 |
 
 ## 2. ACTIVITY RECOVERY
 Android 시스템 이벤트(Configuration 변화)로 인한 앱 초기화를 막기 위해 `AndroidManifest.xml`에 다음 속성을 고정했습니다.

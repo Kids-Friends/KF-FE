@@ -34,3 +34,5 @@
 19. **[P1] 메모리 릭(Memory Leak)**: `SensorEventPoller`나 `Handler`의 Runnable이 Activity 종료 시 해제 안 됨. -> `onPause()` / `onDestroy()`에 `removeCallbacksAndMessages(null)` 적용 완료.
 20. **[P1] 런타임 권한(Permission) 팝업**: 시연 중 마이크 권한 요청 팝업이 떠서 흐름이 끊김. -> `onStart/onResume` 시 권한 체크하여 없으면 바로 재요청(시연 전 세팅으로 방어).
 21. **[P2] 백그라운드 킬(Doze Mode)**: 화면이 켜진 채로 방치되다 배터리 최적화로 프로세스가 정지됨. -> `WAKE_LOCK` 권한과 `FLAG_KEEP_SCREEN_ON` 적용으로 방어 완료.
+22. **[P0] 알 수 없는 런타임 강제 종료 (Uncaught Exception)**: NullPointer 등 예상치 못한 에러 발생 시 OS에서 "앱이 중지되었습니다" 다이얼로그 노출. -> `KidsFriendApp`에 `GlobalExceptionHandler`를 등록해 에러를 씹고 조용히 `MainActivity`를 재시작하도록 조치(Crash Zero 달성).
+23. **[P2] TTS 엔진 런타임 크래시**: `Robot.getInstance().speak()`가 Temi 코어 에러로 죽음. -> 기존 `RuntimeException`에서 최상위 `Exception` Catch로 방어 범위 확장 완료.
