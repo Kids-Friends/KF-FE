@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity
     private SensorEventPoller sensorEventPoller;
     private RobotResilienceManager resilienceManager;
     private Robot robot;
+    private android.os.PowerManager.WakeLock wakeLock;
     private ImageView faceImage;
     private TextView statusText;
     private TextView answerText;
@@ -93,6 +94,18 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        
+        // [방어 코드] 하드웨어 수준 화면 꺼짐 절대 방지 (Wakelock 강제 획득)
+        try {
+            android.os.PowerManager powerManager = (android.os.PowerManager) getSystemService(android.content.Context.POWER_SERVICE);
+            if (powerManager != null) {
+                wakeLock = powerManager.newWakeLock(android.os.PowerManager.FULL_WAKE_LOCK | android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG + ":DemoLock");
+                wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "WakeLock acquisition failed", e);
+        }
+
         AppConfig.init(this);
         BackendConnectionChecker.check();
         repository = new TemiRepository(this);
@@ -218,9 +231,6 @@ public class MainActivity extends AppCompatActivity
         sensorEventPoller.stop();
         voiceInputManager.stopListening();
         uiHandler.removeCallbacks(systemWatchdog);
-    }
-        uiHandler.removeCallbacks(systemWatchdog);
-    }
     }
 
     @Override
@@ -483,6 +493,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         try {
+            if (wakeLock != null && wakeLock.isHeld()) {
+                wakeLock.release();
+            }
+        } catch (Exception ignored) {}
+        
+        try {
             if (resilienceManager != null) {
                 resilienceManager.unregister();
             }
@@ -497,21 +513,8 @@ public class MainActivity extends AppCompatActivity
         if (voiceInputManager != null) {
             voiceInputManager.destroy();
         }
-        super.onDestroy();
-    }
-}
-();
-            }
-            robot.toggleWakeup(false);
-            robot.setKioskModeOn(false);
-            robot.removeOnRobotReadyListener(this);
-            robot.removeOnRequestPermissionResultListener(this);
-        } catch (RuntimeException exception) {
-            Log.w(TAG, "Temi listener removal failed.", exception);
-        }
-        uiHandler.removeCallbacksAndMessages(null);
-        if (voiceInputManager != null) {
-            voiceInputManager.destroy();
+        if (sensorEventPoller != null) {
+            sensorEventPoller.stop();
         }
         super.onDestroy();
     }

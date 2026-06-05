@@ -16,9 +16,13 @@ public class SessionManager {
     private final SharedPreferences preferences;
 
     private SessionManager(Context context) {
-        preferences = context.getApplicationContext()
-                .getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        ensureDefaults();
+        Context appContext = context.getApplicationContext() != null ? context.getApplicationContext() : context;
+        preferences = appContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        try {
+            ensureDefaults();
+        } catch (Exception e) {
+            android.util.Log.e("SessionManager", "Failed to init defaults", e);
+        }
     }
 
     public static synchronized SessionManager getInstance(Context context) {
