@@ -21,11 +21,27 @@ import java.util.Map;
 public class RobotActionManager {
     private static final String TAG = "RobotActionManager";
 
+    /** 표정 변화를 알리기 위한 인터페이스 */
+    public interface OnFaceChangeListener {
+        void onFaceChange(int drawableRes);
+    }
+
+    private OnFaceChangeListener faceChangeListener;
     /** 같은 상황이 계속 감지돼도 이 시간 안에는 다시 반응하지 않는다(로봇이 산만해지는 것 방지). */
     private static final long REACTION_COOLDOWN_MS = 8000L;
 
     private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker();
     private long lastReactionAt = 0L;
+
+    public void setOnFaceChangeListener(OnFaceChangeListener listener) {
+        this.faceChangeListener = listener;
+    }
+
+    private void changeFace(int drawableRes) {
+        if (faceChangeListener != null) {
+            faceChangeListener.onFaceChange(drawableRes);
+        }
+    }
 
     public void onSensorEvent(String eventType, Map<String, Object> payload) {
         if (eventType == null) {

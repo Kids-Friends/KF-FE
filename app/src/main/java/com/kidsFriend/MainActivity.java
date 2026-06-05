@@ -25,6 +25,7 @@ import com.kidsFriend.data.model.QuestionResponse;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
 import com.kidsFriend.robot.RobotActionManager;
+import com.kidsFriend.robot.RobotResilienceManager;
 import com.kidsFriend.robot.SensorEventPoller;
 import com.kidsFriend.ui.MembershipCardActivity;
 import com.kidsFriend.ui.QuizActivity;
@@ -52,6 +53,8 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
     private static final int REQUEST_RECORD_AUDIO = 2001;
     private static final int REQUEST_TTS_SETTINGS = 3001;
+    // 대화가 이 시간 동안 한 단계도 진행되지 않으면(STT/TTS 멈춤 등) 대기 상태로 자동 복귀한다.
+    private static final long CONVERSATION_TIMEOUT_MS = 45_000L;
 
     private enum State { IDLE, CONVERSATION }
 
@@ -67,9 +70,18 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+    // 대화가 멈췄을 때(STT/TTS/AI 응답 없음) 안전하게 대기 상태로 되돌리는 워치독.
+    private final Runnable conversationWatchdog = () -> {
+        if (state == State.CONVERSATION) {
+            Log.w(TAG, "대화 워치독: 일정 시간 진행 없음 → 대기 상태로 자동 복귀");
+            enterIdle();
+        }
+    };
+
     private TemiRepository repository;
     private VoiceInputManager voiceInputManager;
     private SensorEventPoller sensorEventPoller;
+    private RobotResilienceManager resilienceManager;
     private Robot robot;
     private ImageView faceImage;
     private TextView statusText;
@@ -86,15 +98,62 @@ public class MainActivity extends AppCompatActivity
         repository = new TemiRepository(this);
         voiceInputManager = new VoiceInputManager(this);
         // 라즈베리파이 센서 이벤트(KF_BE 경유)를 폴링해 로봇 동작으로 변환한다.
-        sensorEventPoller = new SensorEventPoller(new RobotActionManager());
+        RobotActionManager actionManager = new RobotActionManager();
+        actionManager.setOnFaceChangeListener(drawableRes -> 
+            uiHandler.post(() -> setFace(drawableRes))
+        );
+        sensorEventPoller = new SensorEventPoller(actionManager);
+        // 시연 중 돌발상황을 Temi 내장 기능으로 자동 복구(내장 사람감지 백업, 들림/끌림 정지, 배터리 안내).
+        resilienceManager = new RobotResilienceManager(actionManager);
 
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
         robot.addOnRequestPermissionResultListener(this);
 
         faceImage = findViewById(R.id.image_face);
+        
+        // 데모용 비밀 트리거 (얼굴 길게 누르기 -> 아이 감지 센서 이벤트 모의 발생)
+        faceImage.setOnLongClickListener(v -> {
+            Log.d(TAG, "Secret Trigger: Mock CHILD_DETECTED event");
+            actionManager.onSensorEvent("CHILD_DETECTED", null);
+            return true;
+        });
+
         statusText = findViewById(R.id.text_home_status);
+        // 데모용 비밀 트리거 2: 상태 텍스트 길게 누르기 -> 위험(TILT) 상황 모의 발생
+        statusText.setOnLongClickListener(v -> {
+            Log.d(TAG, "Secret Trigger: Mock TILT event");
+            actionManager.onSensorEvent("TILT", null);
+            return true;
+        });
+
         answerText = findViewById(R.id.text_home_answer);
+        // 데모용 비밀 트리거 3: 답변 텍스트 길게 누르기 -> 장애물 접근(20cm) 모의 발생
+        answerText.setOnLongClickListener(v -> {
+            Log.d(TAG, "Secret Trigger: Mock OBSTACLE_DETECTED event");
+            java.util.Map<String, Object> payload = new java.util.HashMap<>();
+            payload.put("distance_cm", 20);
+            actionManager.onSensorEvent("OBSTACLE_DETECTED", payload);
+            return true;
+        });
+
+        // 데모용 비밀 트리거 4: 답변 텍스트 더블 클릭(또는 빠른 연속 클릭) -> 배터리 부족 모의 발생
+        answerText.setOnClickListener(new View.OnClickListener() {
+            private long lastClickTime = 0;
+            @Override
+            public void onClick(View v) {
+                long clickTime = System.currentTimeMillis();
+                if (clickTime - lastClickTime < 500) {
+                    Log.d(TAG, "Secret Trigger: Mock LOW_BATTERY event");
+                    actionManager.onSensorEvent("LOW_BATTERY", null);
+                } else if (state == State.IDLE) {
+                    voiceInputManager.stopListening();
+                    startConversation(null);
+                }
+                lastClickTime = clickTime;
+            }
+        });
+        
         Button backButton = findViewById(R.id.button_back);
         Button operatorMenuButton = findViewById(R.id.button_operator_menu);
 
@@ -139,6 +198,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
+        disarmConversationWatchdog();
         sensorEventPoller.stop();
         voiceInputManager.stopListening();
     }
@@ -157,6 +217,8 @@ public class MainActivity extends AppCompatActivity
                 Log.w(TAG, "Kiosk mode could not be activated: " + e.getMessage());
             }
             applyCuteVoice();
+            // 로봇이 준비된 뒤 내장 복구 기능(사람감지/들림/끌림/배터리) 등록.
+            resilienceManager.register();
         }
     }
 
@@ -184,6 +246,7 @@ public class MainActivity extends AppCompatActivity
 
     /** 대기 상태: 얼굴 + "친구야 불러줘" 안내, 호출어 대기. */
     private void enterIdle() {
+        disarmConversationWatchdog();
         if (!ensureAudioPermission()) {
             return;
         }
@@ -238,6 +301,7 @@ public class MainActivity extends AppCompatActivity
 
     /** 대화 중 한 마디 듣기: "듣고 있어요" 화면을 띄웁니다. */
     private void listenInConversation() {
+        armConversationWatchdog();
         setFace(R.drawable.face_excited);
         statusText.setText(R.string.home_listening);
         voiceInputManager.startSingleListening(new VoiceInputManager.Callback() {
@@ -297,6 +361,7 @@ public class MainActivity extends AppCompatActivity
 
     /** AI에게 묻고 답을 화면+음성으로 보여준 뒤, 다시 듣기로 대화를 이어갑니다. */
     private void answerWithAi(String question) {
+        armConversationWatchdog();
         setFace(R.drawable.face_peaceful);
         statusText.setText(R.string.home_thinking);
         repository.askQuestion(question, new RepositoryCallback<QuestionResponse>() {
@@ -309,8 +374,12 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onError(String message) {
+                // 네트워크/ngrok/AI 실패 시: 원시 에러 대신 친근한 안내로 대화를 이어간다.
+                Log.w(TAG, "AI 응답 실패: " + message);
                 setFace(R.drawable.face_sadness);
-                showAnswer(message);
+                String friendly = "미안해, 지금은 대답하기가 조금 어려워. 잠시 뒤에 다시 물어봐 줄래?";
+                showAnswer(friendly);
+                speaker.speak(friendly);
                 if (state == State.CONVERSATION) {
                     listenInConversation();
                 }
@@ -325,6 +394,7 @@ public class MainActivity extends AppCompatActivity
 
     /** 발화를 시작하고, 발화가 끝날 무렵 다시 듣기를 시작합니다(테미가 자기 음성을 인식하는 문제 방지). */
     private void speakThenListen(String text) {
+        armConversationWatchdog();
         speaker.speak(text);
         uiHandler.removeCallbacks(listenRunnable);
         // 발화 길이를 글자 수로 추정해 그만큼 기다린 뒤 듣기 시작
@@ -334,6 +404,16 @@ public class MainActivity extends AppCompatActivity
 
     private void setFace(int drawableRes) {
         faceImage.setImageResource(drawableRes);
+    }
+
+    /** 대화 한 단계가 시작될 때마다 워치독 타이머를 다시 건다(정상 진행 중엔 발동하지 않음). */
+    private void armConversationWatchdog() {
+        uiHandler.removeCallbacks(conversationWatchdog);
+        uiHandler.postDelayed(conversationWatchdog, CONVERSATION_TIMEOUT_MS);
+    }
+
+    private void disarmConversationWatchdog() {
+        uiHandler.removeCallbacks(conversationWatchdog);
     }
 
     private boolean isEndPhrase(String text) {
@@ -374,6 +454,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         try {
+            if (resilienceManager != null) {
+                resilienceManager.unregister();
+            }
             robot.toggleWakeup(false);
             robot.setKioskModeOn(false);
             robot.removeOnRobotReadyListener(this);

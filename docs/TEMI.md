@@ -42,6 +42,21 @@ FE는 `GET /api/sensor-events/latest`를 2초마다 폴링해 `RobotActionManage
 
 > 자율 주행(`beWithMe`)은 짧은 시연 안전을 위해 꺼져 있다. `RobotActionManager.approachNearbyChild()`에서 한 줄 주석 해제로 켤 수 있다.
 
+## 6. 시연 돌발상황 자동 복구 (Temi 내장 기능)
+
+`RobotResilienceManager`가 로봇 준비 후 내장 기능을 등록해 돌발상황을 자동 처리한다.
+
+| 돌발상황 | Temi 내장 기능 | 반응 |
+|---|---|---|
+| 백엔드/HW/ngrok 다운 | **내장 사람감지**(`setDetectionModeOn`, `OnDetectionStateChangedListener`) | 테미 자체 카메라로 아이 접근 감지 → 인사 (센서 경로 백업) |
+| 누가 로봇을 듦 | `OnRobotLiftedListener` | 즉시 정지 + "천천히 내려주세요" |
+| 누가 로봇을 밂 | `OnRobotDragStateChangedListener` | 즉시 정지 + 안내 |
+| 배터리 부족 | `OnBatteryStatusChangedListener` | 음성 안내 (충전 복귀는 기본 비활성) |
+| AI/네트워크 실패 | (앱) | 원시 에러 대신 친근한 발화로 대화 지속 |
+| 대화 멈춤(STT/TTS 응답 없음) | (앱) 워치독 | 45초 무진행 시 대기 상태로 자동 복귀 |
+
+> 데모 중 카메라/백엔드가 불안정해도, 화면 길게 누르기(비밀 트리거)나 테미 내장 사람감지로 반응을 유발할 수 있다.
+
 ## 4. 권한 요구 사항
 
 - `android.permission.INTERNET`: 백엔드 통신용
