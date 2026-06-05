@@ -24,6 +24,8 @@ import com.kidsFriend.data.config.BackendConnectionChecker;
 import com.kidsFriend.data.model.QuestionResponse;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
+import com.kidsFriend.robot.RobotActionManager;
+import com.kidsFriend.robot.SensorEventPoller;
 import com.kidsFriend.ui.MembershipCardActivity;
 import com.kidsFriend.ui.QuizActivity;
 import com.kidsFriend.voice.IntentRouter;
@@ -67,6 +69,7 @@ public class MainActivity extends AppCompatActivity
 
     private TemiRepository repository;
     private VoiceInputManager voiceInputManager;
+    private SensorEventPoller sensorEventPoller;
     private Robot robot;
     private ImageView faceImage;
     private TextView statusText;
@@ -82,6 +85,8 @@ public class MainActivity extends AppCompatActivity
         BackendConnectionChecker.check();
         repository = new TemiRepository(this);
         voiceInputManager = new VoiceInputManager(this);
+        // 라즈베리파이 센서 이벤트(KF_BE 경유)를 폴링해 로봇 동작으로 변환한다.
+        sensorEventPoller = new SensorEventPoller(new RobotActionManager());
 
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
@@ -127,12 +132,14 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         robot.hideTopBar();
         robot.setKioskModeOn(true);
+        sensorEventPoller.start();
         enterIdle();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        sensorEventPoller.stop();
         voiceInputManager.stopListening();
     }
 

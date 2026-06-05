@@ -46,6 +46,10 @@
         <meta-data
             android:name="com.robotemi.sdk.metadata.SKILL"
             android:value="Kids_Friend"/>
+        <!-- 상단 시스템(타이틀)바 숨김: UI_MODE=4 (런타임 hideTopBar()와 병행) -->
+        <meta-data
+            android:name="com.robotemi.sdk.metadata.UI_MODE"
+            android:value="4"/>
         <!-- 키오스크 모드 허용 선언 (테미 런처가 이 앱을 키오스크 후보로 인식) -->
         <meta-data
             android:name="com.robotemi.sdk.metadata.KIOSK"

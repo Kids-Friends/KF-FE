@@ -1,5 +1,9 @@
 # Kids-Friends API Endpoint Checklist
 
+## Temi Robot Info
+- **SDK Version**: 1.131.4
+- **Documentation**: [TEMI.md](./docs/TEMI.md)
+
 ---
 
 ## 0. 공통 규칙
