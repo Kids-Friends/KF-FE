@@ -45,6 +45,7 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_api_test);
+        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         repository = new TemiRepository(this);
         
         Button backButton = findViewById(R.id.button_back);

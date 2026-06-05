@@ -99,8 +99,15 @@ public class MainActivity extends AppCompatActivity
         voiceInputManager = new VoiceInputManager(this);
         // 라즈베리파이 센서 이벤트(KF_BE 경유)를 폴링해 로봇 동작으로 변환한다.
         RobotActionManager actionManager = new RobotActionManager();
-        actionManager.setOnFaceChangeListener(drawableRes -> 
-            uiHandler.post(() -> setFace(drawableRes))
+        actionManager.setOnFaceChangeListener(faceType -> 
+            uiHandler.post(() -> {
+                int resId = R.drawable.face_peaceful;
+                if ("EXCITED".equals(faceType)) resId = R.drawable.face_excited;
+                else if ("SADNESS".equals(faceType)) resId = R.drawable.face_sadness;
+                else if ("ANGER".equals(faceType)) resId = R.drawable.face_anger;
+                else if ("JOY".equals(faceType)) resId = R.drawable.face_joy;
+                setFace(resId);
+            })
         );
         sensorEventPoller = new SensorEventPoller(actionManager);
         // 시연 중 돌발상황을 Temi 내장 기능으로 자동 복구(내장 사람감지 백업, 들림/끌림 정지, 배터리 안내).

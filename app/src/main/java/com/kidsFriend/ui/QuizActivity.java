@@ -34,6 +34,7 @@ public class QuizActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quiz);
+        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         repository = new TemiRepository(this);
         speaker = new TemiSpeechSpeaker();
 
@@ -86,10 +87,13 @@ public class QuizActivity extends AppCompatActivity {
         });
     }
 
+    private long lastSubmitTime = 0;
+
     private void submitAnswer(String selectedAnswer) {
-        if (currentQuiz == null) {
-            return;
-        }
+        if (currentQuiz == null) return;
+        if (System.currentTimeMillis() - lastSubmitTime < 1000) return;
+        lastSubmitTime = System.currentTimeMillis();
+
         setAnswerEnabled(false);
         repository.submitQuizAnswer(currentQuiz.quizId, selectedAnswer, new RepositoryCallback<QuizAnswerResponse>() {
             @Override

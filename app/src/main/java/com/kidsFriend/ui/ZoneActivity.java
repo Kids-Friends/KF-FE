@@ -27,6 +27,7 @@ public class ZoneActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_zone);
+        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         repository = new TemiRepository(this);
 
         zoneListText = findViewById(R.id.text_zone_list);

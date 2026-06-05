@@ -23,7 +23,7 @@ public class RobotActionManager {
 
     /** 표정 변화를 알리기 위한 인터페이스 */
     public interface OnFaceChangeListener {
-        void onFaceChange(int drawableRes);
+        void onFaceChange(String faceType);
     }
 
     private OnFaceChangeListener faceChangeListener;
@@ -37,9 +37,9 @@ public class RobotActionManager {
         this.faceChangeListener = listener;
     }
 
-    private void changeFace(int drawableRes) {
+    private void changeFace(String faceType) {
         if (faceChangeListener != null) {
-            faceChangeListener.onFaceChange(drawableRes);
+            faceChangeListener.onFaceChange(faceType);
         }
     }
 
@@ -55,6 +55,7 @@ public class RobotActionManager {
         lastReactionAt = now;
         switch (eventType) {
             case "CHILD_DETECTED":
+                changeFace("EXCITED");
                 approachNearbyChild();
                 break;
             case "OBSTACLE_DETECTED":
@@ -62,12 +63,15 @@ public class RobotActionManager {
                 break;
             case "TILT":
             case "BUMP":
+                changeFace("ANGER");
                 handleSafetyStop();
                 break;
             case "LOW_BATTERY":
+                changeFace("SADNESS");
                 speaker.speak("배터리가 부족해요. 잠깐 충전하고 올게요!");
                 break;
             case "ARRIVED_AT_LOCATION":
+                changeFace("JOY");
                 speaker.speak("도착했어요!");
                 break;
             default:
@@ -90,9 +94,11 @@ public class RobotActionManager {
     private void reactToObstacle(Map<String, Object> payload) {
         int distanceCm = readInt(payload, "distance_cm", 60);
         if (distanceCm <= 30) {
+            changeFace("SADNESS");
             runRobot(Robot::stopMovement);
             speaker.speak("앗, 너무 가까워요. 조심조심!");
         } else {
+            changeFace("PEACEFUL");
             tiltUpToFace();
             speaker.speak("거기 누구 있어요?");
         }
