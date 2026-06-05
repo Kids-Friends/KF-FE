@@ -30,16 +30,6 @@ public class SensorEventPoller {
     private boolean running = false;
     private String lastHandledId = null;
 
-    private final Runnable pollTask = new Runnable() {
-        @Override
-        public void run() {
-            poll();
-            if (running) {
-                handler.postDelayed(this, POLL_INTERVAL_MS);
-            }
-        }
-    };
-
     public SensorEventPoller(RobotActionManager actionManager) {
         this.actionManager = actionManager;
     }
@@ -49,13 +39,13 @@ public class SensorEventPoller {
             return;
         }
         running = true;
-        handler.post(pollTask);
+        poll();
         Log.d(TAG, "센서 이벤트 폴링 시작");
     }
 
     public void stop() {
         running = false;
-        handler.removeCallbacks(pollTask);
+        handler.removeCallbacksAndMessages(null);
         Log.d(TAG, "센서 이벤트 폴링 중지");
     }
 
@@ -91,6 +81,24 @@ public class SensorEventPoller {
                         // 폴링 실패는 조용히 무시하고 다음 주기에 재시도
                     }
                 });
+    }
+
+    private static String asString(Object o) {
+        return o == null ? null : o.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> asMap(Object o) {
+        return (o instanceof Map) ? (Map<String, Object>) o : null;
+    }
+}
+        actionManager.onSensorEvent(eventType, payload);
+    }
+
+    private void scheduleNext() {
+        if (running) {
+            handler.postDelayed(this::poll, POLL_INTERVAL_MS);
+        }
     }
 
     private static String asString(Object o) {
