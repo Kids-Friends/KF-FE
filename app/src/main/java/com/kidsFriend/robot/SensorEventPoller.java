@@ -92,21 +92,3 @@ public class SensorEventPoller {
         return (o instanceof Map) ? (Map<String, Object>) o : null;
     }
 }
-        actionManager.onSensorEvent(eventType, payload);
-    }
-
-    private void scheduleNext() {
-        if (running) {
-            handler.postDelayed(this::poll, POLL_INTERVAL_MS);
-        }
-    }
-
-    private static String asString(Object o) {
-        return o == null ? null : o.toString();
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Map<String, Object> asMap(Object o) {
-        return (o instanceof Map) ? (Map<String, Object>) o : null;
-    }
-}

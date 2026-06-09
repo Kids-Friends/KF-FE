@@ -221,7 +221,6 @@ public class MainActivity extends AppCompatActivity
         robot.hideTopBar();
         robot.setKioskModeOn(true);
         sensorEventPoller.start();
-        uiHandler.post(systemWatchdog);
         enterIdle();
     }
 
