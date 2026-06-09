@@ -21,6 +21,8 @@ import com.kidsFriend.data.model.ClientResponse;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
 import com.kidsFriend.data.session.SessionManager;
+import com.kidsFriend.robot.RobotActionManager;
+import com.kidsFriend.ui.PhotoActivity;
 import com.kidsFriend.ui.QuestionActivity;
 import com.kidsFriend.ui.QuizActivity;
 import com.kidsFriend.ui.ZoneActivity;
@@ -37,6 +39,7 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
 
     private TemiRepository repository;
     private VoiceInputManager wakeVoiceInputManager;
+    private final RobotActionManager actionManager = new RobotActionManager();
     private TextView wakeStatusText;
     private TextView testResultText;
     private EditText testClientIdInput;
@@ -77,10 +80,13 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
 
         questionButton.setOnClickListener(v -> openScreen(QuestionActivity.class));
         quizButton.setOnClickListener(v -> openScreen(QuizActivity.class));
-        approachButton.setOnClickListener(v -> showPendingFeature());
+        approachButton.setOnClickListener(v -> {
+            Toast.makeText(this, "아이 감지 이벤트를 실행합니다.", Toast.LENGTH_SHORT).show();
+            actionManager.onSensorEvent("CHILD_DETECTED", null);
+        });
         locationGuideButton.setOnClickListener(v -> openScreen(ZoneActivity.class));
         rewardButton.setOnClickListener(v -> showPendingFeature());
-        photoButton.setOnClickListener(v -> showPhotoUrlDialog());
+        photoButton.setOnClickListener(v -> openScreen(PhotoActivity.class));
         clientSettingsButton.setOnClickListener(v -> showClientSettingsDialog());
         wakeButton.setOnClickListener(v -> startWakeWordStandby());
 

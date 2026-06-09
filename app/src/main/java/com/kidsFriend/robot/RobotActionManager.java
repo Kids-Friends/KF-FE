@@ -87,7 +87,7 @@ public class RobotActionManager {
     private void approachNearbyChild() {
         speaker.speak("안녕! 친구야, 같이 놀까?");
         tiltUpToFace();
-        // runRobot(Robot::beWithMe);  // ← 실제 접근(주행)을 원하면 주석 해제
+        runRobot(Robot::beWithMe); // 실제 접근(주행) 활성화
     }
 
     /** 60cm 안에 무언가 감지되면 거리에 따라 멈추거나 올려다본다. */

@@ -28,6 +28,7 @@ import com.kidsFriend.robot.RobotActionManager;
 import com.kidsFriend.robot.RobotResilienceManager;
 import com.kidsFriend.robot.SensorEventPoller;
 import com.kidsFriend.ui.MembershipCardActivity;
+import com.kidsFriend.ui.PhotoActivity;
 import com.kidsFriend.ui.QuizActivity;
 import com.kidsFriend.voice.IntentRouter;
 import com.kidsFriend.voice.TemiSpeechSpeaker;
@@ -417,6 +418,13 @@ public class MainActivity extends AppCompatActivity
                 speaker.speak(getString(R.string.home_routing_membership));
                 statusText.setText(R.string.home_routing_membership);
                 startActivity(new Intent(this, MembershipCardActivity.class));
+                break;
+            case PHOTO:
+                setFace(R.drawable.face_joy);
+                String photoAnnounce = "좋아! 예쁘게 찍어줄게. 카메라를 봐줘!";
+                speaker.speak(photoAnnounce);
+                statusText.setText(photoAnnounce);
+                startActivity(new Intent(this, PhotoActivity.class));
                 break;
             case CHAT:
             default:
