@@ -18,8 +18,8 @@ public class TemiSpeechSpeaker {
             return null;
         }
 
-        // [방어 코드] 다중 센서 동시 발동으로 인한 TTS 스팸/겹침 방지 (3초 쿨다운)
-        if (System.currentTimeMillis() - lastSpeakTime < 3000) {
+        // [방어 코드] 다중 센서 동시 발동으로 인한 TTS 스팸/겹침 방지 (1.5초 쿨다운)
+        if (System.currentTimeMillis() - lastSpeakTime < 1500) {
             Log.w(TAG, "speak: Ignored to prevent TTS spamming. Text: " + text);
             return null;
         }

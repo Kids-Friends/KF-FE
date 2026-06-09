@@ -63,6 +63,8 @@ public class MainActivity extends AppCompatActivity
 
     private State state = State.IDLE;
 
+
+
     // 발화(TTS)가 끝날 무렵 다시 듣기를 시작합니다.
     private final Runnable listenRunnable = () -> {
         if (state == State.CONVERSATION) {
@@ -71,6 +73,30 @@ public class MainActivity extends AppCompatActivity
     };
 
     // 대화가 멈췄을 때(STT/TTS/AI 응답 없음) 안전하게 대기 상태로 되돌리는 워치독.
+    private final Runnable systemWatchdog = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                // [P0] 볼륨 0% 방지 (10초마다 80%로 강제 원복)
+                android.media.AudioManager audioManager = (android.media.AudioManager) getSystemService(android.content.Context.AUDIO_SERVICE);
+                if (audioManager != null) {
+                    int maxVol = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC);
+                    int targetVol = (int) (maxVol * 0.8);
+                    audioManager.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, targetVol, 0);
+                }
+
+                // [P2] 키오스크 모드 및 상단 바 숨김 강제 유지
+                if (robot != null) {
+                    robot.hideTopBar();
+                    robot.setKioskModeOn(true);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "systemWatchdog error", e);
+            }
+            uiHandler.postDelayed(this, 10_000L); // 10초마다 반복 실행
+        }
+    };
+
     private final Runnable conversationWatchdog = () -> {
         if (state == State.CONVERSATION) {
             Log.w(TAG, "대화 워치독: 일정 시간 진행 없음 → 대기 상태로 자동 복귀");
@@ -261,10 +287,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void setCuteVoice() {
-        // 여성 음색 + 최대 피치(+10) + 경쾌한 속도(1.2) = 높고 귀엽고 활기찬 톤
-        boolean ok = robot.setTtsVoice(new TtsVoice(Gender.FEMALE, 1.2f, 10));
+    //
+        boolean ok = robot.setTtsVoice(new TtsVoice(Gender.FEMALE, 1.7f, 5));
         Log.d(TAG, "setTtsVoice(cute) result = " + ok);
+
     }
+
+
 
     @Override
     public void onRequestPermissionResult(Permission permission, int grantResult, int requestCode) {
