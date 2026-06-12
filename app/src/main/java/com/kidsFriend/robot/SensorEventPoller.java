@@ -19,6 +19,9 @@ import retrofit2.Response;
  *
  * <p>같은 이벤트(sensorEventId)에 대해서는 한 번만 반응한다. 폴링 실패는 조용히 무시하고
  * 다음 주기에 재시도하므로, KF_BE가 잠깐 꺼져 있어도 앱은 영향을 받지 않는다.</p>
+ *
+ * <p>앱 시작 시 DB에 남아 있던 "과거 마지막 이벤트"에 반응하지 않도록,
+ * 첫 폴링 결과는 기준선(baseline)으로만 기록하고 행동하지 않는다.</p>
  */
 public class SensorEventPoller {
     private static final String TAG = "SensorEventPoller";
@@ -29,6 +32,18 @@ public class SensorEventPoller {
 
     private boolean running = false;
     private String lastHandledId = null;
+    private boolean baselined = false;
+
+    // 폴링 루프: 한 번 폴링하고, 동작 중이면 다음 주기를 예약한다.
+    private final Runnable pollTask = new Runnable() {
+        @Override
+        public void run() {
+            poll();
+            if (running) {
+                handler.postDelayed(this, POLL_INTERVAL_MS);
+            }
+        }
+    };
 
     public SensorEventPoller(RobotActionManager actionManager) {
         this.actionManager = actionManager;
@@ -39,13 +54,13 @@ public class SensorEventPoller {
             return;
         }
         running = true;
-        poll();
+        handler.post(pollTask);
         Log.d(TAG, "센서 이벤트 폴링 시작");
     }
 
     public void stop() {
         running = false;
-        handler.removeCallbacksAndMessages(null);
+        handler.removeCallbacks(pollTask);
         Log.d(TAG, "센서 이벤트 폴링 중지");
     }
 
@@ -60,7 +75,8 @@ public class SensorEventPoller {
                         }
                         Map<String, Object> data = response.body().data;
                         if (data == null) {
-                            return; // 아직 들어온 이벤트가 없음
+                            baselined = true; // 이벤트가 아직 없음 = 깨끗한 기준선
+                            return;
                         }
 
                         String id = asString(data.get("sensorEventId"));
@@ -68,6 +84,12 @@ public class SensorEventPoller {
                             return; // 이미 처리한(또는 식별 불가한) 이벤트
                         }
                         lastHandledId = id;
+
+                        if (!baselined) {
+                            baselined = true;
+                            Log.d(TAG, "기준선 설정(과거 이벤트 무시): " + id);
+                            return;
+                        }
 
                         String eventType = asString(data.get("eventType"));
                         Map<String, Object> payload = asMap(data.get("payload"));

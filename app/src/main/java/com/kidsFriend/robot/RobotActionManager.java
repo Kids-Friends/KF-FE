@@ -47,8 +47,10 @@ public class RobotActionManager {
         if (eventType == null) {
             return;
         }
+        // 안전 이벤트(기울어짐/충돌)는 쿨다운과 무관하게 항상 즉시 처리한다.
+        boolean isSafetyEvent = "TILT".equals(eventType) || "BUMP".equals(eventType);
         long now = System.currentTimeMillis();
-        if (now - lastReactionAt < REACTION_COOLDOWN_MS) {
+        if (!isSafetyEvent && now - lastReactionAt < REACTION_COOLDOWN_MS) {
             Log.d(TAG, "쿨다운 중 - 이벤트 무시: " + eventType);
             return;
         }

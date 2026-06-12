@@ -58,8 +58,46 @@ public class MainActivity extends AppCompatActivity
 
     private enum State { IDLE, CONVERSATION }
 
-    private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker();
+    // 대화 발화는 반드시 들려야 하므로 디바운스를 끈다(웨이크 응답 직후 AI 답변이 3초 쿨다운에 먹혀
+    // 화면만 바뀌고 말은 안 나오는 "조용한 답변" 문제 방지).
+    private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker(false);
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
+
+    // 시스템 워치독 주기: 볼륨/키오스크/상단바 상태를 주기적으로 강제 원복한다.
+    private static final long SYSTEM_WATCHDOG_INTERVAL_MS = 10_000L;
+
+    // 시스템 워치독: 10초마다 (1) 볼륨이 크게 낮아졌으면 80%로 원복,
+    // (2) 키오스크 모드가 풀렸으면 재활성, (3) 상단바가 다시 떴으면 숨김.
+    // 어느 한 단계가 실패해도 전체가 멈추지 않도록 각각 try/catch로 격리하고 항상 다음 주기를 예약한다.
+    private final Runnable systemWatchdog = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                android.media.AudioManager am =
+                        (android.media.AudioManager) getSystemService(android.content.Context.AUDIO_SERVICE);
+                if (am != null) {
+                    int max = am.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC);
+                    int target = (int) Math.round(max * 0.8);
+                    int cur = am.getStreamVolume(android.media.AudioManager.STREAM_MUSIC);
+                    // 누군가 볼륨을 절반 이하로 낮췄을 때만 끌어올린다(시연자가 의도적으로 키운 건 건드리지 않음).
+                    if (cur < target * 0.6) {
+                        am.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, target, 0);
+                    }
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "systemWatchdog: 볼륨 원복 실패(무시): " + e.getMessage());
+            }
+            try {
+                if (robot != null) {
+                    robot.setKioskModeOn(true);
+                    robot.hideTopBar();
+                }
+            } catch (Exception e) {
+                Log.w(TAG, "systemWatchdog: 키오스크/상단바 재적용 실패(무시): " + e.getMessage());
+            }
+            uiHandler.postDelayed(this, SYSTEM_WATCHDOG_INTERVAL_MS);
+        }
+    };
 
     private State state = State.IDLE;
 
@@ -221,6 +259,9 @@ public class MainActivity extends AppCompatActivity
         robot.hideTopBar();
         robot.setKioskModeOn(true);
         sensorEventPoller.start();
+        // 시스템 워치독 시작 (볼륨/키오스크/상단바 주기 원복). onPause에서 해제된다.
+        uiHandler.removeCallbacks(systemWatchdog);
+        uiHandler.postDelayed(systemWatchdog, SYSTEM_WATCHDOG_INTERVAL_MS);
         enterIdle();
     }
 

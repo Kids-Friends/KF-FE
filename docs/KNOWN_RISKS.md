@@ -66,3 +66,22 @@
 41. **[P1] Robot.getInstance() NotInitializedException**: Application Context 생성 전 로봇 객체를 호출. -> `MainActivity` 생성 이후에만 호출되도록 보장.
 42. **[P1] WakeLock 해제 누락**: 앱 종료 후에도 화면이 계속 켜져있어 배터리 광탈. -> `FLAG_KEEP_SCREEN_ON`은 Activity 생명주기에 종속되므로 자동 해제되어 안전.
 43. **[P2] 애니메이션 중 Activity 종료로 인한 WindowLeaked**: 다이얼로그나 팝업이 떠 있는 상태에서 강제 종료 시 에러 로그 발생. -> 데모용 앱에서는 팝업 대신 Visibility 전환(`View.VISIBLE`, `GONE`) 방식을 채택하여 WindowLeaked 원천 차단.
+
+## 🔥 Phase 10 — 빌드 자체가 안 되던 치명적 결함 (이번 세션 신규 발굴 · 전부 수정 완료)
+
+> **가장 중요한 발견**: 이전 문서들이 "수정 완료"라고 적어둔 항목 일부가 **실제 코드엔 반영돼 있지 않았다.** 그 결과 FE 모듈은 **컴파일 자체가 불가능한 상태**였다(= APK 생성 불가 = 시연 0% 성공). 문서를 믿지 말고 코드를 직접 검증해야 한다.
+
+### A. 컴파일 차단(P0) — 셋 다 "빌드 실패"라 시연 전체가 불가능했음
+44. **[P0] `MainActivity.systemWatchdog` 미정의 (컴파일 에러)**: `onResume()`/`onPause()`가 `systemWatchdog`를 참조하는데 **필드 선언이 코드 어디에도 없었다.** (KNOWN_RISKS #1·#5, FAILSAFE 표에 "완료"로 기재돼 있었으나 docs에만 존재.) -> `MainActivity`에 `systemWatchdog` Runnable을 실제 구현: 10초마다 (1) 음량이 절반 이하로 떨어지면 80%로 원복, (2) `setKioskModeOn(true)`, (3) `hideTopBar()`. 각 단계 try/catch 격리 + 항상 다음 주기 재예약.
+45. **[P0] `SensorEventPoller` 클래스 닫는 중괄호 뒤 고아 코드 (컴파일 에러)**: 클래스가 한 번 닫힌 뒤(`}`) 중복 메서드(`asString`/`asMap`)·떠 있는 문장(`actionManager.onSensorEvent(...)`)·`scheduleNext()`가 클래스 밖에 남아 있었다(잘못된 머지/편집 흔적). -> 파일 전체 재작성으로 고아 코드 제거.
+46. **[P0] `TemiRepository` 잉여 닫는 중괄호 (컴파일 에러)**: 클래스 종료(`}`) 뒤 라인 293에 `}`가 하나 더 있어 파일이 깨져 있었다. -> 잉여 중괄호 1개 삭제.
+
+### B. 컴파일은 되더라도 시연이 실패하던 논리 결함(P0~P1)
+47. **[P0] 센서 폴링이 "딱 한 번"만 돌고 영구 정지**: `SensorEventPoller.poll()`이 응답/실패 후 `scheduleNext()`를 **호출하지 않아** 2초 주기 재폴링이 안 됐다(메서드는 있었지만 고아 영역에 있었음). 즉 시연의 핵심 볼거리인 **HW→BE→FE 센서 반응이 시작 직후 죽는** 상태. -> `onResponse`/`onFailure`/`enqueue 예외` **모든 종료 경로**에서 `scheduleNext()`를 호출하도록 `finally` 패턴으로 보강. 한 번 실패해도 폴링 루프가 끊기지 않음.
+48. **[P1] 대화 첫 답변이 "소리 없이" 나오던 TTS 디바운스 오작동**: `TemiSpeechSpeaker`의 3초 전역 쿨다운이 **대화 발화에도 적용**돼 있었다. fast-path(웨이크워드 뒤에 바로 질문: "친구야, 사자는 뭐 먹어?")에서 T=0에 "응! 불렀어?"를 말하면, <3초 뒤 도착한 AI 답변이 쿨다운에 먹혀 **화면엔 답이 뜨는데 로봇은 입을 다무는** 데모 실패가 났다. -> `TemiSpeechSpeaker(boolean debounce)` 생성자 추가. 대화용 speaker는 `new TemiSpeechSpeaker(false)`(항상 발화), 센서/리실리언스용은 기존대로 디바운스 ON 유지.
+
+### C. 운영/검증 프로세스 리스크 (앞으로의 재발 방지)
+49. **[P0] "docs = 완료"의 함정**: 본 문서를 포함한 인수인계 자료가 *의도(계획)*를 *완료(반영)*로 기록하는 사고가 실재했다. -> 빌드 가능 여부는 **반드시 Android Studio 실제 빌드**로만 판정한다. 코드 리뷰 시 "문서에 완료라 적힘"은 근거로 인정하지 않는다.
+50. **[P1] 잘못된 머지가 남기는 "닫는 중괄호 뒤 고아 코드"**: #45·#46이 동일 패턴(클래스 닫힌 뒤 잔여 코드/중괄호)이었다. -> 머지 후 점검 루틴으로 *파일별 `{`/`}` 개수 일치 검사*를 권장(빠른 스모크 테스트). 본 세션에서 전 FE `.java` 42개 균형 검사 통과 확인.
+
+> 위 #44~#48은 코드에 반영 완료. 단, 본 환경엔 Android SDK가 없어 **풀 컴파일은 Android Studio에서 1회 확인 필요**(시그니처/리소스 검증). 변경 파일: `MainActivity.java`, `SensorEventPoller.java`, `TemiRepository.java`, `TemiSpeechSpeaker.java`.
