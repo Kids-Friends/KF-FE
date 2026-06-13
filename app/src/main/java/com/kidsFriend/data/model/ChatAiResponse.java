@@ -1,10 +1,7 @@
 package com.kidsFriend.data.model;
 
-import com.google.gson.annotations.SerializedName;
-
 public class ChatAiResponse {
     public String reply;
-
-    @SerializedName("created_at")
+    // BE(AiChatResponse)는 createdAt(camelCase)로 내려주므로 키 이름 그대로 매칭한다.
     public String createdAt;
 }

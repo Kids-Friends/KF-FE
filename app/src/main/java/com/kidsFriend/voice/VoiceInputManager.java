@@ -66,6 +66,9 @@ public class VoiceInputManager implements Robot.NlpListener {
         this.continuousMode = continuousMode;
         this.callback = callback;
         this.stopped = false;
+        // 새로 시작할 때 서킷브레이커 상태를 초기화한다(이전 실패 누적으로 즉시 멈추는 것 방지).
+        this.rapidFailCount = 0;
+        this.lastNlpTime = 0;
 
         Log.d(TAG, "startListening: continuousMode = " + continuousMode);
         
@@ -99,10 +102,24 @@ public class VoiceInputManager implements Robot.NlpListener {
         }
         lastNlpTime = now;
 
-        // [방어 코드] 1초 이내에 실패가 5번 이상 반복되면 하드웨어/마이크 고장으로 간주하고 연속 듣기를 강제 중단 (ANR 방지)
+        // [방어 코드] 1초 이내에 실패가 5번 이상 반복되면 하드웨어/마이크 고장으로 간주하고 폭주 루프를 멈춘다.
+        // 단, 영구 정지하지 않는다: 사용자에게 터치를 안내한 뒤 잠시 후 자동으로 다시 듣기를 시도한다.
         if (rapidFailCount > 5) {
-            Log.e(TAG, "onNlpCompleted: Circuit Breaker triggered! STT hardware might be broken. Stopping infinite loop.");
+            Log.e(TAG, "onNlpCompleted: Circuit Breaker! STT 폭주 → 일시 중단 후 자동 복구 예약.");
+            final Callback savedCallback = this.callback;
+            final boolean wasContinuous = this.continuousMode;
             stopListening();
+            if (savedCallback != null) {
+                savedCallback.onError("마이크가 잘 안 들려요. 화면을 눌러줘!");
+            }
+            if (wasContinuous && savedCallback != null) {
+                // 5초 뒤 연속 듣기를 자동 재시작한다(마이크/네트워크가 잠깐 꼬여도 스스로 회복).
+                handler.postDelayed(() -> {
+                    if (stopped) {
+                        startContinuousListening(savedCallback);
+                    }
+                }, 5000);
+            }
             return;
         }
 

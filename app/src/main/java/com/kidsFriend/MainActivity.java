@@ -333,15 +333,14 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onPartialResult(String text) {
-                if (!TextUtils.isEmpty(text)) {
-                    statusText.setText(getString(R.string.voice_heard_format, text));
-                }
+                // 대기화면에서는 오인식/주변 소음 텍스트로 안내문구를 덮지 않는다(화면 깔끔 유지).
             }
 
             @Override
             public void onResult(String text) {
+                // 호출어("친구야")가 들렸을 때만 화면을 전환하고,
+                // 그 외 인식 결과는 무시해 대기화면("친구야 하고 부르거나...")을 안정적으로 유지한다.
                 if (!WakeWordMatcher.containsWakeWord(text)) {
-                    statusText.setText(getString(R.string.voice_heard_format, text));
                     return;
                 }
                 voiceInputManager.stopListening();
@@ -350,6 +349,7 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onError(String message) {
+                // STT가 반복 실패하면(마이크/네트워크 문제) 터치를 안내한다. (VoiceInputManager가 잠시 후 자동 복구)
                 statusText.setText(message);
             }
         });
