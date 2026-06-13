@@ -25,6 +25,7 @@ import com.kidsFriend.data.model.QuestionResponse;
 import com.kidsFriend.data.repository.RepositoryCallback;
 import com.kidsFriend.data.repository.TemiRepository;
 import com.kidsFriend.robot.RobotActionManager;
+import com.kidsFriend.robot.RobotPositionReporter;
 import com.kidsFriend.robot.RobotResilienceManager;
 import com.kidsFriend.robot.SensorEventPoller;
 import com.kidsFriend.ui.MembershipCardActivity;
@@ -120,6 +121,7 @@ public class MainActivity extends AppCompatActivity
     private VoiceInputManager voiceInputManager;
     private SensorEventPoller sensorEventPoller;
     private RobotResilienceManager resilienceManager;
+    private RobotPositionReporter positionReporter;
     private Robot robot;
     private android.os.PowerManager.WakeLock wakeLock;
     private ImageView faceImage;
@@ -163,6 +165,8 @@ public class MainActivity extends AppCompatActivity
         sensorEventPoller = new SensorEventPoller(actionManager);
         // 시연 중 돌발상황을 Temi 내장 기능으로 자동 복구(내장 사람감지 백업, 들림/끌림 정지, 배터리 안내).
         resilienceManager = new RobotResilienceManager(actionManager);
+        // 테미 매핑(자기 위치 인식) 정보를 KF_BE로 보고 → 대시보드(KF_WEB)가 실시간 위치 표시.
+        positionReporter = new RobotPositionReporter();
 
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
@@ -289,6 +293,8 @@ public class MainActivity extends AppCompatActivity
             applyCuteVoice();
             // 로봇이 준비된 뒤 내장 복구 기능(사람감지/들림/끌림/배터리) 등록.
             resilienceManager.register();
+            // 테미 위치 보고 시작(매핑된 상태에서 위치가 바뀔 때마다 BE로 전송).
+            positionReporter.register();
         }
     }
 
@@ -541,6 +547,9 @@ public class MainActivity extends AppCompatActivity
         try {
             if (resilienceManager != null) {
                 resilienceManager.unregister();
+            }
+            if (positionReporter != null) {
+                positionReporter.unregister();
             }
             robot.toggleWakeup(false);
             robot.setKioskModeOn(false);

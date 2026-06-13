@@ -11,6 +11,8 @@ import com.kidsFriend.data.model.IntentResponse;
 import com.kidsFriend.data.model.PhotoRequest;
 import com.kidsFriend.data.model.PhotoResponse;
 import com.kidsFriend.data.model.PointRequest;
+import com.kidsFriend.data.model.RobotLocationsRequest;
+import com.kidsFriend.data.model.RobotPositionRequest;
 import com.kidsFriend.data.model.SensorEventRequest;
 
 import java.util.List;
@@ -59,6 +61,12 @@ public interface TemiApiService {
 
     @GET("api/sensor-events/latest")
     Call<ApiResponse<Map<String, Object>>> getLatestSensorEvent();
+
+    @POST("api/robot-position")
+    Call<Void> reportRobotPosition(@Body RobotPositionRequest request);
+
+    @POST("api/robot-position/locations")
+    Call<Void> reportRobotLocations(@Body RobotLocationsRequest request);
 
     @GET("api/health")
     Call<Map<String, String>> health();
