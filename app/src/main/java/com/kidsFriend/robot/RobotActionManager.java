@@ -2,10 +2,21 @@ package com.kidsFriend.robot;
 
 import android.util.Log;
 
+import com.kidsFriend.data.api.ApiClient;
+import com.kidsFriend.data.model.ApiResponse;
+import com.kidsFriend.data.model.ClientResponse;
+import com.kidsFriend.data.model.SensorEventRequest;
+import com.kidsFriend.data.repository.RepositoryCallback;
+import com.kidsFriend.data.repository.TemiRepository;
 import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.robotemi.sdk.Robot;
 
+import java.util.List;
 import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * 센서 이벤트에 따라 테미 로봇의 이동/표현을 제어하는 레이어.
@@ -31,7 +42,16 @@ public class RobotActionManager {
     private static final long REACTION_COOLDOWN_MS = 8000L;
 
     private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker();
+    private final TemiRepository repository;
     private long lastReactionAt = 0L;
+
+    public RobotActionManager() {
+        this.repository = new TemiRepository();
+    }
+
+    public RobotActionManager(TemiRepository repository) {
+        this.repository = repository;
+    }
 
     public void setOnFaceChangeListener(OnFaceChangeListener listener) {
         this.faceChangeListener = listener;
@@ -58,7 +78,8 @@ public class RobotActionManager {
         switch (eventType) {
             case "CHILD_DETECTED":
                 changeFace("EXCITED");
-                approachNearbyChild();
+                String childName = asString(payload, "name");
+                approachNearbyChild(childName);
                 break;
             case "OBSTACLE_DETECTED":
                 reactToObstacle(payload);
@@ -75,9 +96,30 @@ public class RobotActionManager {
             case "ARRIVED_AT_LOCATION":
                 changeFace("JOY");
                 speaker.speak("도착했어요!");
+                reportArrival();
                 break;
             default:
                 Log.d(TAG, "처리하지 않는 이벤트: " + eventType);
+        }
+    }
+
+    private void reportArrival() {
+        // SensorEventRequest(String robotId, String eventType, Object payload)
+        SensorEventRequest req = new SensorEventRequest("TEMI_01", "ARRIVAL", null);
+        try {
+            ApiClient.getService().postSensorEvent(req).enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<Map<String, Object>>> call, Response<ApiResponse<Map<String, Object>>> response) {
+                    Log.d(TAG, "Arrival reported successfully");
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
+                    Log.w(TAG, "Failed to report arrival: " + t.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            Log.w(TAG, "Error reporting arrival: " + e.getMessage());
         }
     }
 
@@ -86,10 +128,29 @@ public class RobotActionManager {
      * 데모 안전을 위해 자율 주행(beWithMe)은 기본 비활성화한다.
      * 실제로 아이에게 "다가가게" 하려면 아래 runRobot(Robot::beWithMe); 한 줄의 주석을 해제하면 된다.
      */
-    private void approachNearbyChild() {
-        speaker.speak("안녕! 친구야, 같이 놀까?");
+    private void approachNearbyChild(String name) {
+        if (name != null && !name.isEmpty()) {
+            repository.getClientsByName(name, new RepositoryCallback<List<ClientResponse>>() {
+                @Override
+                public void onSuccess(List<ClientResponse> data) {
+                    if (data != null && !data.isEmpty()) {
+                        String childName = data.get(0).childName;
+                        speaker.speak("안녕 " + childName + "아! 같이 놀까?");
+                    } else {
+                        speaker.speak("안녕! 새로운 친구구나? 같이 놀까?");
+                    }
+                }
+
+                @Override
+                public void onError(String message) {
+                    speaker.speak("안녕! 친구야, 같이 놀까?");
+                }
+            });
+        } else {
+            speaker.speak("안녕! 친구야, 같이 놀까?");
+        }
         tiltUpToFace();
-        // runRobot(Robot::beWithMe);  // ← 실제 접근(주행)을 원하면 주석 해제
+        runRobot(Robot::beWithMe);  // ← 실제 접근(주행)을 원하면 주석 해제
     }
 
     /** 60cm 안에 무언가 감지되면 거리에 따라 멈추거나 올려다본다. */
@@ -128,6 +189,12 @@ public class RobotActionManager {
         } catch (RuntimeException e) {
             Log.w(TAG, "로봇 동작 실패(로봇 환경이 아닐 수 있음): " + e.getMessage());
         }
+    }
+
+    private String asString(Map<String, Object> payload, String key) {
+        if (payload == null) return null;
+        Object val = payload.get(key);
+        return val != null ? val.toString() : null;
     }
 
     private int readInt(Map<String, Object> payload, String key, int fallback) {

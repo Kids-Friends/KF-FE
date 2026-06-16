@@ -29,6 +29,9 @@ import com.kidsFriend.voice.WakeWordMatcher;
 import com.robotemi.sdk.Robot;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyListener {
@@ -80,7 +83,7 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
         approachButton.setOnClickListener(v -> showPendingFeature());
         locationGuideButton.setOnClickListener(v -> openScreen(ZoneActivity.class));
         rewardButton.setOnClickListener(v -> showPendingFeature());
-        photoButton.setOnClickListener(v -> showPhotoUrlDialog());
+        photoButton.setOnClickListener(v -> simulateCaptureAndUpload());
         clientSettingsButton.setOnClickListener(v -> showClientSettingsDialog());
         wakeButton.setOnClickListener(v -> startWakeWordStandby());
 
@@ -97,6 +100,40 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
 
     private void showPendingFeature() {
         Toast.makeText(this, R.string.feature_pending_message, Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 실제 카메라 하드웨어가 없는 환경에서도 업로드 프로세스를 테스트할 수 있도록
+     * 더미 파일을 생성하여 Step 1(업로드) -> Step 2(DB 등록) 과정을 시뮬레이션합니다.
+     */
+    private void simulateCaptureAndUpload() {
+        setTestResult("사진 촬영 시뮬레이션 중...");
+
+        File dummyFile = new File(getCacheDir(), "test_capture_" + System.currentTimeMillis() + ".jpg");
+        try (FileOutputStream fos = new FileOutputStream(dummyFile)) {
+            // 빈 파일 혹은 작은 데이터를 써서 더미 이미지 파일 생성
+            fos.write(new byte[1024]);
+        } catch (IOException e) {
+            Toast.makeText(this, "더미 파일 생성 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        repository.uploadAndSavePhoto(dummyFile, new RepositoryCallback<com.kidsFriend.data.model.PhotoResponse>() {
+            @Override
+            public void onSuccess(com.kidsFriend.data.model.PhotoResponse data) {
+                setTestResult("사진 업로드 및 DB 등록 성공: " + data.photoName);
+                Toast.makeText(ApiTestActivity.this, "사진이 성공적으로 업로드되었습니다.", Toast.LENGTH_SHORT).show();
+                // 사용이 끝난 더미 파일 삭제
+                dummyFile.delete();
+            }
+
+            @Override
+            public void onError(String message) {
+                setTestResult("업로드 오류: " + message);
+                Toast.makeText(ApiTestActivity.this, "업로드 실패: " + message, Toast.LENGTH_SHORT).show();
+                dummyFile.delete();
+            }
+        });
     }
 
     private void showClientSettingsDialog() {

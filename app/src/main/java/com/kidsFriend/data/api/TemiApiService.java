@@ -18,10 +18,13 @@ import com.kidsFriend.data.model.SensorEventRequest;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Multipart;
 import retrofit2.http.PATCH;
+import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
@@ -30,7 +33,7 @@ public interface TemiApiService {
     @GET("api/clients")
     Call<ApiResponse<List<ClientResponse>>> getClients();
 
-    @GET("api/clients")
+    @GET("api/clients/search")
     Call<ApiResponse<List<ClientResponse>>> getClientsByName(
             @Query("name") String name
     );
@@ -52,6 +55,12 @@ public interface TemiApiService {
 
     @POST("api/chat")
     Call<ApiResponse<ChatResponse>> saveChatLog(@Body ChatLogRequest request);
+
+    @Multipart
+    @POST("api/photos/upload")
+    Call<ApiResponse<PhotoResponse>> uploadPhoto(
+            @Part MultipartBody.Part file
+    );
 
     @POST("api/photos")
     Call<ApiResponse<PhotoResponse>> savePhoto(@Body PhotoRequest request);

@@ -28,8 +28,12 @@ import com.kidsFriend.data.model.VoiceQuestionRequest;
 import com.kidsFriend.data.model.ZoneInfo;
 import com.kidsFriend.data.session.SessionManager;
 
+import java.io.File;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -202,6 +206,38 @@ public class TemiRepository {
     public void savePhoto(String photoUrl, String photoName, RepositoryCallback<PhotoResponse> callback) {
         PhotoRequest request = new PhotoRequest(getCurrentClientId(), photoUrl, photoName);
         apiService().savePhoto(request).enqueue(toWrappedRetrofitCallback(callback));
+    }
+
+    public void uploadPhoto(File file, RepositoryCallback<PhotoResponse> callback) {
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+        apiService().uploadPhoto(body).enqueue(toWrappedRetrofitCallback(callback));
+    }
+
+    /**
+     * Step 1(업로드) + Step 2(DB 등록)를 한 번에 수행하는 통합 메서드
+     */
+    public void uploadAndSavePhoto(File file, RepositoryCallback<PhotoResponse> callback) {
+        uploadPhoto(file, new RepositoryCallback<PhotoResponse>() {
+            @Override
+            public void onSuccess(PhotoResponse uploadedData) {
+                // Step 2: 업로드된 정보를 바탕으로 메타데이터 등록
+                savePhoto(uploadedData.photoUrl, uploadedData.photoName, callback);
+            }
+
+            @Override
+            public void onError(String message) {
+                callback.onError("Step 1 Upload failed: " + message);
+            }
+        });
+    }
+
+    public void askAi(String question, RepositoryCallback<ChatAiResponse> callback) {
+        apiService().askAi(new ChatAiRequest(question)).enqueue(toWrappedRetrofitCallback(callback));
+    }
+
+    public void resolveIntent(String text, RepositoryCallback<IntentResponse> callback) {
+        apiService().resolveIntent(new IntentRequest(text)).enqueue(toWrappedRetrofitCallback(callback));
     }
 
     private TemiApiService apiService() {

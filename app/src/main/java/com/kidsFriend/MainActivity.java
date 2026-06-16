@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity
         repository = new TemiRepository(this);
         voiceInputManager = new VoiceInputManager(this);
         // 라즈베리파이 센서 이벤트(KF_BE 경유)를 폴링해 로봇 동작으로 변환한다.
-        RobotActionManager actionManager = new RobotActionManager();
+        RobotActionManager actionManager = new RobotActionManager(repository);
         actionManager.setOnFaceChangeListener(faceType -> 
             uiHandler.post(() -> {
                 int resId = R.drawable.face_peaceful;
@@ -440,6 +440,12 @@ public class MainActivity extends AppCompatActivity
                 speaker.speak(getString(R.string.home_routing_membership));
                 statusText.setText(R.string.home_routing_membership);
                 startActivity(new Intent(this, MembershipCardActivity.class));
+                break;
+            case PHOTO:
+                setFace(R.drawable.face_excited);
+                speaker.speak("좋아요! 멋진 포즈를 취해봐요. 사진 찍을게요!");
+                statusText.setText("사진 촬영 준비 중...");
+                // TODO: 실제 카메라 구동 및 uploadAndSavePhoto 호출 로직 구현
                 break;
             case CHAT:
             default:
