@@ -77,11 +77,10 @@ public class MainActivity extends AppCompatActivity
                 android.media.AudioManager am =
                         (android.media.AudioManager) getSystemService(android.content.Context.AUDIO_SERVICE);
                 if (am != null) {
-                    int max = am.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC);
-                    int target = (int) Math.round(max * 0.8);
+                    int target = 6;
                     int cur = am.getStreamVolume(android.media.AudioManager.STREAM_MUSIC);
-                    // 누군가 볼륨을 절반 이하로 낮췄을 때만 끌어올린다(시연자가 의도적으로 키운 건 건드리지 않음).
-                    if (cur < target * 0.6) {
+                    // 볼륨이 6이 아니면 강제로 6으로 맞춤 (사용자 요청: 테미 목소리가 너무 크므로 6으로 고정)
+                    if (cur != target) {
                         am.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, target, 0);
                     }
                 }
@@ -173,6 +172,12 @@ public class MainActivity extends AppCompatActivity
         robot.addOnRequestPermissionResultListener(this);
 
         faceImage = findViewById(R.id.image_face);
+        faceImage.setOnClickListener(v -> {
+            if (state == State.IDLE) {
+                voiceInputManager.stopListening();
+                startConversation(null);
+            }
+        });
         
         // 데모용 비밀 트리거 (얼굴 길게 누르기 -> 아이 감지 센서 이벤트 모의 발생)
         faceImage.setOnLongClickListener(v -> {
