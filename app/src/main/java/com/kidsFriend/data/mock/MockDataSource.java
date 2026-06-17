@@ -17,7 +17,10 @@ public class MockDataSource {
     private static final String ANSWER_X = "X";
     private static final Random RANDOM = new Random();
 
+    // 시연 대본 고정 순서: demo-001(정답 케이스) → demo-002(오답 케이스) → 이후 기본 문제들
     private static final List<MockQuiz> QUIZZES = Arrays.asList(
+            new MockQuiz("demo-001", "미끄럼틀 위에서 친구를 밀어도 될까요?", ANSWER_X, "친구를 밀면 다칠 수 있어요. 카운터에서 선물을 받을 수 있어!"),
+            new MockQuiz("demo-002", "펭귄은 하늘을 날 수 있어요?", ANSWER_X, "펭귄은 날개가 있지만 하늘을 날지는 못해요."),
             new MockQuiz("quiz-001", "키즈카페에서는 뛰기보다 천천히 걸어야 해요.", ANSWER_O, "천천히 움직이면 친구와 부딪칠 위험을 줄일 수 있어요."),
             new MockQuiz("quiz-002", "미끄럼틀은 거꾸로 올라가도 괜찮아요.", ANSWER_X, "미끄럼틀은 정해진 방향으로만 이용해야 안전해요."),
             new MockQuiz("quiz-003", "놀고 난 뒤에는 손을 씻는 것이 좋아요.", ANSWER_O, "손 씻기는 가장 기본적인 위생 습관이에요."),
@@ -47,8 +50,12 @@ public class MockDataSource {
         );
     }
 
+    // 시연 재현성을 위해 랜덤 대신 고정 순서로 한 문제씩 내보낸다.
+    private static int demoIndex = 0;
+
     public QuizQuestion getCurrentQuiz() {
-        MockQuiz quiz = QUIZZES.get(RANDOM.nextInt(QUIZZES.size()));
+        MockQuiz quiz = QUIZZES.get(demoIndex % QUIZZES.size());
+        demoIndex++;
         return quiz.toQuestion();
     }
 
@@ -60,8 +67,8 @@ public class MockDataSource {
 
         boolean correct = quiz.correctAnswer.equals(request.selectedAnswer);
         String message = correct
-                ? "와우! 정답이에요! 🎉 " + quiz.explanation
-                : "아쉬워요. 정답은 " + quiz.correctAnswer + "였어요. " + quiz.explanation + " 🤔";
+                ? "정답! 정말 잘했어! " + quiz.explanation
+                : "정말 아쉽다! 정답은 " + quiz.correctAnswer + "였어. " + quiz.explanation;
         return new QuizAnswerResponse(correct, message);
     }
 

@@ -31,6 +31,7 @@ import com.kidsFriend.robot.SensorEventPoller;
 import com.kidsFriend.ui.MembershipCardActivity;
 import com.kidsFriend.ui.QuizActivity;
 import com.kidsFriend.voice.IntentRouter;
+import com.kidsFriend.voice.ScriptedResponder;
 import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.kidsFriend.voice.VoiceInputManager;
 import com.kidsFriend.voice.WakeWordMatcher;
@@ -245,6 +246,13 @@ public class MainActivity extends AppCompatActivity
             robot.setKioskModeOn(false);
             finish();
         });
+
+        // 데모용 비밀 트리거 6: 뒤로가기 버튼 길게 누르기 -> 화재경보 모의 발생
+        backButton.setOnLongClickListener(v -> {
+            Log.d(TAG, "Secret Trigger: Mock FIRE event");
+            actionManager.onSensorEvent("FIRE_DETECTED", null);
+            return true;
+        });
         operatorMenuButton.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, ApiTestActivity.class)));
     }
@@ -421,9 +429,27 @@ public class MainActivity extends AppCompatActivity
         }
         lastRouteTime = System.currentTimeMillis();
 
+        // 데모 스크립트: "고마워/감사" → 작별 인사 후 대기 복귀
+        if (isThanksPhrase(text)) {
+            setFace(R.drawable.face_joy);
+            speaker.speak("내가 더 고맙지! 늘 사랑해");
+            enterIdle();
+            return;
+        }
+
         if (isEndPhrase(text)) {
             speaker.speak(getString(R.string.home_bye));
             enterIdle();
+            return;
+        }
+
+        // 데모 스크립트: 정체/이름/엄마/미세먼지는 AI 없이 고정 답변으로 대화를 이어간다.
+        String scripted = ScriptedResponder.answer(text);
+        if (scripted != null) {
+            lastRouteTime = 0; // 연속 대화 허용
+            setFace(R.drawable.face_joy);
+            showAnswer(scripted);
+            speakThenListen(scripted);
             return;
         }
 
@@ -435,11 +461,25 @@ public class MainActivity extends AppCompatActivity
                 statusText.setText(R.string.home_routing_quiz);
                 startActivity(new Intent(this, QuizActivity.class));
                 break;
+            case REGISTER:
+                setFace(R.drawable.face_joy);
+                speaker.speak("회원으로 등록하면 퀴즈를 풀고 포인트를 모아 선물을 받을 수 있어! 사진도 찍고 나만의 프로필도 만들 수 있어. 지금 바로 등록해줄게!");
+                statusText.setText("회원 등록을 시작할게요!");
+                Intent registerIntent = new Intent(this, MembershipCardActivity.class);
+                registerIntent.putExtra(MembershipCardActivity.EXTRA_REGISTER_MODE, true);
+                startActivity(registerIntent);
+                break;
             case MEMBERSHIP:
                 setFace(R.drawable.face_joy);
                 speaker.speak(getString(R.string.home_routing_membership));
                 statusText.setText(R.string.home_routing_membership);
                 startActivity(new Intent(this, MembershipCardActivity.class));
+                break;
+            case LOCATION:
+                setFace(R.drawable.face_excited);
+                String guide = locationGuide(text);
+                showAnswer(guide);
+                speakThenListen(guide);
                 break;
             case PHOTO:
                 setFace(R.drawable.face_excited);
@@ -518,6 +558,31 @@ public class MainActivity extends AppCompatActivity
                 || normalized.contains("안녕")
                 || normalized.contains("됐어")
                 || normalized.contains("끝");
+    }
+
+    /** "고마워/감사" 류는 작별 인사("늘 사랑해")로 마무리한다. */
+    private boolean isThanksPhrase(String text) {
+        String normalized = text == null ? "" : text.replaceAll("\\s+", "");
+        return normalized.contains("고마") || normalized.contains("감사");
+    }
+
+    /** 놀이존 위치 안내(자율주행 OFF, 음성 안내만). */
+    private String locationGuide(String text) {
+        String t = text == null ? "" : text.replaceAll("\\s+", "");
+        if (t.contains("미끄럼틀")) {
+            return "미끄럼틀은 D존에 있어! 같이 가볼까? 나를 따라와! "
+                    + "그리고 미끄럼틀은 한 번에 한 명씩 타야 하고, 친구를 밀면 안 돼!";
+        }
+        if (t.contains("볼풀")) {
+            return "볼풀은 B존에 있어! 뛰지 말고 천천히 가자!";
+        }
+        if (t.contains("화장실")) {
+            return "화장실은 입구 옆에 있어! 보호자랑 같이 가면 돼!";
+        }
+        if (t.contains("트램폴린")) {
+            return "트램폴린은 C존에 있어! 같이 가볼까? 나를 따라와!";
+        }
+        return "그건 어디 있는지 같이 찾아볼까? 직원 선생님께 여쭤보면 정확히 알려줄 거야!";
     }
 
     private boolean ensureAudioPermission() {

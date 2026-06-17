@@ -67,8 +67,9 @@ public class RobotActionManager {
         if (eventType == null) {
             return;
         }
-        // 안전 이벤트(기울어짐/충돌)는 쿨다운과 무관하게 항상 즉시 처리한다.
-        boolean isSafetyEvent = "TILT".equals(eventType) || "BUMP".equals(eventType);
+        // 안전 이벤트(기울어짐/충돌/화재)는 쿨다운과 무관하게 항상 즉시 처리한다.
+        boolean isSafetyEvent = "TILT".equals(eventType) || "BUMP".equals(eventType)
+                || "FIRE".equals(eventType) || "FIRE_DETECTED".equals(eventType) || "SMOKE".equals(eventType);
         long now = System.currentTimeMillis();
         if (!isSafetyEvent && now - lastReactionAt < REACTION_COOLDOWN_MS) {
             Log.d(TAG, "쿨다운 중 - 이벤트 무시: " + eventType);
@@ -92,6 +93,12 @@ public class RobotActionManager {
             case "LOW_BATTERY":
                 changeFace("SADNESS");
                 speaker.speak("배터리가 부족해요. 잠깐 충전하고 올게요!");
+                break;
+            case "FIRE":
+            case "FIRE_DETECTED":
+            case "SMOKE":
+                changeFace("ANGER");
+                handleFireAlarm();
                 break;
             case "ARRIVED_AT_LOCATION":
                 changeFace("JOY");
@@ -171,6 +178,12 @@ public class RobotActionManager {
     private void handleSafetyStop() {
         runRobot(Robot::stopMovement);
         speaker.speak("어어, 위험해요! 잠깐 멈출게요.");
+    }
+
+    /** 화재 경보: 즉시 정지하고 큰 소리로 대피를 안내한다. */
+    private void handleFireAlarm() {
+        runRobot(Robot::stopMovement);
+        speaker.speak("애들아, 불이났어! 비상! 모두 진정하고 선생님을 따라 천천히 밖으로 나가자!");
     }
 
     private void tiltUpToFace() {

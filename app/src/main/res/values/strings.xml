@@ -80,7 +80,7 @@
     <string name="test_result_waiting">결과가 여기에 표시됩니다.</string>
 
     <string name="home_idle_hint">\"친구야\" 하고 부르거나 화면을 터치해줘!</string>
-    <string name="home_wake_detected">응! 무슨 얘기 할까?</string>
+    <string name="home_wake_detected">어떤 도움이 필요하니?</string>
     <string name="home_listening">듣고 있어요 👂</string>
     <string name="home_thinking">음… 생각하고 있어요</string>
     <string name="home_bye">안녕! 또 부르면 올게.</string>
