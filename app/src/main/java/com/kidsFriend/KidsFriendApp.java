@@ -7,6 +7,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.kidsFriend.domain.greeting.MainActivity;
+
 /**
  * 전역 애플리케이션 클래스.
  * 시연 중 발생할 수 있는 모든 Uncaught Exception을 낚아채서 앱이 강제종료(Crash)되는 것을 막고,

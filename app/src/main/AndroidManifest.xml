@@ -25,36 +25,36 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TemiApplication">
         <activity
-            android:name=".ui.ZoneActivity"
+            android:name=".domain.zone.ZoneActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
-            android:name=".ui.QuizActivity"
+            android:name=".domain.quiz.QuizActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
-            android:name=".ui.QuestionActivity"
+            android:name=".domain.chat.QuestionActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
-            android:name=".ApiTestActivity"
+            android:name=".global.debug.ApiTestActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
-            android:name=".ui.MembershipCardActivity"
+            android:name=".domain.membership.MembershipCardActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
-        <activity android:name=".MainActivity"
+        <activity android:name=".domain.greeting.MainActivity"
             android:launchMode="singleTask"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
