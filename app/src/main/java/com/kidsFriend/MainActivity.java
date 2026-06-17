@@ -31,7 +31,6 @@ import com.kidsFriend.robot.SensorEventPoller;
 import com.kidsFriend.ui.MembershipCardActivity;
 import com.kidsFriend.ui.QuizActivity;
 import com.kidsFriend.voice.IntentRouter;
-import com.kidsFriend.voice.ScriptedResponder;
 import com.kidsFriend.voice.TemiSpeechSpeaker;
 import com.kidsFriend.voice.VoiceInputManager;
 import com.kidsFriend.voice.WakeWordMatcher;
@@ -443,13 +442,10 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        // 데모 스크립트: 정체/이름/엄마/미세먼지는 AI 없이 고정 답변으로 대화를 이어간다.
-        String scripted = ScriptedResponder.answer(text);
-        if (scripted != null) {
+        // 미세먼지/공기질: 센서 API 값을 사용하고, 값이 없거나 실패하면 "보통"으로 안내한다.
+        if (isAirQualityQuestion(text)) {
             lastRouteTime = 0; // 연속 대화 허용
-            setFace(R.drawable.face_joy);
-            showAnswer(scripted);
-            speakThenListen(scripted);
+            handleAirQuality();
             return;
         }
 
@@ -564,6 +560,35 @@ public class MainActivity extends AppCompatActivity
     private boolean isThanksPhrase(String text) {
         String normalized = text == null ? "" : text.replaceAll("\\s+", "");
         return normalized.contains("고마") || normalized.contains("감사");
+    }
+
+    private boolean isAirQualityQuestion(String text) {
+        String t = text == null ? "" : text.replaceAll("\\s+", "");
+        return t.contains("미세먼지") || t.contains("먼지") || t.contains("공기");
+    }
+
+    /** 미세먼지 질문: 센서 API 등급을 받아 안내(실패/값 없음 시 "보통"). */
+    private void handleAirQuality() {
+        armConversationWatchdog();
+        setFace(R.drawable.face_peaceful);
+        statusText.setText(R.string.home_thinking);
+        repository.getAirQuality(new RepositoryCallback<String>() {
+            @Override
+            public void onSuccess(String grade) {
+                setFace(R.drawable.face_joy);
+                String answer = "지금 미세먼지 상태는 " + grade + "이야!";
+                answer += "나쁨".equals(grade) ? " 오늘은 실내에서 노는 게 좋겠어!" : " 신나게 놀아도 괜찮아!";
+                showAnswer(answer);
+                speakThenListen(answer);
+            }
+
+            @Override
+            public void onError(String message) {
+                String answer = "지금 미세먼지 상태는 보통이야! 신나게 놀아도 괜찮아!";
+                showAnswer(answer);
+                speakThenListen(answer);
+            }
+        });
     }
 
     /** 놀이존 위치 안내(자율주행 OFF, 음성 안내만). */

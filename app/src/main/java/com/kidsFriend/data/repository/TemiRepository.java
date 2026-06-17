@@ -30,6 +30,7 @@ import com.kidsFriend.data.session.SessionManager;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -107,6 +108,82 @@ public class TemiRepository {
 
     public void getZones(RepositoryCallback<List<ZoneInfo>> callback) {
         callback.onSuccess(mockDataSource.getZones());
+    }
+
+    /**
+     * 미세먼지(공기질) 등급을 가져온다. 최신 센서 이벤트가 공기질 이벤트면 그 값을 등급으로
+     * 변환하고, 값이 없거나 공기질 이벤트가 아니거나 호출이 실패하면 "보통"으로 폴백한다.
+     */
+    public void getAirQuality(RepositoryCallback<String> callback) {
+        apiService().getLatestSensorEvent().enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Map<String, Object>>> call,
+                                   Response<ApiResponse<Map<String, Object>>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(parseAirGrade(response.body().data));
+                } else {
+                    callback.onSuccess("보통");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
+                Log.w("TemiRepository", "getAirQuality failed, fallback 보통: " + t.getMessage());
+                callback.onSuccess("보통");
+            }
+        });
+    }
+
+    /** 센서 데이터에서 공기질 등급(좋음/보통/나쁨) 추출. 판별 불가 시 "보통". */
+    private String parseAirGrade(Map<String, Object> data) {
+        if (data == null) {
+            return "보통";
+        }
+        String type = (str(data.get("sensorType")) + str(data.get("eventType"))).toUpperCase();
+        boolean isAir = type.contains("DUST") || type.contains("AIR")
+                || type.contains("PM") || type.contains("미세");
+        if (!isAir) {
+            return "보통";
+        }
+        // value(문자열) 우선, 없으면 payload의 grade/pm25 확인
+        String raw = str(data.get("value"));
+        if (raw.isEmpty() && data.get("payload") instanceof Map) {
+            Map<?, ?> p = (Map<?, ?>) data.get("payload");
+            Object grade = p.get("grade");
+            Object pm = p.get("pm25");
+            if (grade != null) {
+                raw = grade.toString();
+            } else if (pm != null) {
+                raw = pm.toString();
+            }
+        }
+        raw = raw.trim();
+        if (raw.contains("좋")) {
+            return "좋음";
+        }
+        if (raw.contains("나쁨") || raw.toUpperCase().contains("BAD")) {
+            return "나쁨";
+        }
+        if (raw.contains("보통") || raw.toUpperCase().contains("NORMAL") || raw.toUpperCase().contains("MODERATE")) {
+            return "보통";
+        }
+        try {
+            double pm = Double.parseDouble(raw);
+            if (pm <= 15) {
+                return "좋음";
+            }
+            if (pm <= 35) {
+                return "보통";
+            }
+            return "나쁨";
+        } catch (NumberFormatException ignored) {
+            // 숫자가 아니면 아래 기본값으로
+        }
+        return "보통";
+    }
+
+    private String str(Object o) {
+        return o == null ? "" : o.toString();
     }
 
     public void getClients(RepositoryCallback<List<ClientResponse>> callback) {

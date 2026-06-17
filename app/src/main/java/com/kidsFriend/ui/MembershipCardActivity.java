@@ -26,7 +26,7 @@ public class MembershipCardActivity extends AppCompatActivity {
 
     /** true이면 기존 회원 조회 대신 신규 등록 스크립트를 자동 재생한다(데모용). */
     public static final String EXTRA_REGISTER_MODE = "register_mode";
-    private static final String DEMO_MEMBER_NAME = "박재석";
+    private static final String DEMO_MEMBER_NAME = "박도현";
 
     // 등록 스크립트의 연속 발화가 디바운스(3초)에 먹히지 않도록 디바운스를 끈다.
     private final TemiSpeechSpeaker speaker = new TemiSpeechSpeaker(false);

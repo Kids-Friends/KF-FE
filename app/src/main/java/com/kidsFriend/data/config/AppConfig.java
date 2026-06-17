@@ -1,4 +1,4 @@
-package com.kidsFriend.data.config;
+ㅇpackage com.kidsFriend.data.config;
 
 import android.content.Context;
 import android.content.SharedPreferences;
