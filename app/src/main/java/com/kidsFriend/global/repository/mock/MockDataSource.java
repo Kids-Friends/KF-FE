@@ -1,16 +1,16 @@
 package com.kidsFriend.global.repository.mock;
 
-import com.kidsFriend.domain.chat.QuestionRequest;
-import com.kidsFriend.domain.chat.QuestionResponse;
-import com.kidsFriend.domain.quiz.QuizAnswerRequest;
-import com.kidsFriend.domain.quiz.QuizAnswerResponse;
-import com.kidsFriend.domain.quiz.QuizQuestion;
-import com.kidsFriend.domain.chat.VoiceQuestionRequest;
-import com.kidsFriend.domain.zone.ZoneInfo;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+
+import com.kidsFriend.domain.chat.request.QuestionRequest;
+import com.kidsFriend.domain.chat.request.VoiceQuestionRequest;
+import com.kidsFriend.domain.chat.response.QuestionResponse;
+import com.kidsFriend.domain.quiz.request.QuizAnswerRequest;
+import com.kidsFriend.domain.quiz.response.QuizAnswerResponse;
+import com.kidsFriend.domain.quiz.service.QuizQuestion;
+import com.kidsFriend.domain.zone.ZoneInfo;
 
 public class MockDataSource {
     private static final String ANSWER_O = "O";

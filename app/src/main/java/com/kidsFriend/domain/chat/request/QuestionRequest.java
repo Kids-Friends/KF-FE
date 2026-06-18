@@ -1,4 +1,4 @@
-package com.kidsFriend.domain.chat;
+package com.kidsFriend.domain.chat.request;
 
 public class QuestionRequest {
     public String question;

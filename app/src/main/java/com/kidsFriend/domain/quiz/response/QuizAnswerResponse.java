@@ -1,4 +1,4 @@
-package com.kidsFriend.domain.quiz;
+package com.kidsFriend.domain.quiz.response;
 
 public class QuizAnswerResponse {
     public boolean correct;

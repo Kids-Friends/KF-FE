@@ -1,29 +1,26 @@
-package com.kidsFriend.domain.chat;
+package com.kidsFriend.domain.chat.service;
 
 import android.Manifest;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import com.robotemi.sdk.Robot;
 
 import com.kidsFriend.R;
-import com.kidsFriend.domain.chat.QuestionResponse;
+import com.kidsFriend.domain.chat.response.QuestionResponse;
 import com.kidsFriend.global.repository.RepositoryCallback;
 import com.kidsFriend.global.repository.TemiRepository;
-import com.kidsFriend.domain.chat.QuestionReconstructor;
 import com.kidsFriend.global.voice.TemiSpeechSpeaker;
 import com.kidsFriend.global.voice.VoiceInputManager;
 import com.kidsFriend.global.voice.WakeWordMatcher;
-import com.robotemi.sdk.Robot;
 
 public class QuestionActivity extends AppCompatActivity {
     private static final String TAG = "QuestionActivity";
@@ -41,6 +38,8 @@ public class QuestionActivity extends AppCompatActivity {
     private TextView reconstructedVoiceText;
     private TextView answerText;
     private Button voiceButton;
+    private LinearLayout subtitleLayout;
+    private TextView subtitleText;
     private VoiceInputManager voiceInputManager;
     private boolean shouldStartVoiceAfterPermission;
 
@@ -58,6 +57,8 @@ public class QuestionActivity extends AppCompatActivity {
         answerText = findViewById(R.id.text_question_answer);
         Button askButton = findViewById(R.id.button_ask_question);
         voiceButton = findViewById(R.id.button_voice_listen);
+        subtitleLayout = findViewById(R.id.layout_subtitle);
+        subtitleText = findViewById(R.id.text_subtitle);
         Button backButton = findViewById(R.id.button_back);
         voiceInputManager = new VoiceInputManager(this);
 
@@ -204,23 +205,30 @@ public class QuestionActivity extends AppCompatActivity {
             @Override
             public void onReady() {
                 voiceModeText.setText(R.string.voice_listening);
+                subtitleLayout.setVisibility(View.VISIBLE);
+                subtitleText.setText("");
             }
 
             @Override
             public void onPartialResult(String text) {
                 if (!TextUtils.isEmpty(text)) {
                     rawVoiceText.setText(text);
+                    subtitleText.setText(getString(R.string.voice_caption_format, text));
                 }
             }
 
             @Override
             public void onResult(String text) {
+                if (!TextUtils.isEmpty(text)) {
+                    subtitleText.setText(getString(R.string.voice_caption_format, text));
+                }
                 handleVoiceQuestion(text);
             }
 
             @Override
             public void onError(String message) {
                 voiceModeText.setText(message);
+                subtitleLayout.setVisibility(View.GONE);
             }
         });
     }
@@ -264,6 +272,7 @@ public class QuestionActivity extends AppCompatActivity {
     private void askVoiceQuestion(String rawText, String reconstructedText) {
         voiceModeText.setText(R.string.voice_sending);
         answerText.setText(R.string.common_loading);
+        subtitleLayout.setVisibility(View.GONE);
         repository.askVoiceQuestion(rawText, reconstructedText, new RepositoryCallback<QuestionResponse>() {
             @Override
             public void onSuccess(QuestionResponse data) {

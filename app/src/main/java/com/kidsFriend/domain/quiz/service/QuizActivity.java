@@ -1,4 +1,4 @@
-package com.kidsFriend.domain.quiz;
+package com.kidsFriend.domain.quiz.service;
 
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -7,16 +7,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
+import com.robotemi.sdk.Robot;
 
 import com.kidsFriend.R;
-import com.kidsFriend.domain.quiz.QuizAnswerResponse;
-import com.kidsFriend.domain.quiz.QuizQuestion;
+import com.kidsFriend.domain.quiz.response.QuizAnswerResponse;
 import com.kidsFriend.global.repository.RepositoryCallback;
 import com.kidsFriend.global.repository.TemiRepository;
 import com.kidsFriend.global.voice.TemiSpeechSpeaker;
-import com.robotemi.sdk.Robot;
 
 public class QuizActivity extends AppCompatActivity {
     private static final String TAG = "QuizActivity";

@@ -66,12 +66,6 @@
             style="@style/TemiSecondaryButton"
             android:layout_marginTop="12dp"
             android:text="@string/voice_button_waiting" />
-
-            <Button
-                android:id="@+id/button_client_settings"
-                style="@style/TemiSecondaryButton"
-                android:layout_marginTop="12dp"
-                android:text="@string/settings_client_button" />
         </LinearLayout>
 
         <LinearLayout
@@ -109,43 +103,11 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/button_approach"
-                style="@style/TemiMenuButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="10dp"
-                android:text="@string/menu_approach" />
-
-            <Button
                 android:id="@+id/button_location_guide"
                 style="@style/TemiMenuButton"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_marginStart="10dp"
                 android:text="@string/menu_location_guide" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/button_reward"
-                style="@style/TemiMenuButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="10dp"
-                android:text="@string/menu_reward" />
-
-            <Button
-                android:id="@+id/button_photo"
-                style="@style/TemiMenuButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:text="@string/menu_photo" />
         </LinearLayout>
 
         <!-- ── API 직접 테스트 패널 ───────────────────────── -->
@@ -162,55 +124,11 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="16dp" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/test_client_id_label"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp"
-                android:layout_marginBottom="8dp" />
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginBottom="16dp">
-
-                <EditText
-                    android:id="@+id/edit_test_client_id"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="10dp"
-                    android:hint="@string/test_client_id_hint"
-                    android:inputType="text"
-                    android:singleLine="true"
-                    android:textSize="15sp"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:background="@drawable/status_background" />
-
-                <Button
-                    android:id="@+id/button_test_client_id_save"
-                    android:layout_width="wrap_content"
-                    android:layout_height="56dp"
-                    android:background="@drawable/secondary_button"
-                    android:backgroundTint="@null"
-                    android:elevation="2dp"
-                    android:textAllCaps="false"
-                    android:textColor="@color/kid_blue"
-                    android:textSize="17sp"
-                    android:textStyle="bold"
-                    android:paddingStart="20dp"
-                    android:paddingEnd="20dp"
-                    android:text="@string/test_client_id_save" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="12dp">
 
                 <Button
                     android:id="@+id/button_test_ai_chat"
@@ -224,43 +142,6 @@
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:text="@string/test_btn_ai_chat" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
-
-                <Button
-                    android:id="@+id/button_test_point"
-                    android:layout_width="0dp"
-                    android:layout_height="72dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:background="@drawable/menu_button"
-                    android:backgroundTint="@null"
-                    android:elevation="4dp"
-                    android:textAllCaps="false"
-                    android:textColor="@color/text_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:text="@string/test_btn_point" />
-
-                <Button
-                    android:id="@+id/button_test_chat_log"
-                    android:layout_width="0dp"
-                    android:layout_height="72dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:background="@drawable/menu_button"
-                    android:backgroundTint="@null"
-                    android:elevation="4dp"
-                    android:textAllCaps="false"
-                    android:textColor="@color/text_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:text="@string/test_btn_chat_log" />
             </LinearLayout>
 
             <TextView

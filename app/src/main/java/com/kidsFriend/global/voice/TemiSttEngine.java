@@ -3,7 +3,6 @@ package com.kidsFriend.global.voice;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-
 import com.robotemi.sdk.NlpResult;
 import com.robotemi.sdk.Robot;
 

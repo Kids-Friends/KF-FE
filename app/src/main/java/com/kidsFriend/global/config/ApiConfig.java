@@ -1,7 +1,5 @@
 package com.kidsFriend.global.config;
 
-import com.kidsFriend.BuildConfig;
-
 public final class ApiConfig {
     public static final boolean USE_MOCK = false;
 

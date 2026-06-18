@@ -2,7 +2,6 @@ package com.kidsFriend.global.config;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import com.kidsFriend.BuildConfig;
 
 public class AppConfig {
     // .env 파일의 API_BASE_URL 값이 빌드 시 주입되지만, 수동으로 ngrok 주소를 우선 적용합니다.

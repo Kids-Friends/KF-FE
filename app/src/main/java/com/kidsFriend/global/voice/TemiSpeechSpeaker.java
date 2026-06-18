@@ -1,7 +1,6 @@
 package com.kidsFriend.global.voice;
 
 import android.util.Log;
-
 import com.robotemi.sdk.Robot;
 import com.robotemi.sdk.TtsRequest;
 

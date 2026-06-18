@@ -6,16 +6,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
+import com.robotemi.sdk.Robot;
+import java.util.List;
 
 import com.kidsFriend.R;
-import com.kidsFriend.domain.zone.ZoneInfo;
 import com.kidsFriend.global.repository.RepositoryCallback;
 import com.kidsFriend.global.repository.TemiRepository;
-import com.robotemi.sdk.Robot;
-
-import java.util.List;
 
 public class ZoneActivity extends AppCompatActivity {
     private static final String TAG = "ZoneActivity";

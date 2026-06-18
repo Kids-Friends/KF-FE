@@ -1,86 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/screen_background"
-    android:fillViewport="true"
-    android:overScrollMode="never">
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/screen_background"
+        android:fillViewport="true"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="28dp">
+
+            <Button
+                android:id="@+id/button_back"
+                style="@style/TemiBackButton"
+                android:text="@string/common_back" />
+
+            <TextView
+                style="@style/TemiScreenTitle"
+                android:text="@string/question_title" />
+
+            <TextView
+                style="@style/TemiScreenDescription"
+                android:text="@string/question_description" />
+
+            <LinearLayout
+                style="@style/TemiPanel"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/text_voice_mode"
+                    style="@style/TemiStatusText"
+                    android:layout_marginTop="0dp"
+                    android:text="@string/voice_wake_standby" />
+
+                <TextView
+                    android:id="@+id/text_raw_voice"
+                    style="@style/TemiVoiceLabel"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/voice_raw_waiting" />
+
+                <TextView
+                    android:id="@+id/text_reconstructed_voice"
+                    style="@style/TemiVoiceLabel"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/voice_reconstructed_waiting" />
+
+                <Button
+                    android:id="@+id/button_voice_listen"
+                    style="@style/TemiSecondaryButton"
+                    android:layout_marginTop="16dp"
+                    android:text="@string/voice_button_waiting" />
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/TemiPanel"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/edit_question"
+                    android:layout_width="match_parent"
+                    android:layout_height="96dp"
+                    android:background="@drawable/input_background"
+                    android:gravity="top|start"
+                    android:hint="@string/question_hint"
+                    android:inputType="textMultiLine"
+                    android:padding="18dp"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_muted"
+                    android:textSize="18sp" />
+
+                <Button
+                    android:id="@+id/button_ask_question"
+                    style="@style/TemiPrimaryButton"
+                    android:layout_marginTop="18dp"
+                    android:text="@string/question_submit" />
+
+                <TextView
+                    android:id="@+id/text_question_answer"
+                    style="@style/TemiStatusText"
+                    android:text="@string/question_waiting_message" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
     <LinearLayout
+        android:id="@+id/layout_subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="28dp">
-
-        <Button
-            android:id="@+id/button_back"
-            style="@style/TemiBackButton"
-            android:text="@string/common_back" />
+        android:layout_gravity="bottom"
+        android:background="#B3000000"
+        android:padding="16dp"
+        android:visibility="gone">
 
         <TextView
-            style="@style/TemiScreenTitle"
-            android:text="@string/question_title" />
-
-        <TextView
-            style="@style/TemiScreenDescription"
-            android:text="@string/question_description" />
-
-        <LinearLayout
-            style="@style/TemiPanel"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/text_voice_mode"
-                style="@style/TemiStatusText"
-                android:layout_marginTop="0dp"
-                android:text="@string/voice_wake_standby" />
-
-            <TextView
-                android:id="@+id/text_raw_voice"
-                style="@style/TemiVoiceLabel"
-                android:layout_marginTop="14dp"
-                android:text="@string/voice_raw_waiting" />
-
-            <TextView
-                android:id="@+id/text_reconstructed_voice"
-                style="@style/TemiVoiceLabel"
-                android:layout_marginTop="10dp"
-                android:text="@string/voice_reconstructed_waiting" />
-
-            <Button
-                android:id="@+id/button_voice_listen"
-                style="@style/TemiSecondaryButton"
-                android:layout_marginTop="16dp"
-                android:text="@string/voice_button_waiting" />
-        </LinearLayout>
-
-        <LinearLayout
-            style="@style/TemiPanel"
-            android:orientation="vertical">
-
-            <EditText
-                android:id="@+id/edit_question"
-                android:layout_width="match_parent"
-                android:layout_height="96dp"
-                android:background="@drawable/input_background"
-                android:gravity="top|start"
-                android:hint="@string/question_hint"
-                android:inputType="textMultiLine"
-                android:padding="18dp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_muted"
-                android:textSize="18sp" />
-
-            <Button
-                android:id="@+id/button_ask_question"
-                style="@style/TemiPrimaryButton"
-                android:layout_marginTop="18dp"
-                android:text="@string/question_submit" />
-
-            <TextView
-                android:id="@+id/text_question_answer"
-                style="@style/TemiStatusText"
-                android:text="@string/question_waiting_message" />
-        </LinearLayout>
+            android:id="@+id/text_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="24sp"
+            android:textStyle="bold" />
     </LinearLayout>
-</ScrollView>
+
+</FrameLayout>

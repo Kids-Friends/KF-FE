@@ -1,14 +1,12 @@
 package com.kidsFriend.global.config;
 
 import android.util.Log;
-
-import com.kidsFriend.global.client.ApiClient;
-
 import java.util.Map;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import com.kidsFriend.global.client.ApiClient;
 
 public class BackendConnectionChecker {
 

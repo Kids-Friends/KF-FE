@@ -1,13 +1,12 @@
-package com.kidsFriend.domain.chat;
+package com.kidsFriend.domain.chat.service;
 
 import android.text.TextUtils;
-
-import com.kidsFriend.global.voice.SpeechCorrector;
-import com.kidsFriend.global.voice.WakeWordMatcher;
-
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import com.kidsFriend.global.voice.SpeechCorrector;
+import com.kidsFriend.global.voice.WakeWordMatcher;
 
 public class QuestionReconstructor {
     private static final Map<String, String> REPLACEMENTS = new LinkedHashMap<>();

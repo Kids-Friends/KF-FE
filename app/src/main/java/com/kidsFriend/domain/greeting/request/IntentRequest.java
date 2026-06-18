@@ -1,4 +1,4 @@
-package com.kidsFriend.domain.greeting;
+package com.kidsFriend.domain.greeting.request;
 
 public class IntentRequest {
     public String text;

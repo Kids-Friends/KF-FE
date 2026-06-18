@@ -1,4 +1,4 @@
-package com.kidsFriend.domain.chat;
+package com.kidsFriend.domain.chat.response;
 
 import com.google.gson.annotations.SerializedName;
 

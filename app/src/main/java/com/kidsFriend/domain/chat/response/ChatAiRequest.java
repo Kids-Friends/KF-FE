@@ -1,4 +1,4 @@
-package com.kidsFriend.domain.chat;
+package com.kidsFriend.domain.chat.response;
 
 public class ChatAiRequest {
     public String message;

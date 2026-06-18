@@ -31,13 +31,13 @@
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
-            android:name=".domain.quiz.QuizActivity"
+            android:name=".domain.quiz.service.QuizActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
-            android:name=".domain.chat.QuestionActivity"
+            android:name=".domain.chat.service.QuestionActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
@@ -48,13 +48,7 @@
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
-        <activity
-            android:name=".domain.membership.MembershipCardActivity"
-            android:launchMode="singleTop"
-            android:screenOrientation="landscape"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
-            android:exported="false" />
-        <activity android:name=".domain.greeting.MainActivity"
+        <activity android:name=".domain.greeting.service.MainActivity"
             android:launchMode="singleTask"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"

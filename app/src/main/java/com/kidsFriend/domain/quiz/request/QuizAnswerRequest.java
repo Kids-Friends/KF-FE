@@ -1,4 +1,4 @@
-package com.kidsFriend.domain.quiz;
+package com.kidsFriend.domain.quiz.request;
 
 public class QuizAnswerRequest {
     public String quizId;

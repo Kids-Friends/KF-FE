@@ -1,4 +1,4 @@
-package com.kidsFriend.domain.quiz;
+package com.kidsFriend.domain.quiz.service;
 
 import java.util.List;
 

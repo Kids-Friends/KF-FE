@@ -1,4 +1,4 @@
-package com.kidsFriend.domain.greeting;
+package com.kidsFriend.domain.greeting.service;
 
 import android.Manifest;
 import android.content.Intent;
@@ -14,37 +14,31 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
-import com.kidsFriend.R;
-import com.kidsFriend.global.config.AppConfig;
-import com.kidsFriend.global.config.BackendConnectionChecker;
-import com.kidsFriend.global.debug.ApiTestActivity;
-import com.kidsFriend.domain.chat.QuestionResponse;
-import com.kidsFriend.global.repository.RepositoryCallback;
-import com.kidsFriend.global.repository.TemiRepository;
-import com.kidsFriend.domain.sensor.RobotActionManager;
-import com.kidsFriend.domain.sensor.RobotPositionReporter;
-import com.kidsFriend.domain.sensor.RobotResilienceManager;
-import com.kidsFriend.domain.sensor.SensorEventPoller;
-import com.kidsFriend.domain.membership.MembershipCardActivity;
-import com.kidsFriend.domain.quiz.QuizActivity;
-import com.kidsFriend.domain.greeting.IntentRouter;
-import com.kidsFriend.global.voice.SpeechCorrector;
-import com.kidsFriend.global.voice.TemiSpeechSpeaker;
-import com.kidsFriend.global.voice.VoiceInputManager;
-import com.kidsFriend.global.voice.WakeWordMatcher;
 import com.robotemi.sdk.Robot;
 import com.robotemi.sdk.constants.Gender;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
 import com.robotemi.sdk.permission.OnRequestPermissionResultListener;
 import com.robotemi.sdk.permission.Permission;
 import com.robotemi.sdk.voice.model.TtsVoice;
-
 import java.util.Collections;
+
+import com.kidsFriend.R;
+import com.kidsFriend.domain.chat.response.QuestionResponse;
+import com.kidsFriend.domain.quiz.service.QuizActivity;
+import com.kidsFriend.domain.sensor.service.RobotActionManager;
+import com.kidsFriend.domain.sensor.service.RobotResilienceManager;
+import com.kidsFriend.global.config.AppConfig;
+import com.kidsFriend.global.config.BackendConnectionChecker;
+import com.kidsFriend.global.debug.ApiTestActivity;
+import com.kidsFriend.global.repository.RepositoryCallback;
+import com.kidsFriend.global.repository.TemiRepository;
+import com.kidsFriend.global.voice.SpeechCorrector;
+import com.kidsFriend.global.voice.TemiSpeechSpeaker;
+import com.kidsFriend.global.voice.VoiceInputManager;
+import com.kidsFriend.global.voice.WakeWordMatcher;
 
 /**
  * 통합 홈 화면 / 대화 엔진.
@@ -134,9 +128,7 @@ public class MainActivity extends AppCompatActivity
 
     private TemiRepository repository;
     private VoiceInputManager voiceInputManager;
-    private SensorEventPoller sensorEventPoller;
     private RobotResilienceManager resilienceManager;
-    private RobotPositionReporter positionReporter;
     private Robot robot;
     private android.os.PowerManager.WakeLock wakeLock;
     private ImageView faceImage;
@@ -169,8 +161,8 @@ public class MainActivity extends AppCompatActivity
         BackendConnectionChecker.check();
         repository = new TemiRepository(this);
         voiceInputManager = new VoiceInputManager(this);
-        // 라즈베리파이 센서 이벤트(KF_BE 경유)를 폴링해 로봇 동작으로 변환한다.
-        RobotActionManager actionManager = new RobotActionManager(repository);
+        // 센서 이벤트를 로봇 동작/표정으로 변환한다(시연에서는 화면 비밀 트리거로 발생시킨다).
+        RobotActionManager actionManager = new RobotActionManager();
         actionManager.setOnFaceChangeListener(faceType ->
             uiHandler.post(() -> {
                 int resId = R.drawable.face_peaceful;
@@ -181,11 +173,8 @@ public class MainActivity extends AppCompatActivity
                 setFace(resId);
             })
         );
-        sensorEventPoller = new SensorEventPoller(actionManager);
         // 시연 중 돌발상황을 Temi 내장 기능으로 자동 복구(내장 사람감지 백업, 들림/끌림 정지, 배터리 안내).
         resilienceManager = new RobotResilienceManager(actionManager);
-        // 테미 매핑(자기 위치 인식) 정보를 KF_BE로 보고 → 대시보드(KF_WEB)가 실시간 위치 표시.
-        positionReporter = new RobotPositionReporter();
 
         robot = Robot.getInstance();
         robot.addOnRobotReadyListener(this);
@@ -294,7 +283,6 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         robot.hideTopBar();
         robot.setKioskModeOn(true);
-        sensorEventPoller.start();
         // 시스템 워치독 시작 (볼륨/키오스크/상단바 주기 원복). onPause에서 해제된다.
         uiHandler.removeCallbacks(systemWatchdog);
         uiHandler.postDelayed(systemWatchdog, SYSTEM_WATCHDOG_INTERVAL_MS);
@@ -304,7 +292,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
-        sensorEventPoller.stop();
         voiceInputManager.stopListening();
         uiHandler.removeCallbacks(systemWatchdog);
     }
@@ -321,9 +308,6 @@ public class MainActivity extends AppCompatActivity
             if (resilienceManager != null) {
                 resilienceManager.unregister();
             }
-            if (positionReporter != null) {
-                positionReporter.unregister();
-            }
             robot.toggleWakeup(false);
             robot.setKioskModeOn(false);
             robot.removeOnRobotReadyListener(this);
@@ -334,9 +318,6 @@ public class MainActivity extends AppCompatActivity
         uiHandler.removeCallbacksAndMessages(null);
         if (voiceInputManager != null) {
             voiceInputManager.destroy();
-        }
-        if (sensorEventPoller != null) {
-            sensorEventPoller.stop();
         }
         super.onDestroy();
     }
@@ -361,8 +342,6 @@ public class MainActivity extends AppCompatActivity
             applyCuteVoice();
             // 로봇이 준비된 뒤 내장 복구 기능(사람감지/들림/끌림/배터리) 등록.
             resilienceManager.register();
-            // 테미 위치 보고 시작(매핑된 상태에서 위치가 바뀔 때마다 BE로 전송).
-            positionReporter.register();
         }
     }
 
@@ -533,17 +512,8 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        // 대본 순서대로 분기: 회원등록 → 놀이존 → 퀴즈 → 자유질문(AI).
+        // 대본 순서대로 분기: 놀이존 → 퀴즈 → 자유질문(AI).
         switch (IntentRouter.route(text)) {
-            case REGISTER:
-                handleRegister();
-                break;
-            case MEMBERSHIP:
-                handleMembership();
-                break;
-            case PHOTO:
-                handlePhoto();
-                break;
             case LOCATION:
                 handleLocation(text);
                 break;
@@ -565,38 +535,7 @@ public class MainActivity extends AppCompatActivity
     // 인사("친구야" 호출 → "어떤 도움이 필요하니?")는 startConversation()의 home_wake_detected
     // 발화로 처리된다. 별도 핸들러 없이 대화 진입 자체가 인사 단계다.
 
-    // ── ② 회원등록 ───────────────────────────────────────────────────────────
-
-    /** 회원'등록'/'가입': 신규 등록 모드로 회원카드 화면 진입. */
-    private void handleRegister() {
-        setFace(R.drawable.face_joy);
-        speaker.speak("회원으로 등록하면 퀴즈를 풀고 포인트를 모아 선물을 받을 수 있어! 사진도 찍고 나만의 프로필도 만들 수 있어. 지금 바로 등록해줄게!");
-        statusText.setText("회원 등록을 시작할게요!");
-        Intent registerIntent = new Intent(this, MembershipCardActivity.class);
-        registerIntent.putExtra(MembershipCardActivity.EXTRA_REGISTER_MODE, true);
-        startActivity(registerIntent);
-        logScenario(2, "회원등록", "성공");
-    }
-
-    /** 회원카드 조회(포인트/스탬프 등). */
-    private void handleMembership() {
-        setFace(R.drawable.face_joy);
-        speaker.speak(getString(R.string.home_routing_membership));
-        statusText.setText(R.string.home_routing_membership);
-        startActivity(new Intent(this, MembershipCardActivity.class));
-        logScenario(2, "회원카드 조회", "성공");
-    }
-
-    /** 프로필 사진 촬영(회원등록 흐름의 일부). */
-    private void handlePhoto() {
-        setFace(R.drawable.face_excited);
-        speaker.speak("좋아요! 멋진 포즈를 취해봐요. 사진 찍을게요!");
-        statusText.setText("사진 촬영 준비 중...");
-        // TODO: 실제 카메라 구동 및 uploadAndSavePhoto 호출 로직 구현
-        logScenario(2, "사진 촬영", "진입(촬영 미구현)");
-    }
-
-    // ── ③ 놀이존 위치 안내 ────────────────────────────────────────────────────
+    // ── ② 놀이존 위치 안내 ────────────────────────────────────────────────────
 
     /** 놀이존 위치 안내(자율주행 OFF, 음성 안내만). */
     private void handleLocation(String text) {

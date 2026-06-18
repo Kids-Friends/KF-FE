@@ -7,7 +7,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.kidsFriend.domain.greeting.MainActivity;
+import com.kidsFriend.domain.greeting.service.MainActivity;
 
 /**
  * 전역 애플리케이션 클래스.

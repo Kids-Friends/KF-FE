@@ -1,14 +1,14 @@
-package com.kidsFriend.domain.sensor;
+package com.kidsFriend.domain.sensor.service;
 
 import android.util.Log;
-
-import com.kidsFriend.global.voice.TemiSpeechSpeaker;
 import com.robotemi.sdk.BatteryData;
 import com.robotemi.sdk.Robot;
 import com.robotemi.sdk.listeners.OnBatteryStatusChangedListener;
 import com.robotemi.sdk.listeners.OnDetectionStateChangedListener;
 import com.robotemi.sdk.listeners.OnRobotDragStateChangedListener;
 import com.robotemi.sdk.listeners.OnRobotLiftedListener;
+
+import com.kidsFriend.global.voice.TemiSpeechSpeaker;
 
 /**
  * 시연 중 돌발상황을 <b>Temi 내장 기능</b>으로 자동 복구하는 레이어.
