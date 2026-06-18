@@ -5,15 +5,30 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.robotemi.sdk.NlpResult;
-import com.robotemi.sdk.Robot;
+import com.kidsFriend.R;
 
 /**
- * 안드로이드 표준 SpeechRecognizer 대신 테미 SDK의 음성 인식 기능을 사용하는 매니저입니다.
- * 테미 하드웨어와 내장 STT 엔진을 사용하여 안정적인 음성 인식을 제공합니다.
+ * 음성 인식 오케스트레이터.
+ *
+ * <p>두 엔진을 상황에 맞게 고른다.
+ * <ul>
+ *   <li><b>연속(웨이크 대기)</b> → {@link TemiSttEngine}. 소음에 강한 테미로 "친구야"를 안정적으로 잡는다.</li>
+ *   <li><b>단일(대화 듣기)</b> → {@link AndroidSttEngine} 우선. 부분결과로 실시간 자막을 만들되,
+ *       워치독으로 무응답/데드락을 감지하면 {@link TemiSttEngine}으로 투명하게 폴백한다.</li>
+ * </ul>
+ *
+ * <p>공개 API(시작/정지/해제/가용성)는 기존과 동일해 호출부 수정이 없다. 죽어 있던
+ * {@link Callback#onPartialResult(String)}가 이제 SpeechRecognizer 부분결과로 실제 호출된다.
  */
-public class VoiceInputManager implements Robot.NlpListener {
+public class VoiceInputManager {
     private static final String TAG = "VoiceInputManager";
+
+    /** 마지막 신호(준비/부분결과) 이후 이 시간 동안 진전 없으면 테미로 폴백. */
+    private static final long WATCHDOG_MS = 4000;
+
+    // SpeechRecognizer 에러 코드 중 "무발화/타임아웃"(사용자가 말 안 함). 폴백 대신 그대로 알린다.
+    private static final int ERROR_SPEECH_TIMEOUT = 6;
+    private static final int ERROR_NO_MATCH = 7;
 
     public interface Callback {
         void onReady();
@@ -22,129 +37,156 @@ public class VoiceInputManager implements Robot.NlpListener {
         void onError(String message);
     }
 
-    private final Robot robot;
+    private final Context context;
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private Callback callback;
-    private boolean continuousMode;
-    private boolean stopped = true;
+    private final TemiSttEngine temiEngine = new TemiSttEngine();
+    private final AndroidSttEngine androidEngine;
+    private final boolean androidAvailable;
+
+    private SttEngine activeEngine;
+    private Runnable watchdog;
+    private boolean fellBack;
 
     public VoiceInputManager(Context context) {
-        this.robot = Robot.getInstance();
+        this.context = context.getApplicationContext();
+        this.androidEngine = new AndroidSttEngine(this.context);
+        this.androidAvailable = AndroidSttEngine.isAvailable(this.context);
+        Log.d(TAG, "SpeechRecognizer available = " + androidAvailable);
     }
 
-    /**
-     * 테미 로봇 환경에서는 테미 SDK를 통한 음성 인식이 항상 가능하다고 간주합니다.
-     */
+    /** 테미 STT가 항상 백업으로 있으므로 인식은 항상 가능하다고 본다. */
     public static boolean isRecognitionAvailable(Context context) {
         return true;
     }
 
+    /** 한 발화만 듣는다(대화). SpeechRecognizer 우선 + 테미 폴백. */
     public void startSingleListening(Callback callback) {
-        startListening(false, callback);
+        stopListening();
+        fellBack = false;
+        if (androidAvailable) {
+            startAndroidWithFallback(callback);
+        } else {
+            startTemiSingle(callback);
+        }
     }
 
+    /** 계속 듣는다(웨이크 대기). 소음에 강한 테미 단독. */
     public void startContinuousListening(Callback callback) {
-        startListening(true, callback);
+        stopListening();
+        activeEngine = temiEngine;
+        temiEngine.start(true, callback);
     }
 
     public void stopListening() {
-        if (stopped) return;
-        
-        stopped = true;
-        continuousMode = false;
-        handler.removeCallbacksAndMessages(null);
-        robot.removeNlpListener(this);
-        robot.finishConversation();
-        Log.d(TAG, "stopListening: Voice recognition stopped.");
+        cancelWatchdog();
+        if (activeEngine != null) {
+            activeEngine.stop();
+            activeEngine = null;
+        }
     }
 
     public void destroy() {
-        stopListening();
+        cancelWatchdog();
+        androidEngine.destroy();
+        temiEngine.destroy();
+        activeEngine = null;
     }
 
-    private void startListening(boolean continuousMode, Callback callback) {
-        this.continuousMode = continuousMode;
-        this.callback = callback;
-        this.stopped = false;
-        // 새로 시작할 때 서킷브레이커 상태를 초기화한다(이전 실패 누적으로 즉시 멈추는 것 방지).
-        this.rapidFailCount = 0;
-        this.lastNlpTime = 0;
+    // ── 단일 듣기: SpeechRecognizer 우선 + 폴백 ───────────────────────────────
 
-        Log.d(TAG, "startListening: continuousMode = " + continuousMode);
-        
-        // 기존 리스너가 있다면 제거 후 새로 등록 (중복 방지)
-        robot.removeNlpListener(this);
-        robot.addNlpListener(this);
-        
-        // 테미 전용 STT 시작 (음성 인식 UI 활성화)
-        // 안내 멘트 없이 바로 듣기 시작 (발화 지연/자기음성 간섭 제거)
-        robot.askQuestion("");
-        
-        if (callback != null) {
-            callback.onReady();
+    private void startAndroidWithFallback(Callback userCallback) {
+        activeEngine = androidEngine;
+        armWatchdog(userCallback);
+        androidEngine.start(false, new Callback() {
+            @Override
+            public void onReady() {
+                resetWatchdog(userCallback); // 엔진 응답 → 진전으로 간주
+                userCallback.onReady();
+            }
+
+            @Override
+            public void onPartialResult(String text) {
+                resetWatchdog(userCallback); // 부분결과가 들어오는 동안은 살아있음
+                userCallback.onPartialResult(text);
+            }
+
+            @Override
+            public void onResult(String text) {
+                cancelWatchdog();
+                userCallback.onResult(text);
+            }
+
+            @Override
+            public void onError(String message) {
+                cancelWatchdog();
+                handleAndroidError(message, userCallback);
+            }
+        });
+    }
+
+    private void handleAndroidError(String message, Callback userCallback) {
+        int code = parseCode(message);
+        // 사용자가 말을 안 한 경우(무발화/타임아웃)는 폴백해도 똑같이 빈 결과 → 그대로 알린다.
+        if (code == ERROR_SPEECH_TIMEOUT || code == ERROR_NO_MATCH) {
+            userCallback.onError(context.getString(R.string.voice_not_recognized));
+            return;
+        }
+        // 그 외(busy/audio/server/client/network 등)는 엔진 문제 → 테미로 투명 폴백.
+        fallbackToTemi(userCallback);
+    }
+
+    private void fallbackToTemi(Callback userCallback) {
+        if (fellBack) {
+            return;
+        }
+        fellBack = true;
+        Log.w(TAG, "SpeechRecognizer 실패/무응답 → 테미 STT로 폴백.");
+        androidEngine.stop();
+        startTemiSingle(userCallback);
+    }
+
+    private void startTemiSingle(Callback userCallback) {
+        activeEngine = temiEngine;
+        temiEngine.start(false, userCallback);
+    }
+
+    // ── 워치독: 무응답/데드락 감지 ────────────────────────────────────────────
+
+    private void armWatchdog(Callback userCallback) {
+        cancelWatchdog();
+        watchdog = () -> {
+            Log.w(TAG, "SpeechRecognizer 진전 없음(" + WATCHDOG_MS + "ms) → 테미 폴백.");
+            fallbackToTemi(userCallback);
+        };
+        handler.postDelayed(watchdog, WATCHDOG_MS);
+    }
+
+    private void resetWatchdog(Callback userCallback) {
+        if (fellBack) {
+            return;
+        }
+        armWatchdog(userCallback);
+    }
+
+    private void cancelWatchdog() {
+        if (watchdog != null) {
+            handler.removeCallbacks(watchdog);
+            watchdog = null;
         }
     }
 
-    private int rapidFailCount = 0;
-    private long lastNlpTime = 0;
-
-    @Override
-    public void onNlpCompleted(NlpResult nlpResult) {
-        if (stopped || callback == null) {
-            return;
+    private int parseCode(String message) {
+        if (message == null) {
+            return -1;
         }
-
-        long now = System.currentTimeMillis();
-        if (now - lastNlpTime < 1000) {
-            rapidFailCount++;
-        } else {
-            rapidFailCount = 0;
+        int idx = message.lastIndexOf('_');
+        if (idx < 0 || idx + 1 >= message.length()) {
+            return -1;
         }
-        lastNlpTime = now;
-
-        // [방어 코드] 1초 이내에 실패가 5번 이상 반복되면 하드웨어/마이크 고장으로 간주하고 폭주 루프를 멈춘다.
-        // 단, 영구 정지하지 않는다: 사용자에게 터치를 안내한 뒤 잠시 후 자동으로 다시 듣기를 시도한다.
-        if (rapidFailCount > 5) {
-            Log.e(TAG, "onNlpCompleted: Circuit Breaker! STT 폭주 → 일시 중단 후 자동 복구 예약.");
-            final Callback savedCallback = this.callback;
-            final boolean wasContinuous = this.continuousMode;
-            stopListening();
-            if (savedCallback != null) {
-                savedCallback.onError("마이크가 잘 안 들려요. 화면을 눌러줘!");
-            }
-            if (wasContinuous && savedCallback != null) {
-                // 5초 뒤 연속 듣기를 자동 재시작한다(마이크/네트워크가 잠깐 꼬여도 스스로 회복).
-                handler.postDelayed(() -> {
-                    if (stopped) {
-                        startContinuousListening(savedCallback);
-                    }
-                }, 5000);
-            }
-            return;
-        }
-
-        String text = (nlpResult != null && nlpResult.resolvedQuery != null) 
-                ? nlpResult.resolvedQuery.trim() : "";
-        
-        Log.d(TAG, "onNlpCompleted: text = [" + text + "]");
-
-        if (!text.isEmpty()) {
-            callback.onResult(text);
-        } else {
-            // 인식이 되지 않았거나 취소된 경우
-            Log.d(TAG, "onNlpCompleted: No speech recognized or cancelled.");
-        }
-
-        if (continuousMode && !stopped) {
-            // 지속 모드인 경우 지연 후 다시 인식 시작 (무한 루프 방지를 위해 최소 1초 대기)
-            handler.postDelayed(() -> {
-                if (!stopped) {
-                    Log.d(TAG, "Restarting askQuestion for continuous mode.");
-                    robot.askQuestion(""); 
-                }
-            }, 1000);
-        } else if (!continuousMode) {
-            stopListening();
+        try {
+            return Integer.parseInt(message.substring(idx + 1));
+        } catch (NumberFormatException e) {
+            return -1;
         }
     }
 }

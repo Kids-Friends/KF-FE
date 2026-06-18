@@ -33,6 +33,7 @@ import com.kidsFriend.domain.sensor.SensorEventPoller;
 import com.kidsFriend.domain.membership.MembershipCardActivity;
 import com.kidsFriend.domain.quiz.QuizActivity;
 import com.kidsFriend.domain.greeting.IntentRouter;
+import com.kidsFriend.global.voice.SpeechCorrector;
 import com.kidsFriend.global.voice.TemiSpeechSpeaker;
 import com.kidsFriend.global.voice.VoiceInputManager;
 import com.kidsFriend.global.voice.WakeWordMatcher;
@@ -487,8 +488,9 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onPartialResult(String text) {
+                // 실시간 자막: SpeechRecognizer 부분결과를 하단에 단어별로 갱신(GenieTV식).
                 if (!TextUtils.isEmpty(text)) {
-                    statusText.setText(getString(R.string.voice_heard_format, text));
+                    statusText.setText(getString(R.string.voice_caption_format, text));
                 }
             }
 
@@ -606,7 +608,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private String locationGuide(String text) {
-        String t = text == null ? "" : text.replaceAll("\\s+", "");
+        // 장소명 오인식("미끄럼들"→"미끄럼틀")을 표준어로 스냅한 뒤 매칭한다.
+        String t = SpeechCorrector.correct(text).replaceAll("\\s+", "");
         if (t.contains("미끄럼틀")) {
             return "미끄럼틀은 D존에 있어! 같이 가볼까? 나를 따라와! "
                     + "그리고 미끄럼틀은 한 번에 한 명씩 타야 하고, 친구를 밀면 안 돼!";

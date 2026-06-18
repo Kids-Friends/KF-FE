@@ -62,3 +62,16 @@ FE는 `GET /api/sensor-events/latest`를 2초마다 폴링해 `RobotActionManage
 - `android.permission.INTERNET`: 백엔드 통신용
 - `android.permission.RECORD_AUDIO`: 음성 인식용
 - `com.robotemi.permission.SETTINGS`: 로봇 목소리(TTS) 설정을 변경하기 위해 필요
+
+## 7. 음성 인식 엔진 전략 (STT 이중화)
+
+테미 SDK 1.131.4는 **부분(interim) ASR 콜백이 없다**(`onAsrResult`/`onNlpCompleted`/`onConversationStatusChanged` 모두 최종 1회). 단어별 실시간 자막을 위해 `VoiceInputManager`가 두 엔진을 상황별로 고른다.
+
+| 모드 | 엔진 | 이유 |
+|---|---|---|
+| **웨이크 대기(연속)** | `TemiSttEngine` | 소음에 강함. "친구야" 안정 감지. 자막 불필요. |
+| **대화 듣기(단일)** | `AndroidSttEngine` 우선 → `TemiSttEngine` 폴백 | `SpeechRecognizer.onPartialResults`로 단어별 실시간 자막. 무응답/데드락(KNOWN_RISKS #7) 시 4초 워치독으로 테미 폴백. |
+
+- 인식 텍스트는 `KoreanPhonetics`(자모 유사도) 기반 `IntentRouter` 퍼지 분기 + `SpeechCorrector` 표준어 스냅으로 근사 오인식까지 흡수한다.
+- `SpeechRecognizer` 사용을 위해 Manifest에 `<queries><intent><action android:name="android.speech.RecognitionService"/></intent></queries>`가 등록돼 있어야 한다(이미 존재).
+- 언어는 `ko-KR` 강제(시스템 로케일이 영어로 튀어도 인식 유지, KNOWN_RISKS #40 연계).

@@ -56,7 +56,7 @@
 33. **[P0] Retrofit BaseUrl 파싱 크래시 (IllegalArgumentException)**: `.env` 파일 누락이나 URL 끝에 `/`가 없을 경우 앱 켜지자마자 Retrofit 빌더가 터짐. -> `RetrofitClient`에 강제 문자열 검증 및 기본 URL Fallback 삽입 완료.
 34. **[P1] Gson Null Array 파싱 에러**: 백엔드가 빈 배열 대신 `null`을 내려보낼 경우 DTO 파싱 중 크래시. -> DTO에 기본값 적용 및 레포지토리 단에서 Null 검증.
 35. **[P2] Interceptor 내부 IOException**: 로깅 인터셉터 등에서 네트워크 단절 시 예외를 던짐. -> `try-catch`로 래핑 후 진행.
-36. **[P2] 대규모 JSON OOM**: AI가 예상치 못하게 수만 자의 텍스트를 응답. -> 백엔드 프롬프트에서 "2문장 이내"로 하드 리밋(Hard Limit) 적용 완료.
+36. **[P2] 대규모 JSON OOM + TTS 깨짐**: AI가 예상치 못하게 수만 자의 텍스트를 응답하거나, 마크다운/이모지가 섞여 테미 TTS 발음이 깨짐. -> 백엔드 프롬프트(`AiPrompt.TTS_RULES`)에 "2문장 이내" 하드 리밋 + "마크다운(*, #, `, > 등)·이모지 금지, plaintext만" 규칙 명문화. chat/intent/photo 전 LLM 호출에서 공유. 추가로 구조화 출력(Structured Output)으로 군더더기 텍스트 차단.
 
 ### 9. OS 및 시스템 UI 간섭
 37. **[P0] 시스템 다이얼로그의 Focus 스틸**: 배터리 15% 경고 등 안드로이드 OS 팝업이 키오스크 모드 위로 올라와 시연을 가림. -> 배터리 30% 이상 유지 및 자체 `LOW_BATTERY` 모의 알림으로 시연자에게 사전 인지시킴.
@@ -85,3 +85,15 @@
 50. **[P1] 잘못된 머지가 남기는 "닫는 중괄호 뒤 고아 코드"**: #45·#46이 동일 패턴(클래스 닫힌 뒤 잔여 코드/중괄호)이었다. -> 머지 후 점검 루틴으로 *파일별 `{`/`}` 개수 일치 검사*를 권장(빠른 스모크 테스트). 본 세션에서 전 FE `.java` 42개 균형 검사 통과 확인.
 
 > 위 #44~#48은 코드에 반영 완료. 단, 본 환경엔 Android SDK가 없어 **풀 컴파일은 Android Studio에서 1회 확인 필요**(시그니처/리소스 검증). 변경 파일: `MainActivity.java`, `SensorEventPoller.java`, `TemiRepository.java`, `TemiSpeechSpeaker.java`.
+
+## 🎙️ Phase 11 — 인식률 개선 + 실시간 자막 (STT 엔진 이중화)
+
+> 배경: 테미 SDK 1.131.4는 **부분(interim) ASR 콜백이 없어**(`onAsrResult`/`onNlpCompleted`/`onConversationStatusChanged` 전부 최종 1회) GenieTV식 단어별 실시간 자막이 불가능했다. 동시에 의도 분기가 키워드 정확 일치라 STT 근사 오인식이 전부 CHAT으로 빠졌다.
+
+51. **[개선] 단어별 실시간 자막(Wake 후 듣는 중)**: 대화 듣기(단일)를 **Android `SpeechRecognizer.onPartialResults` 우선**으로 바꿔 하단(`text_home_status`)에 단어별로 갱신. → `AndroidSttEngine`. 죽어 있던 `Callback.onPartialResult`가 이제 실제 호출됨.
+52. **[#7 보강] SpeechRecognizer 데드락(P0) 워치독 폴백**: `VoiceInputManager`가 단일 듣기 시작 후 마지막 신호(준비/부분결과) 이후 **4초 무진전이면 테미 STT로 투명 폴백**(`fallbackToTemi`). `isRecognitionAvailable`=false거나 엔진 에러(busy/audio/server 등)도 즉시 폴백. 무발화/타임아웃(코드 6·7)은 폴백 대신 "잘 못 들었어요" 안내. → #7의 오퍼레이터 백도어는 그대로 유지(최후 보루).
+53. **[개선] 퍼지 의도 분기 + 음성 보정**: `IntentRouter`가 정확 포함 실패 시 **자모 유사도(`KoreanPhonetics.containsSimilar`, 임계 0.75)**로 재시도(3글자↑ 키워드만). `SpeechCorrector`가 장소/명령 고유어("미끄럼들"→"미끄럼틀")를 표준어로 스냅(질문 재구성·위치 안내에 적용). 자유 대화 AI 원문은 보정하지 않아 의미 훼손 없음.
+54. **[유지] 웨이크 대기(연속)는 테미 단독**: 소음에 강한 테미로 "친구야"를 잡는 경로는 그대로(자막 불필요). 마이크 경합 방지를 위해 단일/연속 전환 시 항상 한 엔진만 활성.
+55. **[#8 연계] 하울링 방어 유지**: Android STT는 `speakThenListen`(TTS 예상시간 딜레이) 이후에만 시작되므로 자기음성 인식 위험은 기존과 동일하게 방어됨.
+
+> 변경 파일: `KoreanPhonetics.java`(신규), `SttEngine.java`(신규), `TemiSttEngine.java`(신규), `AndroidSttEngine.java`(신규), `SpeechCorrector.java`(신규), `VoiceInputManager.java`(오케스트레이터), `WakeWordMatcher.java`·`IntentRouter.java`·`QuestionReconstructor.java`·`MainActivity.java`·`strings.xml`. Manifest `<queries>`(RecognitionService)는 이미 존재. **풀 컴파일은 Android Studio에서 1회 확인 필요.**

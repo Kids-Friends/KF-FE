@@ -2,6 +2,7 @@ package com.kidsFriend.domain.chat;
 
 import android.text.TextUtils;
 
+import com.kidsFriend.global.voice.SpeechCorrector;
 import com.kidsFriend.global.voice.WakeWordMatcher;
 
 import java.util.LinkedHashMap;
@@ -32,7 +33,8 @@ public class QuestionReconstructor {
         }
 
         String withoutWakeWord = WakeWordMatcher.removeWakeWord(normalized);
-        String reconstructed = withoutWakeWord;
+        // 도메인 고유어 오인식을 표준어로 스냅한 뒤 정형화 규칙을 적용한다.
+        String reconstructed = SpeechCorrector.correct(withoutWakeWord);
         for (Map.Entry<String, String> entry : REPLACEMENTS.entrySet()) {
             if (reconstructed.contains(entry.getKey())) {
                 reconstructed = entry.getValue();

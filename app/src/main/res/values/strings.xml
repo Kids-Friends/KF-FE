@@ -60,6 +60,8 @@
     <string name="voice_sending">질문을 서버로 보내는 중입니다.</string>
     <string name="voice_answer_received">답변을 받았습니다. Kids_Friend가 읽어줄게요.</string>
     <string name="voice_heard_format">인식 중: %1$s</string>
+    <string name="voice_caption_format">💬 %1$s</string>
+    <string name="voice_not_recognized">잘 못 들었어요. 다시 말해줄래?</string>
     <string name="voice_raw_waiting">STT 원문: 아직 인식된 문장이 없습니다.</string>
     <string name="voice_reconstructed_waiting">정리한 질문: 아직 생성되지 않았습니다.</string>
     <string name="voice_button_waiting">음성 대기 시작</string>

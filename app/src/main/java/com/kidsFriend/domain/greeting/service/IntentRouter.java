@@ -1,10 +1,20 @@
 package com.kidsFriend.domain.greeting;
 
+import com.kidsFriend.global.voice.KoreanPhonetics;
+
 /**
  * 아이의 발화를 듣고 어떤 기능 화면으로 이동할지 결정합니다.
  * 매칭되는 키워드가 없으면 AI 질문(CHAT)으로 처리합니다.
+ *
+ * <p>STT 근사 오인식("미끄럼들", "트람폴린", "화장씰")도 잡도록, 정확 포함이 실패하면
+ * 자모 유사도({@link KoreanPhonetics#containsSimilar})로 한 번 더 본다.
  */
 public final class IntentRouter {
+
+    /** 퍼지 매칭 통과 임계값. 높을수록 보수적(오라우팅 적음). */
+    private static final double FUZZY_THRESHOLD = 0.75;
+    /** 이 글자수 미만 키워드는 퍼지를 건너뛴다(짧은 단어는 오매칭 위험이 큼). */
+    private static final int MIN_FUZZY_LENGTH = 3;
 
     public enum Intent {
         QUIZ,
@@ -48,7 +58,14 @@ public final class IntentRouter {
 
     private static boolean containsAny(String normalized, String[] keywords) {
         for (String keyword : keywords) {
-            if (normalized.contains(keyword.replaceAll("\\s+", ""))) {
+            String k = keyword.replaceAll("\\s+", "");
+            // 1) 정확 포함(빠른 경로).
+            if (normalized.contains(k)) {
+                return true;
+            }
+            // 2) 자모 유사도 퍼지(근사 오인식 흡수). 짧은 키워드는 오매칭 위험이 커 건너뛴다.
+            if (k.length() >= MIN_FUZZY_LENGTH
+                    && KoreanPhonetics.containsSimilar(normalized, k, FUZZY_THRESHOLD)) {
                 return true;
             }
         }
