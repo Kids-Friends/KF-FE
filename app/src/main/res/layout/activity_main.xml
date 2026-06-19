@@ -77,17 +77,33 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- 완료 버튼: 디자인 시스템에 맞춰 친근하게 수정 (빨간색 제거) -->
-    <Button
-        android:id="@+id/button_complete"
-        style="@style/TemiPrimaryButton"
-        android:layout_width="280dp"
-        android:layout_height="88dp"
+    <!-- 액션 버튼 컨테이너: 디자인 시스템 통일 및 시나리오별 분기 -->
+    <LinearLayout
+        android:id="@+id/layout_action_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="180dp"
-        android:text="다 했어요"
-        android:textSize="28sp"
-        android:visibility="gone" />
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/button_continue"
+            style="@style/TemiSecondaryButton"
+            android:layout_width="280dp"
+            android:layout_height="88dp"
+            android:layout_marginEnd="20dp"
+            android:text="또 할래요"
+            android:textSize="28sp" />
+
+        <Button
+            android:id="@+id/button_complete"
+            style="@style/TemiPrimaryButton"
+            android:layout_width="280dp"
+            android:layout_height="88dp"
+            android:text="다 했어요"
+            android:textSize="28sp" />
+    </LinearLayout>
 
     <!-- 실시간 자막 오버레이 -->
     <LinearLayout

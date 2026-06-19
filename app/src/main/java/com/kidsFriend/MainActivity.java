@@ -146,6 +146,8 @@ public class MainActivity extends AppCompatActivity
     private ImageView faceImage;
     private TextView statusText;
     private TextView answerText;
+    private LinearLayout actionButtonLayout;
+    private Button buttonContinue;
     private Button buttonComplete;
     private LinearLayout subtitleLayout;
     private TextView subtitleText;
@@ -235,6 +237,8 @@ public class MainActivity extends AppCompatActivity
         });
 
         answerText = findViewById(R.id.text_home_answer);
+        actionButtonLayout = findViewById(R.id.layout_action_buttons);
+        buttonContinue = findViewById(R.id.button_continue);
         buttonComplete = findViewById(R.id.button_complete);
         buttonComplete.setOnClickListener(v -> enterIdle());
 
@@ -603,7 +607,7 @@ public class MainActivity extends AppCompatActivity
         statusText.setVisibility(View.VISIBLE); // 다시 안내 문구 표시
         statusText.setText(R.string.home_idle_hint);
         answerText.setVisibility(View.GONE);
-        buttonComplete.setVisibility(View.GONE);
+        actionButtonLayout.setVisibility(View.GONE);
         subtitleLayout.setVisibility(View.GONE);
         hideMenuPanel();
 
@@ -656,7 +660,7 @@ public class MainActivity extends AppCompatActivity
         statusText.setVisibility(View.VISIBLE);
         statusText.setText(R.string.home_wake_detected);
         answerText.setVisibility(View.GONE);
-        buttonComplete.setVisibility(View.GONE);
+        actionButtonLayout.setVisibility(View.GONE);
         subtitleLayout.setVisibility(View.GONE); // 테미가 말을 시작하므로 자막 숨김
         showMenuPanel();
         logScenario(1, "입장·인사", "성공");
@@ -736,7 +740,7 @@ public class MainActivity extends AppCompatActivity
         hideMenuPanel();
         subtitleLayout.setVisibility(View.GONE);
         statusText.setVisibility(View.VISIBLE);
-        buttonComplete.setVisibility(View.GONE);
+        actionButtonLayout.setVisibility(View.GONE);
 
         // 자유대화(CHAT) 의도인 경우 쿨다운을 건너뛰어 반응성 확보
         IntentRouter.Intent intent = IntentRouter.route(text);
@@ -812,8 +816,8 @@ public class MainActivity extends AppCompatActivity
                 uiHandler.postDelayed(() -> {
                     String finishMsg = "정말 멋지게 나왔는걸? 이 사진은 내가 잘 간직할게!";
                     showAnswer(finishMsg);
-                    buttonComplete.setVisibility(View.VISIBLE); // 완료 버튼 표시
-                    currentTimeoutMs = SHORT_TIMEOUT_MS;        // 3초 뒤 자동 종료 설정
+                    showActionButtons("또 찍을래요", this::handlePhoto);
+                    currentTimeoutMs = SHORT_TIMEOUT_MS;        // 10초 뒤 자동 종료 설정
                     speakThenListen(finishMsg);
                 }, 3000);
             } catch (Exception e) {
@@ -833,8 +837,7 @@ public class MainActivity extends AppCompatActivity
         showAnswer(guide);
         
         // 완료 버튼 표시 및 최상단 이동
-        buttonComplete.setVisibility(View.VISIBLE);
-        buttonComplete.bringToFront(); 
+        showActionButtons("또 궁금해요", () -> speakThenListen("다른 장소도 알려줄까?"));
         currentTimeoutMs = SHORT_TIMEOUT_MS; // 위치 안내 후 10초 뒤 자동 종료
 
         speakThenListen(guide);
@@ -887,7 +890,7 @@ public class MainActivity extends AppCompatActivity
                 logScenario(5, "자유질문(AI)", "성공");
                 setFace(R.drawable.face_joy);
                 showAnswer(data.answer);
-                buttonComplete.setVisibility(View.VISIBLE); // 완료 버튼 표시
+                showActionButtons("또 물어볼래요", this::listenInConversation);
                 currentTimeoutMs = CONVERSATION_TIMEOUT_MS; // 자유 대화는 계속 이어가도록 긴 타임아웃 유지
                 speakThenListen(data.answer);
             }
@@ -928,7 +931,7 @@ public class MainActivity extends AppCompatActivity
                     String answer = "지금 미세먼지 상태는 " + grade + "이야!";
                     answer += "나쁨".equals(grade) ? " 오늘은 실내에서 노는 게 좋겠어!" : " 신나게 놀아도 괜찮아!";
                     showAnswer(answer);
-                    buttonComplete.setVisibility(View.VISIBLE); // 완료 버튼 표시
+                    showActionButtons("또 궁금해요", this::handleAirQuality);
                     currentTimeoutMs = SHORT_TIMEOUT_MS;        // 10초 뒤 자동 종료 설정
                     speakThenListen(answer);
                 }, delay);
@@ -942,7 +945,7 @@ public class MainActivity extends AppCompatActivity
                     logScenario(6, "미세먼지", "실패→보통 폴백: " + message);
                     String answer = "지금 미세먼지 상태는 보통이야! 신나게 놀아도 괜찮아!";
                     showAnswer(answer);
-                    buttonComplete.setVisibility(View.VISIBLE); // 완료 버튼 표시
+                    showActionButtons("또 궁금해요", this::handleAirQuality);
                     currentTimeoutMs = SHORT_TIMEOUT_MS;        // 10초 뒤 자동 종료 설정
                     speakThenListen(answer);
                 }, delay);
@@ -973,6 +976,19 @@ public class MainActivity extends AppCompatActivity
     private void showAnswer(String text) {
         answerText.setText(text);
         answerText.setVisibility(View.VISIBLE);
+    }
+
+    /** 시나리오별 '또 할래요' 버튼과 '다 했어요' 버튼을 함께 표시합니다. */
+    private void showActionButtons(String continueText, Runnable onContinue) {
+        runOnUiThread(() -> {
+            buttonContinue.setText(continueText);
+            buttonContinue.setOnClickListener(v -> {
+                actionButtonLayout.setVisibility(View.GONE);
+                onContinue.run();
+            });
+            actionButtonLayout.setVisibility(View.VISIBLE);
+            actionButtonLayout.bringToFront();
+        });
     }
 
     /** 발화를 시작하고, 발화가 끝날 무렵 다시 듣기를 시작합니다(테미가 자기 음성을 인식하는 문제 방지). */
