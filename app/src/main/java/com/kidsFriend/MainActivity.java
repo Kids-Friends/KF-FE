@@ -130,6 +130,7 @@ public class MainActivity extends AppCompatActivity
 
     private TemiRepository repository;
     private VoiceInputManager voiceInputManager;
+    private RobotActionManager actionManager;
     private RobotResilienceManager resilienceManager;
     private Robot robot;
     private android.os.PowerManager.WakeLock wakeLock;
@@ -166,7 +167,7 @@ public class MainActivity extends AppCompatActivity
         repository = new TemiRepository(this);
         voiceInputManager = new VoiceInputManager(this);
         // 센서 이벤트를 로봇 동작/표정으로 변환한다(시연에서는 화면 비밀 트리거로 발생시킨다).
-        RobotActionManager actionManager = new RobotActionManager();
+        actionManager = new RobotActionManager();
         actionManager.setOnFaceChangeListener(faceType ->
             uiHandler.post(() -> {
                 int resId = R.drawable.face_peaceful;
@@ -271,6 +272,18 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(MainActivity.this, ApiTestActivity.class)));
     }
 
+    /**
+     * ApiTestActivity 등에서 FLAG_ACTIVITY_REORDER_TO_FRONT 로 재진입할 때 호출된다.
+     * setIntent()로 교체하지 않으면 getIntent()가 최초 실행 Intent를 반환해
+     * injected_stt / injected_sensor extra를 읽지 못하고 enterIdle()로 빠진다.
+     */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);  // getIntent()가 새 Intent를 반환하도록 교체
+        Log.d(TAG, "onNewIntent: " + intent);
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -292,7 +305,22 @@ public class MainActivity extends AppCompatActivity
         // 시스템 워치독 시작 (볼륨/키오스크/상단바 주기 원복). onPause에서 해제된다.
         uiHandler.removeCallbacks(systemWatchdog);
         uiHandler.postDelayed(systemWatchdog, SYSTEM_WATCHDOG_INTERVAL_MS);
-        enterIdle();
+
+        // 운영자 페이지에서 주입된 STT 텍스트가 있는지 확인
+        String injected = getIntent().getStringExtra("injected_stt");
+        String sensor = getIntent().getStringExtra("injected_sensor");
+
+        if (!TextUtils.isEmpty(sensor)) {
+            getIntent().removeExtra("injected_sensor");
+            Log.d(TAG, "Injected Sensor event from operator: " + sensor);
+            actionManager.onSensorEvent(sensor, null);
+        } else if (!TextUtils.isEmpty(injected)) {
+            getIntent().removeExtra("injected_stt");
+            Log.d(TAG, "Injected STT received from operator: " + injected);
+            startConversation(injected);
+        } else {
+            enterIdle();
+        }
     }
 
     @Override
@@ -525,29 +553,27 @@ public class MainActivity extends AppCompatActivity
         }
         lastRouteTime = System.currentTimeMillis();
 
-        // 엔딩(고마워/작별)과 미세먼지는 키워드 의도분기보다 먼저 가로챈다(우선순위 유지).
-        if (isThanksPhrase(text)) {
-            handleThanks();
-            return;
-        }
-        if (isEndPhrase(text)) {
-            handleEnding();
-            return;
-        }
-        if (isAirQualityQuestion(text)) {
-            lastRouteTime = 0; // 연속 대화 허용
-            handleAirQuality();
-            return;
-        }
-
-        // 대본 순서대로 분기: 놀이존 → 퀴즈 → 자유질문(AI).
+        // 대본 순서대로 분기: 엔딩 → 미세먼지 → 회원등록 → 정체 → 놀이존 → 퀴즈 → 자유질문(AI).
         switch (IntentRouter.route(text)) {
+            case ENDING:
+                handleEnding();
+                break;
+            case AIR_QUALITY:
+                handleAirQuality();
+                break;
+            case MEMBERSHIP:
+                handleMembership();
+                break;
+            case IDENTITY:
+                handleIdentity();
+                break;
             case LOCATION:
                 handleLocation(text);
                 break;
             case QUIZ:
                 handleQuiz();
                 break;
+            case FREE_QUESTION:
             case CHAT:
             default:
                 handleChat(text);
@@ -561,9 +587,29 @@ public class MainActivity extends AppCompatActivity
 
     // ── ① 입장·인사 ──────────────────────────────────────────────────────────
     // 인사("친구야" 호출 → "어떤 도움이 필요하니?")는 startConversation()의 home_wake_detected
-    // 발화로 처리된다. 별도 핸들러 없이 대화 진입 자체가 인사 단계다.
+    // 발화로 처리된다.
 
-    // ── ② 놀이존 위치 안내 ────────────────────────────────────────────────────
+    private void handleIdentity() {
+        setFace(R.drawable.face_joy);
+        String msg = "안녕! 나는 키즈카페 친구 테미야. 궁금한것이 있으면 언제든 물어봐!";
+        showAnswer(msg);
+        speakThenListen(msg);
+        logScenario(1, "정체 확인", "성공");
+    }
+
+    // ── ② 회원등록 (Mock) ─────────────────────────────────────────────────────
+
+    private void handleMembership() {
+        setFace(R.drawable.face_excited);
+        // 회원등록 시나리오는 단계가 많으므로 데모용으로 최종 결과를 바로 보여준다.
+        String msg = "반가워, 재석! 이제 회원 등록이 완료되었어. 앞으로 재밌게 놀아보자! 사랑해";
+        String cardMock = "\n\n[회원 카드 생성]\n👤 이름: 박재석\n⭐ 포인트: 0점\n✨ 프로필 사진 등록 완료";
+        showAnswer(msg + cardMock);
+        speakThenListen(msg);
+        logScenario(2, "회원등록(Mock)", "성공");
+    }
+
+    // ── ③ 놀이존 위치 안내 ────────────────────────────────────────────────────
 
     /** 놀이존 위치 안내(자율주행 OFF, 음성 안내만). */
     private void handleLocation(String text) {
@@ -639,11 +685,6 @@ public class MainActivity extends AppCompatActivity
 
     // ── ⑥ 미세먼지(공기질) ────────────────────────────────────────────────────
 
-    private boolean isAirQualityQuestion(String text) {
-        String t = text == null ? "" : text.replaceAll("\\s+", "");
-        return t.contains("미세먼지") || t.contains("먼지") || t.contains("공기");
-    }
-
     /** 미세먼지 질문: 센서 API 등급을 받아 안내(실패/값 없음 시 "보통"). */
     private void handleAirQuality() {
         armConversationWatchdog();
@@ -672,32 +713,14 @@ public class MainActivity extends AppCompatActivity
 
     // ── ⑦ 엔딩 (작별 인사) ────────────────────────────────────────────────────
 
-    /** "고마워/감사" 류는 작별 인사("늘 사랑해")로 마무리한다. */
-    private void handleThanks() {
-        setFace(R.drawable.face_joy);
-        speaker.speak("내가 더 고맙지! 늘 사랑해");
-        logScenario(7, "엔딩(고마워)", "성공");
-        enterIdle();
-    }
-
-    /** "그만/안녕/끝" 류: 인사 후 대기 상태로 복귀. */
+    /** 대화를 마무리하고 작별 인사를 합니다. */
     private void handleEnding() {
-        speaker.speak(getString(R.string.home_bye));
-        logScenario(7, "엔딩(작별)", "성공");
+        setFace(R.drawable.face_joy);
+        String msg = "늘 사랑해 !";
+        showAnswer(msg);
+        speaker.speak(msg);
+        logScenario(7, "엔딩", "성공");
         enterIdle();
-    }
-
-    private boolean isThanksPhrase(String text) {
-        String normalized = text == null ? "" : text.replaceAll("\\s+", "");
-        return normalized.contains("고마") || normalized.contains("감사");
-    }
-
-    private boolean isEndPhrase(String text) {
-        String normalized = text == null ? "" : text.replaceAll("\\s+", "");
-        return normalized.contains("그만")
-                || normalized.contains("안녕")
-                || normalized.contains("됐어")
-                || normalized.contains("끝");
     }
 
     // ── ⑧ 화재경보 ───────────────────────────────────────────────────────────
