@@ -101,6 +101,7 @@
     <string name="quiz_retry">다시 풀기</string>
     <string name="quiz_next">다음 문제</string>
     <string name="quiz_home">홈으로</string>
+    <string name="quiz_stop">그만할래</string>
 
     <string name="membership_title">회원카드</string>
     <string name="membership_name_label">이름</string>

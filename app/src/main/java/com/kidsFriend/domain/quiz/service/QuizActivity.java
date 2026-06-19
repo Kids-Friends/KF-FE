@@ -42,16 +42,21 @@ public class QuizActivity extends AppCompatActivity {
         correctLayout = findViewById(R.id.layout_correct);
         wrongLayout = findViewById(R.id.layout_wrong);
         Button backButton = findViewById(R.id.button_back);
-        Button correctHomeButton = findViewById(R.id.button_correct_home);
+        Button correctNextButton = findViewById(R.id.button_correct_next);
+        Button correctStopButton = findViewById(R.id.button_correct_stop);
         Button wrongRetryButton = findViewById(R.id.button_wrong_retry);
         Button wrongNextButton = findViewById(R.id.button_wrong_next);
+        Button wrongStopButton = findViewById(R.id.button_wrong_stop);
 
         answerOButton.setOnClickListener(v -> submitAnswer("O"));
         answerXButton.setOnClickListener(v -> submitAnswer("X"));
         backButton.setOnClickListener(v -> finish());
-        correctHomeButton.setOnClickListener(v -> finish());
+        // 정답/오답 모두 "다음 문제"로 계속 풀고, "그만할래"로만 종료한다(최대한 오래 트라이).
+        correctNextButton.setOnClickListener(v -> loadQuiz());
+        correctStopButton.setOnClickListener(v -> finish());
         wrongRetryButton.setOnClickListener(v -> hidePopups());
         wrongNextButton.setOnClickListener(v -> loadQuiz());
+        wrongStopButton.setOnClickListener(v -> finish());
 
         loadQuiz();
     }

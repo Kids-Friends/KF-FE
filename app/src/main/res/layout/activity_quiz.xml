@@ -109,12 +109,26 @@
             android:textSize="26sp"
             android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/button_correct_home"
-            style="@style/TemiPrimaryButton"
-            android:layout_width="320dp"
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="36dp"
-            android:text="@string/quiz_home" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_correct_next"
+                style="@style/TemiPrimaryButton"
+                android:layout_width="220dp"
+                android:layout_marginEnd="12dp"
+                android:text="@string/quiz_next" />
+
+            <Button
+                android:id="@+id/button_correct_stop"
+                style="@style/TemiSecondaryButton"
+                android:layout_width="220dp"
+                android:layout_marginStart="12dp"
+                android:text="@string/quiz_stop" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- 오답 팝업 -->
@@ -171,5 +185,12 @@
                 android:layout_marginStart="12dp"
                 android:text="@string/quiz_next" />
         </LinearLayout>
+
+        <Button
+            android:id="@+id/button_wrong_stop"
+            style="@style/TemiSecondaryButton"
+            android:layout_width="452dp"
+            android:layout_marginTop="12dp"
+            android:text="@string/quiz_stop" />
     </LinearLayout>
 </FrameLayout>
