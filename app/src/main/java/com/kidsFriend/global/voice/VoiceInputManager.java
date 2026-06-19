@@ -106,7 +106,9 @@ public class VoiceInputManager {
 
             @Override
             public void onPartialResult(String text) {
-                resetWatchdog(userCallback); // 부분결과가 들어오는 동안은 살아있음
+                // 발화가 한 번 들리면 엔진은 살아있는 게 확실하다. 이후 확정은 우리(AndroidSttEngine)의
+                // 1초 침묵 감지가 책임지므로, 테미 폴백 워치독을 꺼서 테미가 우리 기능을 가로채지 못하게 한다.
+                cancelWatchdog();
                 userCallback.onPartialResult(text);
             }
 

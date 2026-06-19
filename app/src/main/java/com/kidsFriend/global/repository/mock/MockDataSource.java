@@ -10,7 +10,6 @@ import com.kidsFriend.domain.chat.response.QuestionResponse;
 import com.kidsFriend.domain.quiz.request.QuizAnswerRequest;
 import com.kidsFriend.domain.quiz.response.QuizAnswerResponse;
 import com.kidsFriend.domain.quiz.service.QuizQuestion;
-import com.kidsFriend.domain.zone.ZoneInfo;
 
 public class MockDataSource {
     private static final String ANSWER_O = "O";
@@ -51,16 +50,6 @@ public class MockDataSource {
             new MockQuiz("quiz-028", "양치질은 하루에 한 번만 하면 충분해요.", ANSWER_X, "양치질은 아침저녁으로 자주 하는 게 좋아요.")
     );
 
-    private static final List<ZoneInfo> ZONES = Arrays.asList(
-            new ZoneInfo("ENTRANCE", "입구", "입장과 퇴장 안내를 시작하는 구역입니다.", "신발장, 직원 데스크", "보통", "처음 방문한 보호자에게 전체 구조를 짧게 안내합니다."),
-            new ZoneInfo("MAIN_ZONE", "메인 존", "가장 넓은 중앙 놀이 구역입니다.", "볼풀, 미끄럼틀, 카페 존", "혼잡", "아이와 보호자가 합류하기 쉬운 위치로 안내합니다."),
-            new ZoneInfo("BALL_POOL", "볼풀 존", "공놀이를 할 수 있는 인기 구역입니다.", "메인 존, 미끄럼틀 존", "혼잡", "뛰지 말고 천천히 이동하도록 안내합니다."),
-            new ZoneInfo("SLIDE_ZONE", "미끄럼틀 존", "미끄럼틀과 오르기 구조물이 있는 구역입니다.", "볼풀 존, 트램폴린 존", "혼잡", "거꾸로 올라가지 않도록 안전 문구를 말합니다."),
-            new ZoneInfo("RESTROOM", "화장실", "아이와 보호자가 함께 이용하는 화장실 위치입니다.", "세면대, 입구", "여유", "화장실 질문이 들어오면 최우선으로 안내합니다."),
-            new ZoneInfo("PHOTO_ZONE", "포토 존", "사진 촬영 이벤트를 진행할 수 있는 구역입니다.", "역할놀이 존, 메인 존", "여유", "사진 촬영 기능과 연결되는 Mock 구역입니다."),
-            new ZoneInfo("STAFF_DESK", "직원 데스크", "직원 호출과 결제 문의를 처리하는 구역입니다.", "입구, 카페 존", "보통", "긴급 요청이나 분실물 질문이 들어오면 안내합니다.")
-    );
-
     public QuestionResponse askQuestion(QuestionRequest request) {
         return new QuestionResponse(true, "지금은 mock 답변입니다. 실제 환경에서는 Spring Boot AI API 응답으로 교체됩니다.\n\n질문: " + request.question);
     }
@@ -92,10 +81,6 @@ public class MockDataSource {
                 ? "정답! 정말 잘했어! " + quiz.explanation
                 : "정말 아쉽다! 정답은 " + quiz.correctAnswer + "였어. " + quiz.explanation;
         return new QuizAnswerResponse(correct, message);
-    }
-
-    public List<ZoneInfo> getZones() {
-        return ZONES;
     }
 
     private MockQuiz findQuiz(String quizId) {

@@ -20,7 +20,6 @@ import com.kidsFriend.R;
 import com.kidsFriend.domain.chat.response.QuestionResponse;
 import com.kidsFriend.domain.chat.service.QuestionActivity;
 import com.kidsFriend.domain.quiz.service.QuizActivity;
-import com.kidsFriend.domain.zone.ZoneActivity;
 import com.kidsFriend.global.repository.RepositoryCallback;
 import com.kidsFriend.global.repository.TemiRepository;
 import com.kidsFriend.global.voice.VoiceInputManager;
@@ -65,7 +64,6 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
 
         questionButton.setOnClickListener(v -> openScreen(QuestionActivity.class));
         quizButton.setOnClickListener(v -> openScreen(QuizActivity.class));
-        locationGuideButton.setOnClickListener(v -> openScreen(ZoneActivity.class));
         wakeButton.setOnClickListener(v -> startWakeWordStandby());
 
         ensureAudioPermission();

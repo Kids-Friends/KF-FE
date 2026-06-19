@@ -1,4 +1,4 @@
-package com.kidsFriend.domain.greeting.service;
+package com.kidsFriend;
 
 import android.Manifest;
 import android.content.Intent;
@@ -13,10 +13,13 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import com.kidsFriend.domain.greeting.service.IntentRouter;
 import com.robotemi.sdk.Robot;
 import com.robotemi.sdk.constants.Gender;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
@@ -25,7 +28,6 @@ import com.robotemi.sdk.permission.Permission;
 import com.robotemi.sdk.voice.model.TtsVoice;
 import java.util.Collections;
 
-import com.kidsFriend.R;
 import com.kidsFriend.domain.chat.response.QuestionResponse;
 import com.kidsFriend.domain.quiz.service.QuizActivity;
 import com.kidsFriend.domain.sensor.service.RobotActionManager;
@@ -134,6 +136,8 @@ public class MainActivity extends AppCompatActivity
     private ImageView faceImage;
     private TextView statusText;
     private TextView answerText;
+    private LinearLayout subtitleLayout;
+    private TextView subtitleText;
 
     // =========================================================================
     // 1) Android 생명주기
@@ -196,6 +200,8 @@ public class MainActivity extends AppCompatActivity
         });
 
         statusText = findViewById(R.id.text_home_status);
+        subtitleLayout = findViewById(R.id.layout_subtitle);
+        subtitleText = findViewById(R.id.text_subtitle);
         // 데모용 비밀 트리거 2: 상태 텍스트 길게 누르기 -> 위험(TILT) 상황 모의 발생
         statusText.setOnLongClickListener(v -> {
             Log.d(TAG, "Secret Trigger: Mock TILT event");
@@ -330,8 +336,13 @@ public class MainActivity extends AppCompatActivity
     public void onRobotReady(boolean isReady) {
         if (isReady) {
             robot.hideTopBar();
-            robot.toggleWakeup(true);
-            Log.d(TAG, "Temi Wakeup Mode Disabled (true = 차단)");
+            // 사용자의 요청으로 마이크 음소거 및 프라이버시 모드를 해제합니다.
+            // 1. 호출어 활성화 (Hey temi 사용 가능)
+            robot.toggleWakeup(false);
+            // 2. 프라이버시 모드 해제 (마이크 하드웨어 차단 해제)
+            robot.setPrivacyMode(false);
+            
+            Log.d(TAG, "Temi Wakeup Mode Enabled & Privacy Mode Disabled");
             try {
                 robot.requestToBeKioskApp();
                 robot.setKioskModeOn(true);
@@ -406,8 +417,10 @@ public class MainActivity extends AppCompatActivity
         }
         state = State.IDLE;
         setFace(R.drawable.face_peaceful);
+        statusText.setVisibility(View.VISIBLE); // 다시 안내 문구 표시
         statusText.setText(R.string.home_idle_hint);
         answerText.setVisibility(View.GONE);
+        subtitleLayout.setVisibility(View.GONE);
 
         voiceInputManager.startContinuousListening(new VoiceInputManager.Callback() {
             @Override
@@ -444,6 +457,7 @@ public class MainActivity extends AppCompatActivity
         state = State.CONVERSATION;
         setFace(R.drawable.face_excited);
         answerText.setVisibility(View.GONE);
+        subtitleLayout.setVisibility(View.GONE); // 테미가 말을 시작하므로 자막 숨김
         logScenario(1, "입장·인사", "성공");
 
         if (!TextUtils.isEmpty(firstUtterance)) {
@@ -458,30 +472,42 @@ public class MainActivity extends AppCompatActivity
     private void listenInConversation() {
         armConversationWatchdog();
         setFace(R.drawable.face_excited);
-        statusText.setText(R.string.home_listening);
         voiceInputManager.startSingleListening(new VoiceInputManager.Callback() {
             @Override
             public void onReady() {
-                statusText.setText(R.string.home_listening);
+                runOnUiThread(() -> {
+                    statusText.setVisibility(View.GONE);
+                    subtitleLayout.setVisibility(View.VISIBLE);
+                    subtitleText.setText("");
+                });
             }
 
             @Override
             public void onPartialResult(String text) {
-                // 실시간 자막: SpeechRecognizer 부분결과를 하단에 단어별로 갱신(GenieTV식).
                 if (!TextUtils.isEmpty(text)) {
-                    statusText.setText(getString(R.string.voice_caption_format, text));
+                    runOnUiThread(() -> {
+                        subtitleText.setText(getString(R.string.voice_caption_format, text));
+                    });
                 }
             }
 
             @Override
             public void onResult(String text) {
-                handleUtterance(text);
+                runOnUiThread(() -> {
+                    if (!TextUtils.isEmpty(text)) {
+                        subtitleText.setText(getString(R.string.voice_caption_format, text));
+                    }
+                    handleUtterance(text);
+                });
             }
 
             @Override
             public void onError(String message) {
-                // 알아듣지 못하면 대화를 마치고 대기 상태로 돌아갑니다.
-                enterIdle();
+                runOnUiThread(() -> {
+                    subtitleLayout.setVisibility(View.GONE);
+                    statusText.setVisibility(View.VISIBLE);
+                    enterIdle();
+                });
             }
         });
     }
@@ -491,6 +517,8 @@ public class MainActivity extends AppCompatActivity
      * 가로채기 우선순위가 중요하다: 작별 → 미세먼지 → 키워드 의도분기 순.
      */
     private void handleUtterance(String text) {
+        subtitleLayout.setVisibility(View.GONE);
+        statusText.setVisibility(View.VISIBLE);
         if (System.currentTimeMillis() - lastRouteTime < 2000) {
             Log.w(TAG, "handleUtterance: Ignoring rapid utterance to prevent multi-launch.");
             return;
@@ -688,6 +716,7 @@ public class MainActivity extends AppCompatActivity
     /** 발화를 시작하고, 발화가 끝날 무렵 다시 듣기를 시작합니다(테미가 자기 음성을 인식하는 문제 방지). */
     private void speakThenListen(String text) {
         armConversationWatchdog();
+        subtitleLayout.setVisibility(View.GONE); // 발화 시작 시 자막 숨김
         speaker.speak(text);
         uiHandler.removeCallbacks(listenRunnable);
         // 발화 길이를 글자 수로 추정해 그만큼 기다린 뒤 듣기 시작

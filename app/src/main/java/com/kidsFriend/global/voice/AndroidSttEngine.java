@@ -25,12 +25,17 @@ import java.util.ArrayList;
 public class AndroidSttEngine implements SttEngine, RecognitionListener {
     private static final String TAG = "AndroidSttEngine";
 
+    /** 부분결과가 들어온 뒤 이 시간 동안 새 발화가 없으면 그 텍스트로 최종 확정한다(발화 끝 침묵 감지). */
+    private static final long SILENCE_TIMEOUT_MS = 1000;
+
     private final Context context;
     private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable silenceFinalizer = this::finalizeFromSilence;
 
     private SpeechRecognizer recognizer;
     private VoiceInputManager.Callback callback;
     private boolean stopped = true;
+    private String lastPartialText = "";
 
     public AndroidSttEngine(Context context) {
         this.context = context.getApplicationContext();
@@ -51,6 +56,7 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
         // continuous는 안드로이드 SR(단발 인식)엔 의미 없음(대화 듣기 = 한 발화). 무시한다.
         this.callback = callback;
         this.stopped = false;
+        this.lastPartialText = "";
         handler.post(() -> {
             try {
                 if (recognizer == null) {
@@ -84,6 +90,7 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
             return;
         }
         stopped = true;
+        handler.removeCallbacks(silenceFinalizer);
         handler.post(() -> {
             if (recognizer != null) {
                 try {
@@ -98,6 +105,7 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
     @Override
     public void destroy() {
         stopped = true;
+        handler.removeCallbacks(silenceFinalizer);
         handler.post(() -> {
             if (recognizer != null) {
                 try {
@@ -127,8 +135,38 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
         }
         String text = first(partialResults);
         if (text != null && !text.isEmpty()) {
+            lastPartialText = text;
             callback.onPartialResult(text); // 단어별 실시간 자막
+            armSilenceFinalizer(); // 발화 후 1초 침묵하면 이 텍스트로 답변 확정
         }
+    }
+
+    /** 부분결과 수신 후 침묵 타이머를 (재)시작한다. 새 발화가 오면 onPartialResults에서 다시 갱신된다. */
+    private void armSilenceFinalizer() {
+        handler.removeCallbacks(silenceFinalizer);
+        handler.postDelayed(silenceFinalizer, SILENCE_TIMEOUT_MS);
+    }
+
+    /**
+     * 발화 끝 침묵 감지: 마지막 부분결과를 최종 결과로 확정한다.
+     *
+     * <p>테미/SpeechRecognizer의 자체 onResults를 기다리지 않고 우리가 먼저 확정하므로,
+     * 소음으로 onResults가 영구 미발생하는 데드락에서도 답변으로 넘어간다.
+     */
+    private void finalizeFromSilence() {
+        if (stopped || callback == null || lastPartialText.isEmpty()) {
+            return;
+        }
+        stopped = true;
+        try {
+            if (recognizer != null) {
+                recognizer.cancel();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "finalizeFromSilence cancel exception", e);
+        }
+        Log.d(TAG, "finalizeFromSilence: 1초 침묵 → 부분결과로 확정 [" + lastPartialText + "]");
+        callback.onResult(lastPartialText);
     }
 
     @Override
@@ -137,6 +175,7 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
             return;
         }
         stopped = true;
+        handler.removeCallbacks(silenceFinalizer);
         String text = first(results);
         callback.onResult(text != null ? text : "");
     }
@@ -147,6 +186,7 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
             return;
         }
         stopped = true;
+        handler.removeCallbacks(silenceFinalizer);
         Log.w(TAG, "onError: code = " + error);
         callback.onError("STT_ERROR_" + error);
     }

@@ -17,7 +17,6 @@ import com.kidsFriend.domain.greeting.response.IntentResponse;
 import com.kidsFriend.domain.quiz.request.QuizAnswerRequest;
 import com.kidsFriend.domain.quiz.response.QuizAnswerResponse;
 import com.kidsFriend.domain.quiz.service.QuizQuestion;
-import com.kidsFriend.domain.zone.ZoneInfo;
 import com.kidsFriend.global.client.ApiClient;
 import com.kidsFriend.global.client.ApiResponse;
 import com.kidsFriend.global.client.TemiApiService;
@@ -66,10 +65,6 @@ public class TemiRepository {
     public void submitQuizAnswer(String quizId, String selectedAnswer, RepositoryCallback<QuizAnswerResponse> callback) {
         QuizAnswerRequest request = new QuizAnswerRequest(quizId, selectedAnswer);
         callback.onSuccess(mockDataSource.submitQuizAnswer(request));
-    }
-
-    public void getZones(RepositoryCallback<List<ZoneInfo>> callback) {
-        callback.onSuccess(mockDataSource.getZones());
     }
 
     /**

@@ -43,7 +43,8 @@ public class TemiSttEngine implements SttEngine, Robot.NlpListener {
 
         // 테미 전용 STT 시작 (음성 인식 UI 활성화)
         // 안내 멘트 없이 바로 듣기 시작 (발화 지연/자기음성 간섭 제거)
-        robot.askQuestion("");
+        // 마이크 성능을 고려하여 로봇의 시각적 피드백(파란색 바)이 보이도록 설정
+        robot.askQuestion("듣고 있어요");
 
         if (callback != null) {
             callback.onReady();

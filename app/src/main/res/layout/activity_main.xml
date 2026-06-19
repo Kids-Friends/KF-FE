@@ -67,4 +67,24 @@
             android:textSize="26sp"
             android:textStyle="bold" />
     </LinearLayout>
+
+    <!-- 실시간 자막 오버레이 -->
+    <LinearLayout
+        android:id="@+id/layout_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#B3000000"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/text_subtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 </FrameLayout>

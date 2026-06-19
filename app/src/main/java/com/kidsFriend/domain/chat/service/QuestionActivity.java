@@ -87,8 +87,11 @@ public class QuestionActivity extends AppCompatActivity {
         repository.askQuestion(question, new RepositoryCallback<QuestionResponse>() {
             @Override
             public void onSuccess(QuestionResponse data) {
-                answerText.setText(data.answer);
-                temiSpeechSpeaker.speak(data.answer);
+                runOnUiThread(() -> {
+                    answerText.setText(data.answer);
+                    subtitleLayout.setVisibility(View.GONE); // 로봇 답변 시작 시 자막 숨김
+                    temiSpeechSpeaker.speak(data.answer);
+                });
             }
 
             @Override
@@ -204,31 +207,40 @@ public class QuestionActivity extends AppCompatActivity {
         voiceInputManager.startSingleListening(new VoiceInputManager.Callback() {
             @Override
             public void onReady() {
-                voiceModeText.setText(R.string.voice_listening);
-                subtitleLayout.setVisibility(View.VISIBLE);
-                subtitleText.setText("");
+                runOnUiThread(() -> {
+                    voiceModeText.setVisibility(View.GONE);
+                    subtitleLayout.setVisibility(View.VISIBLE);
+                    subtitleText.setText("");
+                });
             }
 
             @Override
             public void onPartialResult(String text) {
                 if (!TextUtils.isEmpty(text)) {
-                    rawVoiceText.setText(text);
-                    subtitleText.setText(getString(R.string.voice_caption_format, text));
+                    runOnUiThread(() -> {
+                        rawVoiceText.setText(text);
+                        subtitleText.setText(getString(R.string.voice_caption_format, text));
+                    });
                 }
             }
 
             @Override
             public void onResult(String text) {
-                if (!TextUtils.isEmpty(text)) {
-                    subtitleText.setText(getString(R.string.voice_caption_format, text));
-                }
-                handleVoiceQuestion(text);
+                runOnUiThread(() -> {
+                    if (!TextUtils.isEmpty(text)) {
+                        subtitleText.setText(getString(R.string.voice_caption_format, text));
+                    }
+                    handleVoiceQuestion(text);
+                });
             }
 
             @Override
             public void onError(String message) {
-                voiceModeText.setText(message);
-                subtitleLayout.setVisibility(View.GONE);
+                runOnUiThread(() -> {
+                    voiceModeText.setVisibility(View.VISIBLE);
+                    voiceModeText.setText(message);
+                    subtitleLayout.setVisibility(View.GONE);
+                });
             }
         });
     }
@@ -270,6 +282,7 @@ public class QuestionActivity extends AppCompatActivity {
     }
 
     private void askVoiceQuestion(String rawText, String reconstructedText) {
+        voiceModeText.setVisibility(View.VISIBLE);
         voiceModeText.setText(R.string.voice_sending);
         answerText.setText(R.string.common_loading);
         subtitleLayout.setVisibility(View.GONE);

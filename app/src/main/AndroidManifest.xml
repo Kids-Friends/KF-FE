@@ -48,7 +48,7 @@
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
-        <activity android:name=".domain.greeting.service.MainActivity"
+        <activity android:name=".MainActivity"
             android:launchMode="singleTask"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
