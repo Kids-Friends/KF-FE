@@ -112,8 +112,10 @@ public class TemiSttEngine implements SttEngine, Robot.NlpListener {
         if (!text.isEmpty()) {
             callback.onResult(text);
         } else {
-            // 인식이 되지 않았거나 취소된 경우
-            Log.d(TAG, "onNlpCompleted: No speech recognized or cancelled.");
+            // 인식이 되지 않았거나 취소된 경우: 대화를 끝내지 않고 빈 결과를 전달해 
+            // 호출부(MainActivity 등)에서 '잘 못 들었어요' 처리를 하게 함.
+            Log.d(TAG, "onNlpCompleted: No speech recognized or cancelled. Returning empty.");
+            callback.onResult("");
         }
 
         if (continuousMode && !stopped) {

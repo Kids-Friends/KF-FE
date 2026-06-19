@@ -411,6 +411,38 @@ public class MainActivity extends AppCompatActivity
                 == PackageManager.PERMISSION_GRANTED) {
             return true;
         }
+
+        // 영구 거부 판단:
+        //   - shouldShowRequestPermissionRationale()는 "한 번 이상 거부했을 때만" true를 반환한다.
+        //   - 즉 false이면서 권한이 없으면 ①최초 실행 또는 ②영구 거부 둘 중 하나다.
+        //   - SharedPreferences에 "이전에 요청한 적 있음"을 기록해 ①②를 구분한다.
+        boolean askedBefore = getSharedPreferences("kf_pref", MODE_PRIVATE)
+                .getBoolean("audio_permission_asked", false);
+        boolean canShowRationale = ActivityCompat.shouldShowRequestPermissionRationale(
+                this, Manifest.permission.RECORD_AUDIO);
+
+        if (askedBefore && !canShowRationale) {
+            // 영구 거부 상태 → 시스템 다이얼로그가 더 이상 뜨지 않음. 앱 설정으로 안내.
+            statusText.setText("마이크 권한이 차단되었습니다. 설정에서 허용해 주세요.");
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("마이크 권한 필요")
+                    .setMessage("음성 인식을 위해 마이크 권한이 필요합니다.\n"
+                            + "설정 → 앱 → Kids_Friend → 권한에서 마이크를 허용해 주세요.")
+                    .setCancelable(false)
+                    .setPositiveButton("설정으로 이동", (d, w) -> {
+                        android.content.Intent si = new android.content.Intent(
+                                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        si.setData(android.net.Uri.parse("package:" + getPackageName()));
+                        startActivity(si);
+                    })
+                    .setNegativeButton("나중에", null)
+                    .show();
+            return false;
+        }
+
+        // 최초 요청 또는 일반 거부(한 번 더 물어볼 수 있는 상태)
+        getSharedPreferences("kf_pref", MODE_PRIVATE).edit()
+                .putBoolean("audio_permission_asked", true).apply();
         statusText.setText(R.string.voice_permission_required);
         ActivityCompat.requestPermissions(
                 this,
@@ -419,6 +451,7 @@ public class MainActivity extends AppCompatActivity
         );
         return false;
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {

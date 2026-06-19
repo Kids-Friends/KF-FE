@@ -17,13 +17,11 @@ import com.robotemi.sdk.Robot;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
 
 import com.kidsFriend.R;
+import com.kidsFriend.MainActivity;
 import com.kidsFriend.domain.chat.response.QuestionResponse;
-import com.kidsFriend.domain.chat.service.QuestionActivity;
-import com.kidsFriend.domain.quiz.service.QuizActivity;
 import com.kidsFriend.global.repository.RepositoryCallback;
 import com.kidsFriend.global.repository.TemiRepository;
-import com.kidsFriend.global.voice.VoiceInputManager;
-import com.kidsFriend.global.voice.WakeWordMatcher;
+import com.kidsFriend.domain.sensor.service.RobotActionManager;
 
 /**
  * 시연 시나리오 점검용 디버그 화면.
@@ -36,8 +34,6 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
     private static final int REQUEST_RECORD_AUDIO = 1001;
 
     private TemiRepository repository;
-    private VoiceInputManager wakeVoiceInputManager;
-    private TextView wakeStatusText;
     private TextView testResultText;
 
     @Override
@@ -48,25 +44,49 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
         repository = new TemiRepository(this);
 
         Button backButton = findViewById(R.id.button_back);
-        Button questionButton = findViewById(R.id.button_question);
-        Button quizButton = findViewById(R.id.button_quiz);
-        Button locationGuideButton = findViewById(R.id.button_location_guide);
-        wakeStatusText = findViewById(R.id.text_wake_status);
-        Button wakeButton = findViewById(R.id.button_start_wake_listening);
-
         testResultText = findViewById(R.id.text_test_result);
-        Button testAiChatButton = findViewById(R.id.button_test_ai_chat);
-
-        wakeVoiceInputManager = new VoiceInputManager(this);
 
         backButton.setOnClickListener(v -> finish());
-        testAiChatButton.setOnClickListener(v -> showTestAiChatDialog());
 
-        questionButton.setOnClickListener(v -> openScreen(QuestionActivity.class));
-        quizButton.setOnClickListener(v -> openScreen(QuizActivity.class));
-        wakeButton.setOnClickListener(v -> startWakeWordStandby());
+        // 시나리오 1: 인사
+        findViewById(R.id.btn_scen_greeting).setOnClickListener(v -> runScenario("넌 정체가 뭐야 !"));
+
+        // 시나리오 2: 회원등록
+        findViewById(R.id.btn_scen_membership).setOnClickListener(v -> runScenario("회원등록을 하고 싶어"));
+
+        // 시나리오 3: 위치 안내
+        findViewById(R.id.btn_scen_location).setOnClickListener(v -> runScenario("미끄럼틀은 어디 있어?"));
+
+        // 시나리오 4: 퀴즈
+        findViewById(R.id.btn_scen_quiz).setOnClickListener(v -> runScenario("퀴즈를 하고 싶어"));
+
+        // 시나리오 5: AI 대화
+        findViewById(R.id.btn_scen_chat).setOnClickListener(v -> showTestAiChatDialog());
+
+        // 시나리오 6: 공기질
+        findViewById(R.id.btn_scen_air).setOnClickListener(v -> runScenario("지금 미세먼지가 어때?"));
+
+        // 시나리오 7: 엔딩
+        findViewById(R.id.btn_scen_ending).setOnClickListener(v -> runScenario("테미야, 고마워!"));
+
+        // 시나리오 8: 화재경보
+        findViewById(R.id.btn_scen_fire).setOnClickListener(v -> {
+            setTestResult("화재 경보 발령 !!!");
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra("injected_sensor", "FIRE_DETECTED");
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        });
 
         ensureAudioPermission();
+    }
+
+    private void runScenario(String injectedText) {
+        setTestResult("시나리오 수행: [" + injectedText + "]");
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("injected_stt", injectedText);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 
     private long lastOpenScreenTime = 0;
@@ -124,20 +144,15 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
     @Override
     protected void onResume() {
         super.onResume();
-        if (hasAudioPermission()) {
-            startWakeWordStandby();
-        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        wakeVoiceInputManager.stopListening();
     }
 
     @Override
     protected void onDestroy() {
-        wakeVoiceInputManager.destroy();
         try {
             Robot.getInstance().removeOnRobotReadyListener(this);
         } catch (RuntimeException exception) {
@@ -162,22 +177,12 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode != REQUEST_RECORD_AUDIO) {
-            return;
-        }
-
-        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            startWakeWordStandby();
-        } else {
-            wakeStatusText.setText(R.string.voice_permission_denied);
-        }
     }
 
     private void ensureAudioPermission() {
         if (hasAudioPermission()) {
             return;
         }
-        wakeStatusText.setText(R.string.voice_permission_required);
         ActivityCompat.requestPermissions(
                 this,
                 new String[]{Manifest.permission.RECORD_AUDIO},
@@ -189,51 +194,4 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
         return ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_GRANTED;
     }
-
-    private void startWakeWordStandby() {
-        if (!hasAudioPermission()) {
-            ensureAudioPermission();
-            return;
-        }
-        if (!VoiceInputManager.isRecognitionAvailable(this)) {
-            wakeStatusText.setText(R.string.voice_recognition_unavailable);
-            return;
-        }
-
-        wakeStatusText.setText(R.string.voice_wake_standby);
-        wakeVoiceInputManager.startContinuousListening(new VoiceInputManager.Callback() {
-            @Override
-            public void onReady() {
-                wakeStatusText.setText(R.string.voice_wake_standby);
-            }
-
-            @Override
-            public void onPartialResult(String text) {
-                if (text == null || text.trim().isEmpty()) {
-                    return;
-                }
-                wakeStatusText.setText(getString(R.string.voice_heard_format, text));
-            }
-
-            @Override
-            public void onResult(String text) {
-                if (!WakeWordMatcher.containsWakeWord(text)) {
-                    wakeStatusText.setText(getString(R.string.voice_heard_format, text));
-                    return;
-                }
-                wakeVoiceInputManager.stopListening();
-                wakeStatusText.setText(R.string.voice_wake_detected);
-                Intent intent = new Intent(ApiTestActivity.this, QuestionActivity.class);
-                intent.putExtra(QuestionActivity.EXTRA_START_VOICE_LISTENING, true);
-                intent.putExtra(QuestionActivity.EXTRA_INITIAL_VOICE_TEXT, WakeWordMatcher.textAfterWakeWord(text));
-                startActivity(intent);
-            }
-
-            @Override
-            public void onError(String message) {
-                wakeStatusText.setText(message);
-            }
-        });
-    }
-
 }
