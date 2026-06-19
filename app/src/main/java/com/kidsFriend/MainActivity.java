@@ -117,14 +117,18 @@ public class MainActivity extends AppCompatActivity
     // 발화(TTS)가 끝날 무렵 다시 듣기를 시작합니다.
     private final Runnable listenRunnable = () -> {
         if (state == State.CONVERSATION) {
+            isProcessing = false; // 발화가 끝났으므로 다시 듣기 준비 완료
             listenInConversation();
         }
     };
+
+    private boolean isProcessing = false; // 중복 명령 실행 방지 (한 번에 하나만)
 
     // 대화가 멈췄을 때(STT/TTS/AI 응답 없음) 안전하게 대기 상태로 되돌리는 워치독.
     private final Runnable conversationWatchdog = () -> {
         if (state == State.CONVERSATION) {
             Log.w(TAG, "대화 워치독: 일정 시간 진행 없음 → 대기 상태로 자동 복귀");
+            isProcessing = false;
             enterIdle();
         }
     };
@@ -588,6 +592,7 @@ public class MainActivity extends AppCompatActivity
 
     /** 대기 상태: 얼굴 + "친구야 불러줘" 안내, 호출어 대기. */
     private void enterIdle() {
+        isProcessing = false;
         disarmConversationWatchdog();
         if (!ensureAudioPermission()) {
             return;
@@ -610,8 +615,10 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onPartialResult(String text) {
+                if (isProcessing) return;
                 if (WakeWordMatcher.containsWakeWord(text)) {
                     Log.i(TAG, "Wake word detected from partial STT: " + text);
+                    isProcessing = true;
                     statusText.setText(R.string.home_wake_detected);
                     voiceInputManager.stopListening();
                     startConversation(WakeWordMatcher.textAfterWakeWord(text));
@@ -620,12 +627,14 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onResult(String text) {
+                if (isProcessing) return;
                 // 호출어("친구야")가 들렸을 때만 화면을 전환하고,
                 // 그 외 인식 결과는 무시해 대기화면("친구야 하고 부르거나...")을 안정적으로 유지한다.
                 if (!WakeWordMatcher.containsWakeWord(text)) {
                     return;
                 }
                 Log.i(TAG, "Wake word detected from final STT: " + text);
+                isProcessing = true;
                 statusText.setText(R.string.home_wake_detected);
                 voiceInputManager.stopListening();
                 startConversation(WakeWordMatcher.textAfterWakeWord(text));
@@ -642,6 +651,7 @@ public class MainActivity extends AppCompatActivity
     /** 대화 시작. 호출어 뒤에 바로 말이 붙어 있으면 그 말부터 처리합니다. */
     private void startConversation(String firstUtterance) {
         state = State.CONVERSATION;
+        isProcessing = true;
         setFace(R.drawable.face_excited);
         statusText.setVisibility(View.VISIBLE);
         statusText.setText(R.string.home_wake_detected);
@@ -661,6 +671,7 @@ public class MainActivity extends AppCompatActivity
 
     /** 대화 중 한 마디 듣기: 화자가 하는 말을 실시간으로 보여줍니다. */
     private void listenInConversation() {
+        isProcessing = false; // 듣기 시작할 때는 명령을 받을 수 있는 상태
         armConversationWatchdog();
         setFace(R.drawable.face_excited);
         voiceInputManager.startSingleListening(new VoiceInputManager.Callback() {
@@ -687,6 +698,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onResult(String text) {
                 runOnUiThread(() -> {
+                    if (isProcessing) return;
                     if (!TextUtils.isEmpty(text)) {
                         subtitleText.setText(getString(R.string.voice_caption_format, text));
                     }
@@ -710,19 +722,34 @@ public class MainActivity extends AppCompatActivity
      * 가로채기 우선순위가 중요하다: 작별 → 미세먼지 → 키워드 의도분기 순.
      */
     private void handleUtterance(String text) {
+        if (isProcessing) return;
+        if (TextUtils.isEmpty(text) || text.trim().isEmpty()) {
+            Log.d(TAG, "handleUtterance: Empty text, ignoring.");
+            if (state == State.CONVERSATION) listenInConversation();
+            return;
+        }
+
+        isProcessing = true;
+        voiceInputManager.stopListening(); // 처리 시작 시 STT 정지
         currentTimeoutMs = CONVERSATION_TIMEOUT_MS; // AI 응답 대기 등 프로세스 중에는 넉넉하게 45초
+        armConversationWatchdog(); // 타임아웃 즉시 적용
         hideMenuPanel();
         subtitleLayout.setVisibility(View.GONE);
         statusText.setVisibility(View.VISIBLE);
         buttonComplete.setVisibility(View.GONE);
-        if (System.currentTimeMillis() - lastRouteTime < 2000) {
-            Log.w(TAG, "handleUtterance: Ignoring rapid utterance to prevent multi-launch.");
-            return;
+
+        // 자유대화(CHAT) 의도인 경우 쿨다운을 건너뛰어 반응성 확보
+        IntentRouter.Intent intent = IntentRouter.route(text);
+        if (intent != IntentRouter.Intent.CHAT && intent != IntentRouter.Intent.FREE_QUESTION) {
+            if (System.currentTimeMillis() - lastRouteTime < 2000) {
+                Log.w(TAG, "handleUtterance: Ignoring rapid utterance for non-chat intent.");
+                return;
+            }
         }
         lastRouteTime = System.currentTimeMillis();
 
         // 대본 순서대로 분기: 엔딩 → 미세먼지 → 사진촬영 → 정체 → 놀이존 → 퀴즈 → 자유질문(AI).
-        switch (IntentRouter.route(text)) {
+        switch (intent) {
             case ENDING:
                 handleEnding();
                 break;
@@ -848,10 +875,12 @@ public class MainActivity extends AppCompatActivity
 
     /** AI에게 묻고 답을 화면+음성으로 보여준 뒤, 다시 듣기로 대화를 이어갑니다. */
     private void handleChat(String question) {
-        lastRouteTime = 0; // 채팅은 딜레이 면제 (연속 대화 허용)
-        armConversationWatchdog();
+        lastRouteTime = 0; // 채팅은 쿨다운 해제
+        armConversationWatchdog(CONVERSATION_TIMEOUT_MS);
         setFace(R.drawable.face_peaceful);
         statusText.setText(R.string.home_thinking);
+
+        Log.d(TAG, "handleChat: Sending to backend -> " + question);
         repository.askVoiceQuestion(question, question, new RepositoryCallback<QuestionResponse>() {
             @Override
             public void onSuccess(QuestionResponse data) {

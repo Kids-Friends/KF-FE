@@ -29,7 +29,7 @@ import okhttp3.WebSocketListener;
  */
 public class SensorWebSocketClient {
     private static final String TAG = "SensorWsClient";
-    private static final long RECONNECT_DELAY_MS = 3000L;
+    private static final long RECONNECT_DELAY_MS = 10000L; // 10초로 연장
     private static final long AIR_QUALITY_TTL_MS = 30000L; // 30초 지난 값은 무효 → "보통" 폴백
 
     // 공기질 최신값 캐시(휘발성). TemiRepository.getAirQuality 에서 읽는다.
@@ -87,7 +87,12 @@ public class SensorWebSocketClient {
 
             @Override
             public void onFailure(WebSocket ws, Throwable t, Response response) {
-                Log.w(TAG, "WS 실패: " + (t == null ? "" : t.getMessage()));
+                // SSL 인증서 오류 등 반복적인 실패 시 로그 도배 방지
+                if (t != null && t.getMessage() != null && t.getMessage().contains("Trust anchor")) {
+                    Log.w(TAG, "WS 연결 실패 (SSL/인증서 문제 - 백엔드 HTTPS 설정 확인 필요)");
+                } else {
+                    Log.w(TAG, "WS 실패: " + (t == null ? "" : t.getMessage()));
+                }
                 webSocket = null;
                 scheduleReconnect();
             }
