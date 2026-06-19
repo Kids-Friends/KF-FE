@@ -816,7 +816,7 @@ public class MainActivity extends AppCompatActivity
                 uiHandler.postDelayed(() -> {
                     String finishMsg = "정말 멋지게 나왔는걸? 이 사진은 내가 잘 간직할게!";
                     showAnswer(finishMsg);
-                    showActionButtons("또 찍을래요", this::handlePhoto);
+                    showActionButtons("또 찍을래요", () -> handlePhoto());
                     currentTimeoutMs = SHORT_TIMEOUT_MS;        // 10초 뒤 자동 종료 설정
                     speakThenListen(finishMsg);
                 }, 3000);
@@ -890,7 +890,7 @@ public class MainActivity extends AppCompatActivity
                 logScenario(5, "자유질문(AI)", "성공");
                 setFace(R.drawable.face_joy);
                 showAnswer(data.answer);
-                showActionButtons("또 물어볼래요", this::listenInConversation);
+                showActionButtons("또 물어볼래요", () -> listenInConversation());
                 currentTimeoutMs = CONVERSATION_TIMEOUT_MS; // 자유 대화는 계속 이어가도록 긴 타임아웃 유지
                 speakThenListen(data.answer);
             }
@@ -931,7 +931,7 @@ public class MainActivity extends AppCompatActivity
                     String answer = "지금 미세먼지 상태는 " + grade + "이야!";
                     answer += "나쁨".equals(grade) ? " 오늘은 실내에서 노는 게 좋겠어!" : " 신나게 놀아도 괜찮아!";
                     showAnswer(answer);
-                    showActionButtons("또 궁금해요", this::handleAirQuality);
+                    showActionButtons("또 궁금해요", () -> handleAirQuality());
                     currentTimeoutMs = SHORT_TIMEOUT_MS;        // 10초 뒤 자동 종료 설정
                     speakThenListen(answer);
                 }, delay);
@@ -945,7 +945,7 @@ public class MainActivity extends AppCompatActivity
                     logScenario(6, "미세먼지", "실패→보통 폴백: " + message);
                     String answer = "지금 미세먼지 상태는 보통이야! 신나게 놀아도 괜찮아!";
                     showAnswer(answer);
-                    showActionButtons("또 궁금해요", this::handleAirQuality);
+                    showActionButtons("또 궁금해요", () -> handleAirQuality());
                     currentTimeoutMs = SHORT_TIMEOUT_MS;        // 10초 뒤 자동 종료 설정
                     speakThenListen(answer);
                 }, delay);
