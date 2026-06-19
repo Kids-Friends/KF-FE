@@ -22,14 +22,23 @@
         android:id="@+id/button_back"
         style="@style/TemiBackButton"
         android:layout_margin="28dp"
-        android:text="@string/common_back" />
+        android:text="종료" />
+
+    <Button
+        android:id="@+id/button_nav_back"
+        style="@style/TemiBackButton"
+        android:layout_gravity="end"
+        android:layout_margin="28dp"
+        android:text="뒤로가기" />
 
     <Button
         android:id="@+id/button_operator_menu"
         style="@style/TemiBackButton"
         android:layout_gravity="end"
-        android:layout_margin="28dp"
+        android:layout_marginEnd="180dp"
+        android:layout_marginTop="28dp"
         android:layout_width="180dp"
+        android:visibility="gone"
         android:text="@string/home_operator_menu" />
 
     <!-- 하단에 상태/답변 오버레이 -->
@@ -68,6 +77,18 @@
             android:textStyle="bold" />
     </LinearLayout>
 
+    <!-- 완료 버튼: 디자인 시스템에 맞춰 친근하게 수정 (빨간색 제거) -->
+    <Button
+        android:id="@+id/button_complete"
+        style="@style/TemiPrimaryButton"
+        android:layout_width="280dp"
+        android:layout_height="88dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="180dp"
+        android:text="다 했어요"
+        android:textSize="28sp"
+        android:visibility="gone" />
+
     <!-- 실시간 자막 오버레이 -->
     <LinearLayout
         android:id="@+id/layout_subtitle"
@@ -86,5 +107,114 @@
             android:textColor="@android:color/white"
             android:textSize="28sp"
             android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- "친구야" 호출 시 하단에서 올라오는 기능 버튼 패널 -->
+    <LinearLayout
+        android:id="@+id/layout_menu_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/panel_background"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:visibility="gone">
+
+        <!-- 메인 기능 5버튼 -->
+        <LinearLayout
+            android:id="@+id/layout_menu_main"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_menu_membership"
+                style="@style/TemiMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/menu_membership" />
+
+            <Button
+                android:id="@+id/button_menu_location"
+                style="@style/TemiMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/menu_location_guide" />
+
+            <Button
+                android:id="@+id/button_menu_quiz"
+                style="@style/TemiMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/menu_quiz" />
+
+            <Button
+                android:id="@+id/button_menu_chat"
+                style="@style/TemiMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/menu_chat" />
+
+            <Button
+                android:id="@+id/button_menu_air"
+                style="@style/TemiMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/menu_air" />
+        </LinearLayout>
+
+        <!-- 위치안내 하위: 장소 선택 버튼 -->
+        <LinearLayout
+            android:id="@+id/layout_menu_zones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/button_zone_slide"
+                style="@style/TemiSecondaryButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/zone_slide" />
+
+            <Button
+                android:id="@+id/button_zone_ball"
+                style="@style/TemiSecondaryButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/zone_ball" />
+
+            <Button
+                android:id="@+id/button_zone_toilet"
+                style="@style/TemiSecondaryButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/zone_toilet" />
+
+            <Button
+                android:id="@+id/button_zone_tramp"
+                style="@style/TemiSecondaryButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/zone_tramp" />
+        </LinearLayout>
     </LinearLayout>
 </FrameLayout>

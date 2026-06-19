@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -132,8 +133,13 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
     protected void onStart() {
         super.onStart();
         try {
-            ActivityInfo activityInfo = getPackageManager()
-                    .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+            ActivityInfo activityInfo;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                activityInfo = getPackageManager().getActivityInfo(getComponentName(),
+                        PackageManager.ComponentInfoFlags.of(PackageManager.GET_META_DATA));
+            } else {
+                activityInfo = getPackageManager().getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+            }
             Robot.getInstance().onStart(activityInfo);
             Log.d(TAG, "Temi onStart: Sovereignty declared.");
         } catch (PackageManager.NameNotFoundException e) {
@@ -165,8 +171,13 @@ public class ApiTestActivity extends AppCompatActivity implements OnRobotReadyLi
     public void onRobotReady(boolean isReady) {
         if (isReady) {
             try {
-                ActivityInfo activityInfo = getPackageManager()
-                        .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+                ActivityInfo activityInfo;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    activityInfo = getPackageManager().getActivityInfo(getComponentName(),
+                            PackageManager.ComponentInfoFlags.of(PackageManager.GET_META_DATA));
+                } else {
+                    activityInfo = getPackageManager().getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+                }
                 Robot.getInstance().onStart(activityInfo);
             } catch (PackageManager.NameNotFoundException exception) {
                 Log.w(TAG, "Temi activity metadata is not available.", exception);

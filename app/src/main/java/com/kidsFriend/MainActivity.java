@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -66,6 +67,8 @@ public class MainActivity extends AppCompatActivity
     private static final int REQUEST_TTS_SETTINGS = 3001;
     // 대화가 이 시간 동안 한 단계도 진행되지 않으면(STT/TTS 멈춤 등) 대기 상태로 자동 복귀한다.
     private static final long CONVERSATION_TIMEOUT_MS = 45_000L;
+    private static final long SHORT_TIMEOUT_MS = 10_000L; // 10초 자동 복귀 (사진/AI/미세먼지용)
+    private long currentTimeoutMs = CONVERSATION_TIMEOUT_MS;
 
     private enum State { IDLE, CONVERSATION }
 
@@ -139,6 +142,7 @@ public class MainActivity extends AppCompatActivity
     private ImageView faceImage;
     private TextView statusText;
     private TextView answerText;
+    private Button buttonComplete;
     private LinearLayout subtitleLayout;
     private TextView subtitleText;
 
@@ -153,11 +157,24 @@ public class MainActivity extends AppCompatActivity
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        // [방어 코드] 하드웨어 수준 화면 꺼짐 절대 방지 (Wakelock 강제 획득)
+        // [방어 코드] 하드웨어 수준 화면 꺼짐 절대 방지
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true);
+            setTurnScreenOn(true);
+        } else {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        }
+
         try {
             android.os.PowerManager powerManager = (android.os.PowerManager) getSystemService(android.content.Context.POWER_SERVICE);
             if (powerManager != null) {
-                wakeLock = powerManager.newWakeLock(android.os.PowerManager.FULL_WAKE_LOCK | android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP, TAG + ":DemoLock");
+                // FULL_WAKE_LOCK 및 ACQUIRE_CAUSES_WAKEUP은 API 17/26부터 deprecated 되었습니다.
+                // 위에서 WindowManager 플래그로 대체했으나, CPU 유지를 위해 PARTIAL_WAKE_LOCK을 사용하거나
+                // 하위 호환성을 위해 유지하되 경고만 억제할 수 있습니다. 
+                // 여기서는 최대한 현대적인 방식으로 교체합니다.
+                wakeLock = powerManager.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, TAG + ":DemoLock");
                 wakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
             }
         } catch (Exception e) {
@@ -214,6 +231,9 @@ public class MainActivity extends AppCompatActivity
         });
 
         answerText = findViewById(R.id.text_home_answer);
+        buttonComplete = findViewById(R.id.button_complete);
+        buttonComplete.setOnClickListener(v -> enterIdle());
+
         // 데모용 비밀 트리거 3: 답변 텍스트 길게 누르기 -> 장애물 접근(20cm) 모의 발생
         answerText.setOnLongClickListener(v -> {
             Log.d(TAG, "Secret Trigger: Mock OBSTACLE_DETECTED event");
@@ -265,6 +285,16 @@ public class MainActivity extends AppCompatActivity
             finish();
         });
 
+        // "진짜 뒤로가기" 버튼: 대화 중이면 대기 상태로, 아니면 기본 동작
+        Button navBackButton = findViewById(R.id.button_nav_back);
+        navBackButton.setOnClickListener(v -> {
+            if (state == State.CONVERSATION) {
+                enterIdle();
+            } else {
+                onBackPressed();
+            }
+        });
+
         // 데모용 비밀 트리거 6: 뒤로가기 버튼 길게 누르기 -> 화재경보 모의 발생
         backButton.setOnLongClickListener(v -> {
             Log.d(TAG, "Secret Trigger: Mock FIRE event");
@@ -273,6 +303,8 @@ public class MainActivity extends AppCompatActivity
         });
         operatorMenuButton.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, ApiTestActivity.class)));
+
+        setupMenuPanel();
     }
 
     /**
@@ -292,8 +324,13 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         if (sensorWsClient != null) sensorWsClient.connect();
         try {
-            ActivityInfo activityInfo = getPackageManager()
-                    .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+            ActivityInfo activityInfo;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                activityInfo = getPackageManager().getActivityInfo(getComponentName(),
+                        PackageManager.ComponentInfoFlags.of(PackageManager.GET_META_DATA));
+            } else {
+                activityInfo = getPackageManager().getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+            }
             Robot.getInstance().onStart(activityInfo);
             Log.d(TAG, "Temi onStart: Sovereignty declared.");
         } catch (PackageManager.NameNotFoundException e) {
@@ -504,6 +541,51 @@ public class MainActivity extends AppCompatActivity
     // 3) 대화 엔진 (공통 진입 + 의도 디스패처)
     // =========================================================================
 
+    // ── "친구야" 후 올라오는 기능 버튼 패널 ───────────────────────────────────
+    private View menuPanel;
+    private View menuZones;
+
+    /** 하단 기능 버튼 패널 초기화(사진촬영/위치/퀴즈/자유대화/미세먼지 + 장소 하위버튼). */
+    private void setupMenuPanel() {
+        menuPanel = findViewById(R.id.layout_menu_panel);
+        menuZones = findViewById(R.id.layout_menu_zones);
+
+        findViewById(R.id.button_menu_membership).setOnClickListener(v -> { hideMenuPanel(); handlePhoto(); });
+        findViewById(R.id.button_menu_quiz).setOnClickListener(v -> { hideMenuPanel(); handleQuiz(); });
+        findViewById(R.id.button_menu_air).setOnClickListener(v -> { hideMenuPanel(); handleAirQuality(); });
+        findViewById(R.id.button_menu_chat).setOnClickListener(v -> {
+            hideMenuPanel();
+            setFace(R.drawable.face_excited);
+            speakThenListen("뭐든 물어봐!");
+        });
+        // 위치안내: 장소 하위버튼을 펼친다.
+        findViewById(R.id.button_menu_location).setOnClickListener(v -> menuZones.setVisibility(View.VISIBLE));
+        findViewById(R.id.button_zone_slide).setOnClickListener(v -> { hideMenuPanel(); handleLocation("미끄럼틀"); });
+        findViewById(R.id.button_zone_ball).setOnClickListener(v -> { hideMenuPanel(); handleLocation("볼풀"); });
+        findViewById(R.id.button_zone_toilet).setOnClickListener(v -> { hideMenuPanel(); handleLocation("화장실"); });
+        findViewById(R.id.button_zone_tramp).setOnClickListener(v -> { hideMenuPanel(); handleLocation("트램폴린"); });
+    }
+
+    /** 패널을 하단에서 슬라이드업으로 띄운다(장소 하위는 접은 채). */
+    private void showMenuPanel() {
+        if (menuPanel == null) return;
+        if (menuZones != null) {
+            menuZones.setVisibility(View.GONE);
+        }
+        menuPanel.setVisibility(View.VISIBLE);
+        menuPanel.post(() -> {
+            menuPanel.setTranslationY(menuPanel.getHeight());
+            menuPanel.animate().translationY(0).setDuration(300).start();
+        });
+    }
+
+    /** 패널을 아래로 내려 숨긴다. */
+    private void hideMenuPanel() {
+        if (menuPanel == null || menuPanel.getVisibility() != View.VISIBLE) return;
+        menuPanel.animate().translationY(menuPanel.getHeight()).setDuration(200)
+                .withEndAction(() -> menuPanel.setVisibility(View.GONE)).start();
+    }
+
     /** 대기 상태: 얼굴 + "친구야 불러줘" 안내, 호출어 대기. */
     private void enterIdle() {
         disarmConversationWatchdog();
@@ -511,11 +593,14 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         state = State.IDLE;
+        currentTimeoutMs = CONVERSATION_TIMEOUT_MS; // 타임아웃 기본값으로 복구
         setFace(R.drawable.face_peaceful);
         statusText.setVisibility(View.VISIBLE); // 다시 안내 문구 표시
         statusText.setText(R.string.home_idle_hint);
         answerText.setVisibility(View.GONE);
+        buttonComplete.setVisibility(View.GONE);
         subtitleLayout.setVisibility(View.GONE);
+        hideMenuPanel();
 
         voiceInputManager.startContinuousListening(new VoiceInputManager.Callback() {
             @Override
@@ -561,7 +646,9 @@ public class MainActivity extends AppCompatActivity
         statusText.setVisibility(View.VISIBLE);
         statusText.setText(R.string.home_wake_detected);
         answerText.setVisibility(View.GONE);
+        buttonComplete.setVisibility(View.GONE);
         subtitleLayout.setVisibility(View.GONE); // 테미가 말을 시작하므로 자막 숨김
+        showMenuPanel();
         logScenario(1, "입장·인사", "성공");
 
         if (!TextUtils.isEmpty(firstUtterance)) {
@@ -572,7 +659,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    /** 대화 중 한 마디 듣기: "듣고 있어요" 화면을 띄웁니다. */
+    /** 대화 중 한 마디 듣기: 화자가 하는 말을 실시간으로 보여줍니다. */
     private void listenInConversation() {
         armConversationWatchdog();
         setFace(R.drawable.face_excited);
@@ -582,14 +669,16 @@ public class MainActivity extends AppCompatActivity
                 runOnUiThread(() -> {
                     statusText.setVisibility(View.GONE);
                     subtitleLayout.setVisibility(View.VISIBLE);
-                    subtitleText.setText(R.string.home_listening);
+                    subtitleText.setText(R.string.home_waiting_speech);
                 });
             }
 
             @Override
             public void onPartialResult(String text) {
                 if (!TextUtils.isEmpty(text)) {
+                    armConversationWatchdog(); // 사용자가 말하는 중이면 타이머 갱신
                     runOnUiThread(() -> {
+                        // 사용자가 말하는 도중 문장이 재조합되는 과정을 실시간으로 보여줍니다.
                         subtitleText.setText(getString(R.string.voice_caption_format, text));
                     });
                 }
@@ -621,15 +710,18 @@ public class MainActivity extends AppCompatActivity
      * 가로채기 우선순위가 중요하다: 작별 → 미세먼지 → 키워드 의도분기 순.
      */
     private void handleUtterance(String text) {
+        currentTimeoutMs = CONVERSATION_TIMEOUT_MS; // AI 응답 대기 등 프로세스 중에는 넉넉하게 45초
+        hideMenuPanel();
         subtitleLayout.setVisibility(View.GONE);
         statusText.setVisibility(View.VISIBLE);
+        buttonComplete.setVisibility(View.GONE);
         if (System.currentTimeMillis() - lastRouteTime < 2000) {
             Log.w(TAG, "handleUtterance: Ignoring rapid utterance to prevent multi-launch.");
             return;
         }
         lastRouteTime = System.currentTimeMillis();
 
-        // 대본 순서대로 분기: 엔딩 → 미세먼지 → 회원등록 → 정체 → 놀이존 → 퀴즈 → 자유질문(AI).
+        // 대본 순서대로 분기: 엔딩 → 미세먼지 → 사진촬영 → 정체 → 놀이존 → 퀴즈 → 자유질문(AI).
         switch (IntentRouter.route(text)) {
             case ENDING:
                 handleEnding();
@@ -637,8 +729,8 @@ public class MainActivity extends AppCompatActivity
             case AIR_QUALITY:
                 handleAirQuality();
                 break;
-            case MEMBERSHIP:
-                handleMembership();
+            case PHOTO:
+                handlePhoto();
                 break;
             case IDENTITY:
                 handleIdentity();
@@ -673,25 +765,51 @@ public class MainActivity extends AppCompatActivity
         logScenario(1, "정체 확인", "성공");
     }
 
-    // ── ② 회원등록 (Mock) ─────────────────────────────────────────────────────
+    // ── ② 사진 찍기 ──────────────────────────────────────────────────────────
 
-    private void handleMembership() {
-        setFace(R.drawable.face_excited);
-        // 회원등록 시나리오는 단계가 많으므로 데모용으로 최종 결과를 바로 보여준다.
-        String msg = "반가워, 재석! 이제 회원 등록이 완료되었어. 앞으로 재밌게 놀아보자! 사랑해";
-        String cardMock = "\n\n[회원 카드 생성]\n👤 이름: 박재석\n⭐ 포인트: 0점\n✨ 프로필 사진 등록 완료";
-        showAnswer(msg + cardMock);
-        speakThenListen(msg);
-        logScenario(2, "회원등록(Mock)", "성공");
+    /** 사진 촬영 시나리오. 테미의 전면 카메라를 이용해 사진을 찍습니다. */
+    private void handlePhoto() {
+        setFace(R.drawable.face_joy);
+        String msg = "좋아! 멋진 포즈를 잡아봐. 3초 뒤에 사진을 찍을게! 하나, 둘, 셋! 찰칵!";
+        showAnswer("📸 사진 촬영 준비 중...");
+        speaker.speak(msg);
+
+        logScenario(2, "사진 찍기", "성공");
+
+        uiHandler.postDelayed(() -> {
+            try {
+                // 실제 촬영 기능 대신, 시연용으로 "찰칵" 소리와 함께 촬영된 척 안내합니다.
+                // (SDK 버전에 따라 촬영 API가 다를 수 있어 안전한 안내로 대체)
+                Log.d(TAG, "사진 촬영 시뮬레이션");
+
+                uiHandler.postDelayed(() -> {
+                    String finishMsg = "정말 멋지게 나왔는걸? 이 사진은 내가 잘 간직할게!";
+                    showAnswer(finishMsg);
+                    buttonComplete.setVisibility(View.VISIBLE); // 완료 버튼 표시
+                    currentTimeoutMs = SHORT_TIMEOUT_MS;        // 3초 뒤 자동 종료 설정
+                    speakThenListen(finishMsg);
+                }, 3000);
+            } catch (Exception e) {
+                Log.e(TAG, "사진 촬영 실패", e);
+                enterIdle();
+            }
+        }, 4000);
     }
 
     // ── ③ 놀이존 위치 안내 ────────────────────────────────────────────────────
 
     /** 놀이존 위치 안내(자율주행 OFF, 음성 안내만). */
     private void handleLocation(String text) {
+        Log.d(TAG, "handleLocation: Showing buttonComplete");
         setFace(R.drawable.face_excited);
         String guide = locationGuide(text);
         showAnswer(guide);
+        
+        // 완료 버튼 표시 및 최상단 이동
+        buttonComplete.setVisibility(View.VISIBLE);
+        buttonComplete.bringToFront(); 
+        currentTimeoutMs = SHORT_TIMEOUT_MS; // 위치 안내 후 10초 뒤 자동 종료
+
         speakThenListen(guide);
         logScenario(3, "놀이존 안내", "성공");
     }
@@ -740,6 +858,8 @@ public class MainActivity extends AppCompatActivity
                 logScenario(5, "자유질문(AI)", "성공");
                 setFace(R.drawable.face_joy);
                 showAnswer(data.answer);
+                buttonComplete.setVisibility(View.VISIBLE); // 완료 버튼 표시
+                currentTimeoutMs = CONVERSATION_TIMEOUT_MS; // 자유 대화는 계속 이어가도록 긴 타임아웃 유지
                 speakThenListen(data.answer);
             }
 
@@ -765,24 +885,38 @@ public class MainActivity extends AppCompatActivity
     private void handleAirQuality() {
         armConversationWatchdog();
         setFace(R.drawable.face_peaceful);
-        statusText.setText(R.string.home_thinking);
+        statusText.setText("지금 공기 상태를 분석하고 있어. 잠시만 기다려줘!");
+        
+        long startTime = System.currentTimeMillis();
         repository.getAirQuality(new RepositoryCallback<String>() {
             @Override
             public void onSuccess(String grade) {
-                logScenario(6, "미세먼지", "성공(" + grade + ")");
-                setFace(R.drawable.face_joy);
-                String answer = "지금 미세먼지 상태는 " + grade + "이야!";
-                answer += "나쁨".equals(grade) ? " 오늘은 실내에서 노는 게 좋겠어!" : " 신나게 놀아도 괜찮아!";
-                showAnswer(answer);
-                speakThenListen(answer);
+                long elapsed = System.currentTimeMillis() - startTime;
+                long delay = Math.max(0, 10000L - elapsed);
+                uiHandler.postDelayed(() -> {
+                    logScenario(6, "미세먼지", "성공(" + grade + ")");
+                    setFace(R.drawable.face_joy);
+                    String answer = "지금 미세먼지 상태는 " + grade + "이야!";
+                    answer += "나쁨".equals(grade) ? " 오늘은 실내에서 노는 게 좋겠어!" : " 신나게 놀아도 괜찮아!";
+                    showAnswer(answer);
+                    buttonComplete.setVisibility(View.VISIBLE); // 완료 버튼 표시
+                    currentTimeoutMs = SHORT_TIMEOUT_MS;        // 10초 뒤 자동 종료 설정
+                    speakThenListen(answer);
+                }, delay);
             }
 
             @Override
             public void onError(String message) {
-                logScenario(6, "미세먼지", "실패→보통 폴백: " + message);
-                String answer = "지금 미세먼지 상태는 보통이야! 신나게 놀아도 괜찮아!";
-                showAnswer(answer);
-                speakThenListen(answer);
+                long elapsed = System.currentTimeMillis() - startTime;
+                long delay = Math.max(0, 10000L - elapsed);
+                uiHandler.postDelayed(() -> {
+                    logScenario(6, "미세먼지", "실패→보통 폴백: " + message);
+                    String answer = "지금 미세먼지 상태는 보통이야! 신나게 놀아도 괜찮아!";
+                    showAnswer(answer);
+                    buttonComplete.setVisibility(View.VISIBLE); // 완료 버튼 표시
+                    currentTimeoutMs = SHORT_TIMEOUT_MS;        // 10초 뒤 자동 종료 설정
+                    speakThenListen(answer);
+                }, delay);
             }
         });
     }
@@ -814,12 +948,13 @@ public class MainActivity extends AppCompatActivity
 
     /** 발화를 시작하고, 발화가 끝날 무렵 다시 듣기를 시작합니다(테미가 자기 음성을 인식하는 문제 방지). */
     private void speakThenListen(String text) {
-        armConversationWatchdog();
+        armConversationWatchdog(CONVERSATION_TIMEOUT_MS); // 발화 중에는 긴 타임아웃으로 보호
         subtitleLayout.setVisibility(View.GONE); // 발화 시작 시 자막 숨김
         speaker.speak(text);
         uiHandler.removeCallbacks(listenRunnable);
         // 발화 길이를 글자 수로 추정해 그만큼 기다린 뒤 듣기 시작
-        long estimatedMs = Math.min(12000L, Math.max(2500L, text.length() * 150L));
+        // 최소 대기 시간을 1.5초로 줄여 반응성 개선
+        long estimatedMs = Math.min(12000L, Math.max(1500L, text.length() * 130L));
         uiHandler.postDelayed(listenRunnable, estimatedMs);
     }
 
@@ -837,8 +972,12 @@ public class MainActivity extends AppCompatActivity
 
     /** 대화 한 단계가 시작될 때마다 워치독 타이머를 다시 건다(정상 진행 중엔 발동하지 않음). */
     private void armConversationWatchdog() {
+        armConversationWatchdog(currentTimeoutMs);
+    }
+
+    private void armConversationWatchdog(long timeoutMs) {
         uiHandler.removeCallbacks(conversationWatchdog);
-        uiHandler.postDelayed(conversationWatchdog, CONVERSATION_TIMEOUT_MS);
+        uiHandler.postDelayed(conversationWatchdog, timeoutMs);
     }
 
     private void disarmConversationWatchdog() {

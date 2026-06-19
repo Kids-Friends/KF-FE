@@ -2,6 +2,7 @@ package com.kidsFriend.domain.quiz.service;
 
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -65,8 +66,13 @@ public class QuizActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         try {
-            ActivityInfo activityInfo = getPackageManager()
-                    .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+            ActivityInfo activityInfo;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                activityInfo = getPackageManager().getActivityInfo(getComponentName(),
+                        PackageManager.ComponentInfoFlags.of(PackageManager.GET_META_DATA));
+            } else {
+                activityInfo = getPackageManager().getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
+            }
             Robot.getInstance().onStart(activityInfo);
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "Temi activity metadata is not available.", e);

@@ -49,7 +49,7 @@ public final class IntentRouter {
     public enum Intent {
         ENDING,         // 고마워/그만/안녕 → 대화 마무리 (가장 먼저 가로챔)
         AIR_QUALITY,    // 미세먼지/공기질
-        MEMBERSHIP,     // 회원등록/가입
+        PHOTO,          // 사진찍기 (기존 회원등록 대체)
         IDENTITY,       // 정체/누구야 → 자기소개
         LOCATION,       // 미끄럼틀/볼풀/화장실 등 위치 안내
         QUIZ,           // 퀴즈/문제
@@ -69,9 +69,9 @@ public final class IntentRouter {
             "미세먼지", "먼지", "공기", "미세", "날씨", "공기질", "오염", "대기",
             "깨끗", "나쁨", "좋음", "보통"
     };
-    private static final String[] MEMBERSHIP_KEYWORDS = {
-            "회원등록", "회원가입", "회원", "등록", "가입", "멤버", "멤버십",
-            "카드만들", "회원카드", "포인트카드", "신청", "만들어줘"
+    private static final String[] PHOTO_KEYWORDS = {
+            "사진", "카메라", "찰칵", "찍어", "포즈", "김치", "치즈",
+            "사진촬영", "촬영", "사진찍", "추억"
     };
     private static final String[] IDENTITY_KEYWORDS = {
             "정체", "누구야", "누구", "넌뭐", "정체가뭐", "넌누구", "이름이뭐",
@@ -104,10 +104,10 @@ public final class IntentRouter {
             "먼지어때", "오늘공기", "오늘미세먼지", "지금미세먼지", "대기어때",
             "공기좋아", "미세먼지나빠", "공기괜찮아"
     };
-    private static final String[] MEMBERSHIP_PHRASES = {
-            "회원등록하고싶어", "회원가입하고싶어", "등록하고싶어", "가입하고싶어",
-            "카드만들고싶어", "회원카드받고싶어", "멤버십가입", "회원하고싶어",
-            "회원으로등록", "포인트카드만들어줘"
+    private static final String[] PHOTO_PHRASES = {
+            "사진찍어줘", "사진찍고싶어", "사진촬영", "카메라켜줘",
+            "나찍어줘", "사진한번찍자", "포즈잡아봐", "사진찍자",
+            "치즈해봐", "찰칵해줘"
     };
     private static final String[] IDENTITY_PHRASES = {
             "넌정체가뭐야", "너는누구야", "이름이뭐야", "자기소개해봐",
@@ -210,7 +210,7 @@ public final class IntentRouter {
         switch (intent) {
             case ENDING:        return ENDING_KEYWORDS;
             case AIR_QUALITY:   return AIR_QUALITY_KEYWORDS;
-            case MEMBERSHIP:    return MEMBERSHIP_KEYWORDS;
+            case PHOTO:         return PHOTO_KEYWORDS;
             case IDENTITY:      return IDENTITY_KEYWORDS;
             case LOCATION:      return LOCATION_KEYWORDS;
             case QUIZ:          return QUIZ_KEYWORDS;
@@ -223,7 +223,7 @@ public final class IntentRouter {
         switch (intent) {
             case ENDING:        return ENDING_PHRASES;
             case AIR_QUALITY:   return AIR_QUALITY_PHRASES;
-            case MEMBERSHIP:    return MEMBERSHIP_PHRASES;
+            case PHOTO:         return PHOTO_PHRASES;
             case IDENTITY:      return IDENTITY_PHRASES;
             case LOCATION:      return LOCATION_PHRASES;
             case QUIZ:          return QUIZ_PHRASES;

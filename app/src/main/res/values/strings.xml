@@ -10,6 +10,13 @@
     <string name="menu_location_guide">위치 안내</string>
     <string name="menu_reward">리워드</string>
     <string name="menu_photo">사진 저장</string>
+    <string name="menu_membership">사진 촬영</string>
+    <string name="menu_chat">자유대화</string>
+    <string name="menu_air">미세먼지</string>
+    <string name="zone_slide">미끄럼틀</string>
+    <string name="zone_ball">볼풀</string>
+    <string name="zone_toilet">화장실</string>
+    <string name="zone_tramp">트램폴린</string>
 
     <string name="common_back">뒤로</string>
     <string name="common_loading">처리 중입니다...</string>
@@ -84,11 +91,12 @@
     <string name="home_idle_hint">\"친구야\" 하고 부르거나 화면을 터치해줘!</string>
     <string name="home_wake_detected">어떤 도움이 필요하니?</string>
     <string name="home_listening">듣고 있어요 👂</string>
+    <string name="home_waiting_speech">💬 말씀을 기다리고 있어요...</string>
     <string name="home_thinking">음… 생각하고 있어요</string>
     <string name="home_bye">안녕! 또 부르면 올게.</string>
     <string name="home_operator_menu">운영자 메뉴</string>
     <string name="home_routing_quiz">퀴즈 풀러 가자!</string>
-    <string name="home_routing_membership">회원카드를 보여줄게!</string>
+    <string name="home_routing_membership">사진 찍으러 가자!</string>
 
     <string name="quiz_stars">⭐ ⭐ ⭐</string>
     <string name="quiz_answer_o">O</string>
