@@ -17,6 +17,7 @@ import com.kidsFriend.domain.greeting.response.IntentResponse;
 import com.kidsFriend.domain.quiz.request.QuizAnswerRequest;
 import com.kidsFriend.domain.quiz.response.QuizAnswerResponse;
 import com.kidsFriend.domain.quiz.service.QuizQuestion;
+import com.kidsFriend.domain.sensor.service.SensorWebSocketClient;
 import com.kidsFriend.global.client.ApiClient;
 import com.kidsFriend.global.client.ApiResponse;
 import com.kidsFriend.global.client.TemiApiService;
@@ -37,23 +38,11 @@ public class TemiRepository {
     }
 
     public void askQuestion(String question, RepositoryCallback<QuestionResponse> callback) {
-        if (ApiConfig.USE_MOCK) {
-            QuestionRequest request = new QuestionRequest(question);
-            callback.onSuccess(mockDataSource.askQuestion(request));
-            return;
-        }
-
         ChatAiRequest request = new ChatAiRequest(question);
         apiService().askAi(request).enqueue(toQuestionCallback(callback));
     }
 
     public void askVoiceQuestion(String rawText, String reconstructedText, RepositoryCallback<QuestionResponse> callback) {
-        if (ApiConfig.USE_MOCK) {
-            VoiceQuestionRequest request = new VoiceQuestionRequest(rawText, reconstructedText);
-            callback.onSuccess(mockDataSource.askVoiceQuestion(request));
-            return;
-        }
-
         ChatAiRequest request = new ChatAiRequest(rawText);
         apiService().askAi(request).enqueue(toQuestionCallback(callback));
     }
@@ -68,10 +57,12 @@ public class TemiRepository {
     }
 
     /**
-     * 미세먼지(공기질) 등급을 반환한다. 백엔드 sensor-events API가 제거되어 시연용 고정값("보통")으로 안내한다.
+     * 미세먼지(공기질) 등급을 반환한다. WS로 받은 최신 pm25 기반 등급(좋음/보통/나쁨),
+     * 값이 없거나 오래됐으면(미연결/타임아웃) "보통"으로 폴백한다(시나리오 2.6: 실패 시 가라).
      */
     public void getAirQuality(RepositoryCallback<String> callback) {
-        callback.onSuccess("보통");
+        String grade = SensorWebSocketClient.airQualityGradeOrNull();
+        callback.onSuccess(grade != null ? grade : "보통");
     }
 
     public void askAi(String question, RepositoryCallback<ChatAiResponse> callback) {
@@ -94,14 +85,14 @@ public class TemiRepository {
             public void onResponse(Call<ApiResponse<ChatAiResponse>> call, Response<ApiResponse<ChatAiResponse>> response) {
                 if (!response.isSuccessful()) {
                     Log.e("TemiRepository", "API response error: " + response.code());
-                    callback.onSuccess(new QuestionResponse(true, "서버랑 잠깐 연결이 끊어졌나 봐. 다시 한번 말해줄래?", "now"));
+                    callback.onError("API response error: " + response.code());
                     return;
                 }
 
                 ApiResponse<ChatAiResponse> body = response.body();
                 if (body == null || body.data == null || body.data.reply == null) {
                     Log.e("TemiRepository", "API response body is empty.");
-                    callback.onSuccess(new QuestionResponse(true, "어라, 내가 무슨 말을 하려고 했는지 까먹었어. 헤헤.", "now"));
+                    callback.onError("API response body is empty.");
                     return;
                 }
 
@@ -111,7 +102,7 @@ public class TemiRepository {
             @Override
             public void onFailure(Call<ApiResponse<ChatAiResponse>> call, Throwable t) {
                 Log.e("TemiRepository", "API connection failed: " + t.getMessage(), t);
-                callback.onSuccess(new QuestionResponse(true, "앗, 지금 인터넷 연결이 안 좋아서 조금 헷갈려. 하지만 난 항상 네 친구야!", "now"));
+                callback.onError("API connection failed: " + t.getMessage());
             }
         };
     }

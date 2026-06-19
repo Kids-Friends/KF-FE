@@ -160,6 +160,16 @@ public class QuestionActivity extends AppCompatActivity {
             public void onPartialResult(String text) {
                 if (!TextUtils.isEmpty(text)) {
                     voiceModeText.setText(getString(R.string.voice_heard_format, text));
+                    if (WakeWordMatcher.containsWakeWord(text)) {
+                        voiceInputManager.stopListening();
+                        voiceModeText.setText(R.string.voice_wake_detected);
+                        String textAfterWakeWord = WakeWordMatcher.textAfterWakeWord(text);
+                        if (!TextUtils.isEmpty(textAfterWakeWord)) {
+                            handleVoiceQuestion(textAfterWakeWord);
+                            return;
+                        }
+                        startQuestionListening();
+                    }
                 }
             }
 

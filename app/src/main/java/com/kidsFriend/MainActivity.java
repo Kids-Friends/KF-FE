@@ -32,6 +32,7 @@ import com.kidsFriend.domain.chat.response.QuestionResponse;
 import com.kidsFriend.domain.quiz.service.QuizActivity;
 import com.kidsFriend.domain.sensor.service.RobotActionManager;
 import com.kidsFriend.domain.sensor.service.RobotResilienceManager;
+import com.kidsFriend.domain.sensor.service.SensorWebSocketClient;
 import com.kidsFriend.global.config.AppConfig;
 import com.kidsFriend.global.config.BackendConnectionChecker;
 import com.kidsFriend.global.debug.ApiTestActivity;
@@ -131,6 +132,7 @@ public class MainActivity extends AppCompatActivity
     private TemiRepository repository;
     private VoiceInputManager voiceInputManager;
     private RobotActionManager actionManager;
+    private SensorWebSocketClient sensorWsClient;
     private RobotResilienceManager resilienceManager;
     private Robot robot;
     private android.os.PowerManager.WakeLock wakeLock;
@@ -168,6 +170,7 @@ public class MainActivity extends AppCompatActivity
         voiceInputManager = new VoiceInputManager(this);
         // 센서 이벤트를 로봇 동작/표정으로 변환한다(시연에서는 화면 비밀 트리거로 발생시킨다).
         actionManager = new RobotActionManager();
+        sensorWsClient = new SensorWebSocketClient(actionManager);
         actionManager.setOnFaceChangeListener(faceType ->
             uiHandler.post(() -> {
                 int resId = R.drawable.face_peaceful;
@@ -287,6 +290,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onStart() {
         super.onStart();
+        if (sensorWsClient != null) sensorWsClient.connect();
         try {
             ActivityInfo activityInfo = getPackageManager()
                     .getActivityInfo(getComponentName(), PackageManager.GET_META_DATA);
@@ -332,6 +336,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onDestroy() {
+        if (sensorWsClient != null) sensorWsClient.disconnect();
         try {
             if (wakeLock != null && wakeLock.isHeld()) {
                 wakeLock.release();
@@ -364,14 +369,17 @@ public class MainActivity extends AppCompatActivity
     public void onRobotReady(boolean isReady) {
         if (isReady) {
             robot.hideTopBar();
-            // 사용자의 요청으로 마이크 음소거 및 프라이버시 모드를 해제합니다.
-            // 1. 호출어 활성화 (Hey temi 사용 가능)
+            // 1. 모든 권한 요청 (Sovereignty 확보)
+            requestAllPermissions();
+
+            // 2. 테미 내장 호출어(Hey temi) 비활성화 -> 우리 호출어(친구야)만 사용
             robot.toggleWakeup(false);
-            // 2. 프라이버시 모드 해제 (마이크 하드웨어 차단 해제)
+            // 3. 프라이버시 모드 해제 (마이크 활성화)
             robot.setPrivacyMode(false);
             
-            Log.d(TAG, "Temi Wakeup Mode Enabled & Privacy Mode Disabled");
+            Log.d(TAG, "Temi Wakeup Mode Disabled (Custom Wake Word Only) & Privacy Mode Disabled");
             try {
+                // 4. 키오스크 모드 및 Sovereignty 보장
                 robot.requestToBeKioskApp();
                 robot.setKioskModeOn(true);
                 Log.d(TAG, "Kiosk mode activated successfully.");
@@ -379,8 +387,34 @@ public class MainActivity extends AppCompatActivity
                 Log.w(TAG, "Kiosk mode could not be activated: " + e.getMessage());
             }
             applyCuteVoice();
-            // 로봇이 준비된 뒤 내장 복구 기능(사람감지/들림/끌림/배터리) 등록.
-            resilienceManager.register();
+            // 5. 로봇이 준비된 뒤 내장 복구 기능 등록 (필요 시 제거 가능하나 안전을 위해 유지)
+            // resilienceManager.register(); 
+            // 6. 테미 내장 사람감지(Detection Mode) 비활성화 -> 우리 앱이 직접 제어
+            robot.setDetectionModeOn(false, 0f);
+            Log.d(TAG, "Detection Mode disabled by user request.");
+        }
+    }
+
+    /** 테미의 모든 주요 권한을 한 번에 요청하여 앱이 로봇을 완전히 제어하게 합니다. */
+    private void requestAllPermissions() {
+        java.util.List<Permission> permissions = new java.util.ArrayList<>();
+        permissions.add(Permission.SETTINGS);
+        permissions.add(Permission.MAP);
+        // SDK 버전에 따라 존재 여부가 다를 수 있는 권한들은 안전하게 체크하여 추가 가능
+        // permissions.add(Permission.SEQUENCE); 
+        // permissions.add(Permission.FACE_RECOGNITION);
+
+        java.util.List<Permission> toRequest = new java.util.ArrayList<>();
+        for (Permission p : permissions) {
+            try {
+                if (robot.checkSelfPermission(p) != Permission.GRANTED) {
+                    toRequest.add(p);
+                }
+            } catch (Exception ignored) {}
+        }
+
+        if (!toRequest.isEmpty()) {
+            robot.requestPermissions(toRequest, REQUEST_TTS_SETTINGS);
         }
     }
 
@@ -491,7 +525,12 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onPartialResult(String text) {
-                // 대기화면에서는 오인식/주변 소음 텍스트로 안내문구를 덮지 않는다(화면 깔끔 유지).
+                if (WakeWordMatcher.containsWakeWord(text)) {
+                    Log.i(TAG, "Wake word detected from partial STT: " + text);
+                    statusText.setText(R.string.home_wake_detected);
+                    voiceInputManager.stopListening();
+                    startConversation(WakeWordMatcher.textAfterWakeWord(text));
+                }
             }
 
             @Override
@@ -501,6 +540,8 @@ public class MainActivity extends AppCompatActivity
                 if (!WakeWordMatcher.containsWakeWord(text)) {
                     return;
                 }
+                Log.i(TAG, "Wake word detected from final STT: " + text);
+                statusText.setText(R.string.home_wake_detected);
                 voiceInputManager.stopListening();
                 startConversation(WakeWordMatcher.textAfterWakeWord(text));
             }
@@ -517,6 +558,8 @@ public class MainActivity extends AppCompatActivity
     private void startConversation(String firstUtterance) {
         state = State.CONVERSATION;
         setFace(R.drawable.face_excited);
+        statusText.setVisibility(View.VISIBLE);
+        statusText.setText(R.string.home_wake_detected);
         answerText.setVisibility(View.GONE);
         subtitleLayout.setVisibility(View.GONE); // 테미가 말을 시작하므로 자막 숨김
         logScenario(1, "입장·인사", "성공");
@@ -539,7 +582,7 @@ public class MainActivity extends AppCompatActivity
                 runOnUiThread(() -> {
                     statusText.setVisibility(View.GONE);
                     subtitleLayout.setVisibility(View.VISIBLE);
-                    subtitleText.setText("");
+                    subtitleText.setText(R.string.home_listening);
                 });
             }
 
@@ -691,7 +734,7 @@ public class MainActivity extends AppCompatActivity
         armConversationWatchdog();
         setFace(R.drawable.face_peaceful);
         statusText.setText(R.string.home_thinking);
-        repository.askQuestion(question, new RepositoryCallback<QuestionResponse>() {
+        repository.askVoiceQuestion(question, question, new RepositoryCallback<QuestionResponse>() {
             @Override
             public void onSuccess(QuestionResponse data) {
                 logScenario(5, "자유질문(AI)", "성공");

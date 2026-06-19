@@ -51,7 +51,8 @@ public class RobotActionManager {
         }
         // 안전 이벤트(기울어짐/충돌/화재)는 쿨다운과 무관하게 항상 즉시 처리한다.
         boolean isSafetyEvent = "TILT".equals(eventType) || "BUMP".equals(eventType)
-                || "FIRE".equals(eventType) || "FIRE_DETECTED".equals(eventType) || "SMOKE".equals(eventType);
+                || "FIRE".equals(eventType) || "FIRE_DETECTED".equals(eventType)
+                || "FIRE_ALARM".equals(eventType) || "SMOKE".equals(eventType);
         long now = System.currentTimeMillis();
         if (!isSafetyEvent && now - lastReactionAt < REACTION_COOLDOWN_MS) {
             Log.d(TAG, "쿨다운 중 - 이벤트 무시: " + eventType);
@@ -77,6 +78,7 @@ public class RobotActionManager {
                 break;
             case "FIRE":
             case "FIRE_DETECTED":
+            case "FIRE_ALARM":
             case "SMOKE":
                 changeFace("ANGER");
                 handleFireAlarm();

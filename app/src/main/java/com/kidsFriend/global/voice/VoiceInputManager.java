@@ -70,11 +70,17 @@ public class VoiceInputManager {
         }
     }
 
-    /** 계속 듣는다(웨이크 대기). 소음에 강한 테미 단독. */
+    /** 계속 듣는다(웨이크 대기). "테미 내장 UI를 버리고 우리 것(Android)"으로 진행. */
     public void startContinuousListening(Callback callback) {
         stopListening();
-        activeEngine = temiEngine;
-        temiEngine.start(true, callback);
+        if (androidAvailable) {
+            activeEngine = androidEngine;
+            androidEngine.start(true, callback);
+        } else {
+            // Android STT 불가 시에만 테미로 폴백
+            activeEngine = temiEngine;
+            temiEngine.start(true, callback);
+        }
     }
 
     public void stopListening() {

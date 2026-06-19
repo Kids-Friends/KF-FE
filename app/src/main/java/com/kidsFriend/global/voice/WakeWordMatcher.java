@@ -24,17 +24,18 @@ public class WakeWordMatcher {
     private static final String WAKE_WORD = "친구야";
 
     /**
-     * 자모 유사도 호출어 인정 임계값(0~1). 0.78 = "친구야" 발음에서 약 1.5음절까지 벌어져도 인정.
-     * "친구가"(0.71)·"친구들"(0.63)은 이 아래라 깨우지 않는다. 로그 보며 0.74~0.82 사이로 조정.
+     * 자모 유사도 호출어 인정 임계값(0~1). 짧은 호출어는 STT가 한 글자만 틀려도 누락되기 쉬우므로
+     * false wake보다 호출 성공률을 우선한다.
      */
-    private static final double WAKE_SIMILARITY = 0.78;
+    private static final double WAKE_SIMILARITY = 0.70;
 
     /**
      * 자모 거리로는 못 잡지만 현장 로그상 명백히 호출어인 오인식들.
      * 일상 단어와 겹치지 않는 것만 넣는다(false wake 방지). 로그 보며 확장.
      */
     private static final String[] VARIANTS = {
-            "친구야아", "친구야야", "친구얏"
+            "친구야아", "친구야야", "친구얏", "칭구야", "친쿠야", "친구여", "친구얌",
+            "친구아", "진구야", "친규야", "친고야", "친구냐", "친구요"
     };
 
     private WakeWordMatcher() {
@@ -44,6 +45,9 @@ public class WakeWordMatcher {
         try {
             // 1) 정확 일치(공백/문장부호 제거 후). "친구 야"처럼 띄어 인식된 경우도 여기서 잡힌다.
             if (normalize(text).contains(WAKE_WORD)) {
+                return true;
+            }
+            if (containsVariant(normalize(text))) {
                 return true;
             }
             // 2) 토큰별 유사 일치.
@@ -66,6 +70,15 @@ public class WakeWordMatcher {
             // 1) 정확 일치: 호출어만 제거하고 앞뒤 말은 보존.
             if (sentence.contains(WAKE_WORD)) {
                 return sentence.replace(WAKE_WORD, "").trim();
+            }
+            String compact = normalize(sentence);
+            for (String variant : VARIANTS) {
+                String normalizedVariant = normalize(variant);
+                int variantIndex = compact.indexOf(normalizedVariant);
+                if (variantIndex == 0) {
+                    int end = Math.min(sentence.length(), variant.length());
+                    return sentence.substring(end).trim();
+                }
             }
             // 2) 유사 일치: 호출어로 인식된 첫 토큰만 제거.
             String[] tokens = sentence.split(" ");
@@ -96,6 +109,15 @@ public class WakeWordMatcher {
             if (wakeWordIndex >= 0) {
                 return sentence.substring(wakeWordIndex + WAKE_WORD.length()).trim();
             }
+            String compact = normalize(sentence);
+            for (String variant : VARIANTS) {
+                String normalizedVariant = normalize(variant);
+                int variantIndex = compact.indexOf(normalizedVariant);
+                if (variantIndex == 0) {
+                    int end = Math.min(sentence.length(), variant.length());
+                    return sentence.substring(end).trim();
+                }
+            }
             // 2) 유사 일치: 호출어로 인식된 토큰 뒤 문자열.
             String[] tokens = sentence.split(" ");
             for (int i = 0; i < tokens.length; i++) {
@@ -125,6 +147,9 @@ public class WakeWordMatcher {
         if (token.contains(WAKE_WORD)) {
             return true;
         }
+        if ("친구".equals(token)) {
+            return true;
+        }
         for (String variant : VARIANTS) {
             if (token.equals(variant)) {
                 return true;
@@ -135,6 +160,15 @@ public class WakeWordMatcher {
             return false;
         }
         return KoreanPhonetics.similarity(token, WAKE_WORD) >= WAKE_SIMILARITY;
+    }
+
+    private static boolean containsVariant(String compactText) {
+        for (String variant : VARIANTS) {
+            if (compactText.contains(normalize(variant))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String normalize(String text) {

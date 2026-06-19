@@ -27,6 +27,8 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
 
     /** 부분결과가 들어온 뒤 이 시간 동안 새 발화가 없으면 그 텍스트로 최종 확정한다(발화 끝 침묵 감지). */
     private static final long SILENCE_TIMEOUT_MS = 1000;
+    private static final long CONTINUOUS_RESTART_DELAY_MS = 300;
+    private static final long CONTINUOUS_ERROR_RESTART_DELAY_MS = 1200;
 
     private final Context context;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -35,6 +37,7 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
     private SpeechRecognizer recognizer;
     private VoiceInputManager.Callback callback;
     private boolean stopped = true;
+    private boolean continuousMode = false;
     private String lastPartialText = "";
 
     public AndroidSttEngine(Context context) {
@@ -53,7 +56,7 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
 
     @Override
     public void start(boolean continuous, VoiceInputManager.Callback callback) {
-        // continuous는 안드로이드 SR(단발 인식)엔 의미 없음(대화 듣기 = 한 발화). 무시한다.
+        this.continuousMode = continuous;
         this.callback = callback;
         this.stopped = false;
         this.lastPartialText = "";
@@ -81,6 +84,9 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
         intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, context.getPackageName());
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, SILENCE_TIMEOUT_MS);
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, SILENCE_TIMEOUT_MS);
+        intent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 1000L);
         return intent;
     }
 
@@ -157,7 +163,8 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
         if (stopped || callback == null || lastPartialText.isEmpty()) {
             return;
         }
-        stopped = true;
+        String finalText = lastPartialText;
+        lastPartialText = "";
         try {
             if (recognizer != null) {
                 recognizer.cancel();
@@ -165,8 +172,13 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
         } catch (Exception e) {
             Log.e(TAG, "finalizeFromSilence cancel exception", e);
         }
-        Log.d(TAG, "finalizeFromSilence: 1초 침묵 → 부분결과로 확정 [" + lastPartialText + "]");
-        callback.onResult(lastPartialText);
+        Log.d(TAG, "finalizeFromSilence: 1초 침묵 → 부분결과로 확정 [" + finalText + "]");
+        callback.onResult(finalText);
+        if (continuousMode && !stopped) {
+            restartListening(CONTINUOUS_RESTART_DELAY_MS);
+        } else {
+            stopped = true;
+        }
     }
 
     @Override
@@ -174,10 +186,16 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
         if (stopped || callback == null) {
             return;
         }
-        stopped = true;
         handler.removeCallbacks(silenceFinalizer);
         String text = first(results);
+        lastPartialText = "";
         callback.onResult(text != null ? text : "");
+
+        if (continuousMode && !stopped) {
+            restartListening(CONTINUOUS_RESTART_DELAY_MS);
+        } else {
+            stopped = true;
+        }
     }
 
     @Override
@@ -185,10 +203,35 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
         if (stopped || callback == null) {
             return;
         }
-        stopped = true;
         handler.removeCallbacks(silenceFinalizer);
+        lastPartialText = "";
         Log.w(TAG, "onError: code = " + error);
-        callback.onError("STT_ERROR_" + error);
+        
+        if (continuousMode && !stopped) {
+            restartListening(CONTINUOUS_ERROR_RESTART_DELAY_MS);
+        } else {
+            stopped = true;
+            callback.onError("STT_ERROR_" + error);
+        }
+    }
+
+    private void restartListening(long delayMs) {
+        handler.postDelayed(() -> {
+            if (stopped || recognizer == null) {
+                return;
+            }
+            try {
+                recognizer.startListening(buildIntent());
+            } catch (Exception e) {
+                Log.e(TAG, "restartListening exception", e);
+                if (continuousMode && !stopped) {
+                    restartListening(CONTINUOUS_ERROR_RESTART_DELAY_MS);
+                } else if (!stopped && callback != null) {
+                    stopped = true;
+                    callback.onError("STT_ERROR_5");
+                }
+            }
+        }, delayMs);
     }
 
     @Override
@@ -205,6 +248,10 @@ public class AndroidSttEngine implements SttEngine, RecognitionListener {
 
     @Override
     public void onEndOfSpeech() {
+        if (!stopped && !lastPartialText.isEmpty()) {
+            handler.removeCallbacks(silenceFinalizer);
+            handler.postDelayed(silenceFinalizer, SILENCE_TIMEOUT_MS);
+        }
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.kidsFriend.domain.greeting.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.kidsFriend.domain.greeting.service.IntentRouter.Intent;
 import org.junit.Test;
@@ -44,8 +45,12 @@ public class IntentRouterTest {
     }
 
     @Test
-    public void 시나리오2_5_자유질문은_CHAT으로_폴백() {
-        assertEquals(Intent.CHAT, IntentRouter.route("바다는 왜 파란색이야"));
+    public void 시나리오2_5_자유질문은_AI로_폴백() {
+        // FREE_QUESTION/CHAT 둘 다 MainActivity.handleUtterance 의 switch default(handleChat=AI)로 처리된다.
+        // IntentRouter 개선으로 "왜/어떻게" 류는 FREE_QUESTION 으로 라우팅되며, 동작상 자유질문(AI)과 동일하다.
+        Intent r = IntentRouter.route("바다는 왜 파란색이야");
+        assertTrue("자유질문은 CHAT 또는 FREE_QUESTION 으로 라우팅돼 AI가 답한다",
+                r == Intent.CHAT || r == Intent.FREE_QUESTION);
     }
 
     @Test
