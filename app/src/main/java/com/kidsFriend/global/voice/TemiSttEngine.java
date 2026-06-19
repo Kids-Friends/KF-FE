@@ -3,7 +3,6 @@ package com.kidsFriend.global.voice;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import com.robotemi.sdk.NlpResult;
 import com.robotemi.sdk.Robot;
 
 /**
@@ -13,7 +12,7 @@ import com.robotemi.sdk.Robot;
  * {@link VoiceInputManager.Callback#onPartialResult(String)}는 호출하지 않고 최종 결과만 준다.
  * (기존 {@code VoiceInputManager}의 테미 로직을 그대로 이전 — 서킷브레이커/연속모드 재시작 포함.)
  */
-public class TemiSttEngine implements SttEngine, Robot.NlpListener {
+public class TemiSttEngine implements SttEngine, Robot.AsrListener {
     private static final String TAG = "TemiSttEngine";
 
     private final Robot robot = Robot.getInstance();
@@ -38,8 +37,9 @@ public class TemiSttEngine implements SttEngine, Robot.NlpListener {
         Log.d(TAG, "start: continuousMode = " + continuousMode);
 
         // 기존 리스너가 있다면 제거 후 새로 등록 (중복 방지)
-        robot.removeNlpListener(this);
-        robot.addNlpListener(this);
+        // AsrListener: 테미 ASR raw 결과를 onAsrResult 로 직접 받는다(NLP 의도분석을 거치지 않아 발화 누락이 적음).
+        robot.removeAsrListener(this);
+        robot.addAsrListener(this);
 
         // 테미 전용 STT 시작 (음성 인식 UI 활성화)
         // 안내 멘트 없이 바로 듣기 시작 (발화 지연/자기음성 간섭 제거)
@@ -59,7 +59,7 @@ public class TemiSttEngine implements SttEngine, Robot.NlpListener {
         stopped = true;
         continuousMode = false;
         handler.removeCallbacksAndMessages(null);
-        robot.removeNlpListener(this);
+        robot.removeAsrListener(this);
         robot.finishConversation();
         Log.d(TAG, "stop: Voice recognition stopped.");
     }
@@ -70,7 +70,7 @@ public class TemiSttEngine implements SttEngine, Robot.NlpListener {
     }
 
     @Override
-    public void onNlpCompleted(NlpResult nlpResult) {
+    public void onAsrResult(String asrResult) {
         if (stopped || callback == null) {
             return;
         }
@@ -86,7 +86,7 @@ public class TemiSttEngine implements SttEngine, Robot.NlpListener {
         // [방어 코드] 1초 이내에 실패가 5번 이상 반복되면 하드웨어/마이크 고장으로 간주하고 폭주 루프를 멈춘다.
         // 단, 영구 정지하지 않는다: 사용자에게 터치를 안내한 뒤 잠시 후 자동으로 다시 듣기를 시도한다.
         if (rapidFailCount > 5) {
-            Log.e(TAG, "onNlpCompleted: Circuit Breaker! STT 폭주 → 일시 중단 후 자동 복구 예약.");
+            Log.e(TAG, "onAsrResult: Circuit Breaker! STT 폭주 → 일시 중단 후 자동 복구 예약.");
             final VoiceInputManager.Callback savedCallback = this.callback;
             final boolean wasContinuous = this.continuousMode;
             stop();
@@ -104,17 +104,16 @@ public class TemiSttEngine implements SttEngine, Robot.NlpListener {
             return;
         }
 
-        String text = (nlpResult != null && nlpResult.resolvedQuery != null)
-                ? nlpResult.resolvedQuery.trim() : "";
+        String text = (asrResult != null) ? asrResult.trim() : "";
 
-        Log.d(TAG, "onNlpCompleted: text = [" + text + "]");
+        Log.d(TAG, "onAsrResult: text = [" + text + "]");
 
         if (!text.isEmpty()) {
             callback.onResult(text);
         } else {
             // 인식이 되지 않았거나 취소된 경우: 대화를 끝내지 않고 빈 결과를 전달해 
             // 호출부(MainActivity 등)에서 '잘 못 들었어요' 처리를 하게 함.
-            Log.d(TAG, "onNlpCompleted: No speech recognized or cancelled. Returning empty.");
+            Log.d(TAG, "onAsrResult: No speech recognized or cancelled. Returning empty.");
             callback.onResult("");
         }
 
