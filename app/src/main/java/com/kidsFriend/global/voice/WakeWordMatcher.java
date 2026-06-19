@@ -134,7 +134,7 @@ public class WakeWordMatcher {
         if (token.length() < 2 || token.length() > 5) {
             return false;
         }
-        return KoreanPhonetics.jamoDistance(token, WAKE_WORD) <= MAX_JAMO_DISTANCE;
+        return KoreanPhonetics.similarity(token, WAKE_WORD) >= WAKE_SIMILARITY;
     }
 
     private static String normalize(String text) {
