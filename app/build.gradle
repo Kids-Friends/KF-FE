@@ -46,4 +46,17 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation 'com.robotemi:sdk:1.131.4'
+
+    // 글래스모피즘 실시간 블러: API 31+ RenderEffect(GPU), 그 이하 RenderScript 자동 선택
+    implementation 'com.github.Dimezis:BlurView:version-2.0.6'
+
+    // CameraX core library using the camera2 implementation
+    def camerax_version = "1.2.3"
+    implementation "androidx.camera:camera-core:${camerax_version}"
+    implementation "androidx.camera:camera-camera2:${camerax_version}"
+    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+    implementation "androidx.camera:camera-video:${camerax_version}"
+
+    implementation "androidx.camera:camera-view:${camerax_version}"
+    implementation "androidx.camera:camera-extensions:${camerax_version}"
 }

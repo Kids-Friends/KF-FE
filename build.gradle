@@ -16,7 +16,8 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        // Warning: this repository is going to shut down soon
+        // BlurView(글래스모피즘 블러)는 JitPack 배포
+        maven { url 'https://jitpack.io' }
     }
 }
 

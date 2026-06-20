@@ -1,21 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 글래스 메뉴 카드: 프로스트 패널 위에서도 떠 보이도록 흰 유리(50%) + 광택 + 테두리. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
-        <shape>
-            <solid android:color="#FFFFF4CC" />
-            <stroke
-                android:width="3dp"
-                android:color="@color/kid_orange" />
-            <corners android:radius="30dp" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="#73FFF4CC" />
+                    <corners android:radius="30dp" />
+                    <stroke
+                        android:width="2dp"
+                        android:color="@color/kid_orange" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="270"
+                        android:startColor="@color/glass_gloss"
+                        android:endColor="@color/glass_gloss_clear" />
+                    <corners android:radius="30dp" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
     <item>
-        <shape>
-            <solid android:color="@color/white" />
-            <stroke
-                android:width="3dp"
-                android:color="@color/kid_blue" />
-            <corners android:radius="30dp" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/glass_tint_strong" />
+                    <corners android:radius="30dp" />
+                    <stroke
+                        android:width="1.5dp"
+                        android:color="@color/glass_border" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="270"
+                        android:startColor="@color/glass_gloss"
+                        android:endColor="@color/glass_gloss_clear" />
+                    <corners android:radius="30dp" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
 </selector>

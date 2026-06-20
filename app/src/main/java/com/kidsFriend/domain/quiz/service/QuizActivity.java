@@ -11,22 +11,26 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.robotemi.sdk.Robot;
 
+import com.robotemi.sdk.TtsRequest;
+
 import com.kidsFriend.R;
 import com.kidsFriend.domain.quiz.response.QuizAnswerResponse;
 import com.kidsFriend.global.repository.RepositoryCallback;
 import com.kidsFriend.global.repository.TemiRepository;
-import com.kidsFriend.global.voice.TemiSpeechSpeaker;
+import com.kidsFriend.global.ui.GlassBlur;
+import com.kidsFriend.global.ui.KidAnimator;
+
+import eightbitlab.com.blurview.BlurView;
 
 public class QuizActivity extends AppCompatActivity {
     private static final String TAG = "QuizActivity";
 
     private TemiRepository repository;
-    private TemiSpeechSpeaker speaker;
     private TextView questionText;
     private Button answerOButton;
     private Button answerXButton;
-    private View correctLayout;
-    private View wrongLayout;
+    private BlurView correctLayout;
+    private BlurView wrongLayout;
     private QuizQuestion currentQuiz;
 
     @Override
@@ -35,13 +39,19 @@ public class QuizActivity extends AppCompatActivity {
         setContentView(R.layout.activity_quiz);
         getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         repository = new TemiRepository(this);
-        speaker = new TemiSpeechSpeaker();
 
         questionText = findViewById(R.id.text_quiz_question);
         answerOButton = findViewById(R.id.button_answer_o);
         answerXButton = findViewById(R.id.button_answer_x);
         correctLayout = findViewById(R.id.layout_correct);
         wrongLayout = findViewById(R.id.layout_wrong);
+
+        // 정답/오답 팝업: 뒤의 퀴즈 화면을 프로스트 처리(글래스 오버레이)
+        android.view.ViewGroup rootQuiz = findViewById(R.id.root_quiz);
+        GlassBlur.apply(this, correctLayout, rootQuiz, 20f, R.color.glass_tint_strong);
+        GlassBlur.apply(this, wrongLayout, rootQuiz, 20f, R.color.glass_tint_strong);
+        // 질문 카드: 뒤의 컬러 배경을 흐림
+        GlassBlur.apply(this, findViewById(R.id.blur_quiz_question), rootQuiz, 18f, R.color.glass_tint_strong);
         Button backButton = findViewById(R.id.button_back);
         Button correctNextButton = findViewById(R.id.button_correct_next);
         Button correctStopButton = findViewById(R.id.button_correct_stop);
@@ -49,8 +59,8 @@ public class QuizActivity extends AppCompatActivity {
         Button wrongNextButton = findViewById(R.id.button_wrong_next);
         Button wrongStopButton = findViewById(R.id.button_wrong_stop);
 
-        answerOButton.setOnClickListener(v -> submitAnswer("O"));
-        answerXButton.setOnClickListener(v -> submitAnswer("X"));
+        KidAnimator.onClick(answerOButton, v -> submitAnswer("O"));
+        KidAnimator.onClick(answerXButton, v -> submitAnswer("X"));
         backButton.setOnClickListener(v -> finish());
         // 정답/오답 모두 "다음 문제"로 계속 풀고, "그만할래"로만 종료한다(최대한 오래 트라이).
         correctNextButton.setOnClickListener(v -> loadQuiz());
@@ -87,7 +97,7 @@ public class QuizActivity extends AppCompatActivity {
                 if (isFinishing() || isDestroyed()) return;
                 currentQuiz = data;
                 questionText.setText(data.question);
-                speaker.speak(data.question);
+                Robot.getInstance().speak(TtsRequest.create(data.question, false));
             }
 
             @Override
@@ -113,12 +123,16 @@ public class QuizActivity extends AppCompatActivity {
                 setAnswerEnabled(true);
                 if (data.correct) {
                     correctLayout.setVisibility(View.VISIBLE);
+                    View t = findViewById(R.id.text_correct_title);
+                    t.post(() -> KidAnimator.success(t)); // 팝 + 초록 글로우 + 별 버스트
                 } else {
                     wrongLayout.setVisibility(View.VISIBLE);
+                    View t = findViewById(R.id.text_wrong_title);
+                    t.post(() -> KidAnimator.error(t));   // 쉐이크 + 부드러운 빨강
                 }
                 if (data.message != null) {
                     String speechText = data.message.replaceAll("[^가-힣a-zA-Z0-9\\s.!?]", "").trim();
-                    speaker.speak(speechText);
+                    Robot.getInstance().speak(TtsRequest.create(speechText, false));
                 }
             }
 

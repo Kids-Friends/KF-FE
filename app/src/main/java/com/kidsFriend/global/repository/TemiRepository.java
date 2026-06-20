@@ -2,18 +2,14 @@ package com.kidsFriend.global.repository;
 
 import android.content.Context;
 import android.util.Log;
-import java.util.List;
+import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import com.kidsFriend.domain.chat.request.QuestionRequest;
-import com.kidsFriend.domain.chat.request.VoiceQuestionRequest;
 import com.kidsFriend.domain.chat.response.ChatAiRequest;
 import com.kidsFriend.domain.chat.response.ChatAiResponse;
 import com.kidsFriend.domain.chat.response.QuestionResponse;
-import com.kidsFriend.domain.greeting.request.IntentRequest;
-import com.kidsFriend.domain.greeting.response.IntentResponse;
 import com.kidsFriend.domain.quiz.request.QuizAnswerRequest;
 import com.kidsFriend.domain.quiz.response.QuizAnswerResponse;
 import com.kidsFriend.domain.quiz.service.QuizQuestion;
@@ -65,12 +61,13 @@ public class TemiRepository {
         callback.onSuccess(grade != null ? grade : "보통");
     }
 
-    public void askAi(String question, RepositoryCallback<ChatAiResponse> callback) {
-        apiService().askAi(new ChatAiRequest(question)).enqueue(toWrappedRetrofitCallback(callback));
+    /** 서버 연결 상태를 확인한다. */
+    public void checkHealth(RepositoryCallback<Map<String, String>> callback) {
+        apiService().health().enqueue(toWrappedRetrofitCallback(callback));
     }
 
-    public void resolveIntent(String text, RepositoryCallback<IntentResponse> callback) {
-        apiService().resolveIntent(new IntentRequest(text)).enqueue(toWrappedRetrofitCallback(callback));
+    public void askAi(String question, RepositoryCallback<ChatAiResponse> callback) {
+        apiService().askAi(new ChatAiRequest(question)).enqueue(toWrappedRetrofitCallback(callback));
     }
 
     private TemiApiService apiService() {

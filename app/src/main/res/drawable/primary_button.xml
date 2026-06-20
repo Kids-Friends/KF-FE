@@ -1,21 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 메인 액션 버튼: 키즈용으로 선명한 그라데이션을 유지하되 상단 광택을 얹어 유리 질감. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true">
-        <shape>
-            <gradient
-                android:angle="0"
-                android:endColor="@color/button_primary_pressed"
-                android:startColor="@color/kid_purple" />
-            <corners android:radius="28dp" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="0"
+                        android:endColor="@color/button_primary_pressed"
+                        android:startColor="@color/kid_purple" />
+                    <corners android:radius="28dp" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#59FFFFFF"
+                        android:endColor="@color/glass_gloss_clear" />
+                    <corners android:radius="28dp" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
     <item>
-        <shape>
-            <gradient
-                android:angle="0"
-                android:endColor="@color/kid_green"
-                android:startColor="@color/button_primary" />
-            <corners android:radius="28dp" />
-        </shape>
+        <layer-list>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="0"
+                        android:endColor="@color/kid_green"
+                        android:startColor="@color/button_primary" />
+                    <corners android:radius="28dp" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="270"
+                        android:startColor="#59FFFFFF"
+                        android:endColor="@color/glass_gloss_clear" />
+                    <corners android:radius="28dp" />
+                </shape>
+            </item>
+        </layer-list>
     </item>
 </selector>

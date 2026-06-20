@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/kid_blue"
+    tools:context=".domain.photo.service.PhotoPlayActivity">
+
+    <!-- 1단계: 템플릿 선택 (4색) — 인트로 영상이 끝난 뒤 표시 -->
+    <LinearLayout
+        android:id="@+id/layout_step_template"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="어떤 배경으로 찍을까?"
+            android:textColor="@android:color/white"
+            android:textSize="40sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btn_tpl_blue"
+                android:layout_width="0dp"
+                android:layout_height="220dp"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/panel_background"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/camera_template_blue" />
+
+            <ImageButton
+                android:id="@+id/btn_tpl_green"
+                android:layout_width="0dp"
+                android:layout_height="220dp"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/panel_background"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/camera_template_green" />
+
+            <ImageButton
+                android:id="@+id/btn_tpl_pink"
+                android:layout_width="0dp"
+                android:layout_height="220dp"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/panel_background"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/camera_template_pink" />
+
+            <ImageButton
+                android:id="@+id/btn_tpl_yellow"
+                android:layout_width="0dp"
+                android:layout_height="220dp"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:adjustViewBounds="true"
+                android:background="@drawable/panel_background"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/camera_template_yellow" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 2단계: 카메라 촬영 -->
+    <FrameLayout
+        android:id="@+id/layout_step_camera"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/camera_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <!-- 촬영 중에도 선택한 템플릿을 프리뷰 위에 얹어 최종 프레임을 미리 보여준다. -->
+        <ImageView
+            android:id="@+id/img_camera_template"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="fitCenter"
+            android:scaleX="1.1"
+            android:scaleY="1.1" />
+
+        <TextView
+            android:id="@+id/text_countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="120sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/text_photo_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/glass_chip_dark"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="15dp"
+            android:text="예쁘게 포즈를 취해봐!"
+            android:textColor="@android:color/white"
+            android:textSize="30sp" />
+    </FrameLayout>
+
+    <!-- 3단계: 최종 결과물 (템플릿 합성 1장) -->
+    <FrameLayout
+        android:id="@+id/layout_step_result"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <FrameLayout
+            android:id="@+id/layout_result_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/img_result"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop" />
+
+            <ImageView
+                android:id="@+id/img_result_template"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY" />
+        </FrameLayout>
+
+        <!-- 하단 텍스트 및 버튼 오버레이 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:background="#80000000"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="와아! 사진이 완성됐어!"
+                android:textColor="@android:color/white"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/layout_result_actions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_photo_retry"
+                    style="@style/TemiPrimaryButton"
+                    android:layout_width="220dp"
+                    android:layout_height="80dp"
+                    android:layout_marginEnd="20dp"
+                    android:text="다시 찍기" />
+
+                <Button
+                    android:id="@+id/btn_photo_home"
+                    style="@style/TemiPrimaryButton"
+                    android:layout_width="220dp"
+                    android:layout_height="80dp"
+                    android:text="처음으로" />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- 처리 중: 촬영 후 합성하는 동안 보여주는 로딩 화면 -->
+    <LinearLayout
+        android:id="@+id/layout_step_processing"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/kid_blue"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:indeterminateTint="@android:color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center"
+            android:text="사진을 처리하고 있어! 잠시만 기다려줘~"
+            android:textColor="@android:color/white"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- 0단계: 인트로 영상 (사진촬영 진입 시 가장 먼저 1회 재생) -->
+    <FrameLayout
+        android:id="@+id/layout_step_intro"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:visibility="visible">
+
+        <VideoView
+            android:id="@+id/video_intro"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:scaleX="1.1"
+            android:scaleY="1.1" />
+
+    </FrameLayout>
+
+    <!-- 나가기 (항상 최상단) -->
+    <Button
+        android:id="@+id/btn_photo_back"
+        style="@style/TemiBackButton"
+        android:layout_margin="24dp"
+        android:text="나가기" />
+
+    <!-- 촬영 순간 흰 플래시 오버레이(평소 숨김, 최상단) -->
+    <View
+        android:id="@+id/view_flash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:background="@android:color/white"
+        android:clickable="false"
+        android:focusable="false"
+        android:visibility="gone" />
+
+</FrameLayout>

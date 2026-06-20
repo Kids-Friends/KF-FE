@@ -25,7 +25,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TemiApplication">
         <activity
-            android:name=".domain.zone.ZoneActivity"
+            android:name=".domain.photo.service.PhotoPlayActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
@@ -37,13 +37,19 @@
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
-            android:name=".domain.chat.service.QuestionActivity"
+            android:name=".domain.quiz.service.QuizIntroActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
-            android:name=".global.debug.ApiTestActivity"
+            android:name=".domain.guide.service.GuidePlayActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
+            android:exported="false" />
+        <activity
+            android:name=".domain.dust.service.DustVideoActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"

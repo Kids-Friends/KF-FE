@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eightbitlab.com.blurview.BlurView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rocket_menu_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="invisible">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- 뽀로로 AI 대화 버튼 (중앙) -->
+        <Button
+            android:id="@+id/btn_menu_ai_chat"
+            style="@style/TemiMenuButton"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:text="뽀로로AI\n대화하기"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- 메뉴 버튼들 (코드에서 위치 동적 계산 예정) -->
+        <!-- 모든 버튼은 초기 위치가 중앙으로 잡힘 -->
+        <Button
+            android:id="@+id/btn_menu_photo"
+            style="@style/TemiMenuButton"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:text="사진 찍기"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/btn_menu_game"
+            style="@style/TemiMenuButton"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:text="게임 하기"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/btn_menu_music"
+            style="@style/TemiMenuButton"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:text="공기 확인"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/btn_menu_dance"
+            style="@style/TemiMenuButton"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:text="카페 안내"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</eightbitlab.com.blurview.BlurView>

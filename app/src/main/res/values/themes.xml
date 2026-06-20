@@ -8,8 +8,8 @@
         <item name="colorSecondaryVariant">@color/kid_orange</item>
         <item name="colorOnSecondary">@color/text_primary</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
-        <item name="android:statusBarColor" tools:targetApi="l">@color/screen_start</item>
-        <item name="android:navigationBarColor" tools:targetApi="l">@color/screen_end</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/bg_top</item>
+        <item name="android:navigationBarColor" tools:targetApi="l">@color/bg_bottom</item>
     </style>
 
     <style name="TemiMenuButton">
@@ -25,6 +25,15 @@
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:textSize">22sp</item>
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TemiIconButton" parent="Widget.AppCompat.Button.Borderless">
+        <item name="android:layout_width">56dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:background">@drawable/secondary_button</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:tint">@color/kid_blue</item>
     </style>
 
     <style name="TemiBackButton">

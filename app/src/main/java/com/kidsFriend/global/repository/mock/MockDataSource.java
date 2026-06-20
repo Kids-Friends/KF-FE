@@ -4,9 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import com.kidsFriend.domain.chat.request.QuestionRequest;
-import com.kidsFriend.domain.chat.request.VoiceQuestionRequest;
-import com.kidsFriend.domain.chat.response.QuestionResponse;
 import com.kidsFriend.domain.quiz.request.QuizAnswerRequest;
 import com.kidsFriend.domain.quiz.response.QuizAnswerResponse;
 import com.kidsFriend.domain.quiz.service.QuizQuestion;
@@ -49,17 +46,6 @@ public class MockDataSource {
             new MockQuiz("quiz-027", "실내에서 큰 소리로 떠들어도 괜찮아요.", ANSWER_X, "실내에서는 작은 목소리로 말해야 해요."),
             new MockQuiz("quiz-028", "양치질은 하루에 한 번만 하면 충분해요.", ANSWER_X, "양치질은 아침저녁으로 자주 하는 게 좋아요.")
     );
-
-    public QuestionResponse askQuestion(QuestionRequest request) {
-        return new QuestionResponse(true, "지금은 mock 답변입니다. 실제 환경에서는 Spring Boot AI API 응답으로 교체됩니다.\n\n질문: " + request.question);
-    }
-
-    public QuestionResponse askVoiceQuestion(VoiceQuestionRequest request) {
-        return new QuestionResponse(
-                true,
-                "음성 질문 mock 답변입니다.\n\n원문: " + request.rawText + "\n정리: " + request.reconstructedText
-        );
-    }
 
     // 시연 재현성을 위해 랜덤 대신 고정 순서로 한 문제씩 내보낸다.
     private static int demoIndex = 0;

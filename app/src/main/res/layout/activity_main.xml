@@ -9,37 +9,41 @@
     android:focusable="true"
     tools:context=".MainActivity">
 
-    <!-- 화면을 가득 채우는 뽀로로 표정 -->
+    <!-- 화면을 가득 채우는 뽀로로 표정 (1.1배 확대) -->
     <ImageView
         android:id="@+id/image_face"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="@string/app_name"
         android:scaleType="fitCenter"
+        android:scaleX="1.15"
+        android:scaleY="1.15"
         android:src="@drawable/face_peaceful" />
 
-    <Button
+    <ImageButton
         android:id="@+id/button_back"
-        style="@style/TemiBackButton"
+        style="@style/TemiIconButton"
         android:layout_margin="28dp"
-        android:text="종료" />
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:contentDescription="종료" />
 
-    <Button
+    <ImageButton
         android:id="@+id/button_nav_back"
-        style="@style/TemiBackButton"
+        style="@style/TemiIconButton"
         android:layout_gravity="end"
         android:layout_margin="28dp"
-        android:text="뒤로가기" />
+        android:src="@android:drawable/ic_menu_revert"
+        android:contentDescription="뒤로가기" />
 
-    <Button
+    <ImageButton
         android:id="@+id/button_operator_menu"
-        style="@style/TemiBackButton"
+        style="@style/TemiIconButton"
         android:layout_gravity="end"
-        android:layout_marginEnd="180dp"
+        android:layout_marginEnd="100dp"
         android:layout_marginTop="28dp"
-        android:layout_width="180dp"
-        android:visibility="gone"
-        android:text="@string/home_operator_menu" />
+        android:src="@android:drawable/ic_menu_info_details"
+        android:visibility="visible"
+        android:contentDescription="서버 확인" />
 
     <!-- 하단에 상태/답변 오버레이 -->
     <LinearLayout
@@ -71,7 +75,7 @@
             android:background="@drawable/status_background"
             android:paddingHorizontal="32dp"
             android:paddingVertical="18dp"
-            android:text="@string/home_idle_hint"
+            android:text="터치해보세요 !"
             android:textColor="@color/text_primary"
             android:textSize="26sp"
             android:textStyle="bold" />
@@ -101,7 +105,7 @@
             style="@style/TemiPrimaryButton"
             android:layout_width="280dp"
             android:layout_height="88dp"
-            android:text="다 했어요"
+            android:text="다 말했어 !"
             android:textSize="28sp" />
     </LinearLayout>
 
@@ -125,112 +129,6 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- "친구야" 호출 시 하단에서 올라오는 기능 버튼 패널 -->
-    <LinearLayout
-        android:id="@+id/layout_menu_panel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:background="@drawable/panel_background"
-        android:orientation="vertical"
-        android:padding="20dp"
-        android:visibility="gone">
-
-        <!-- 메인 기능 5버튼 -->
-        <LinearLayout
-            android:id="@+id/layout_menu_main"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/button_menu_membership"
-                style="@style/TemiMenuButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="@string/menu_membership" />
-
-            <Button
-                android:id="@+id/button_menu_location"
-                style="@style/TemiMenuButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="@string/menu_location_guide" />
-
-            <Button
-                android:id="@+id/button_menu_quiz"
-                style="@style/TemiMenuButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="@string/menu_quiz" />
-
-            <Button
-                android:id="@+id/button_menu_chat"
-                style="@style/TemiMenuButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="@string/menu_chat" />
-
-            <Button
-                android:id="@+id/button_menu_air"
-                style="@style/TemiMenuButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/menu_air" />
-        </LinearLayout>
-
-        <!-- 위치안내 하위: 장소 선택 버튼 -->
-        <LinearLayout
-            android:id="@+id/layout_menu_zones"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <Button
-                android:id="@+id/button_zone_slide"
-                style="@style/TemiSecondaryButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="@string/zone_slide" />
-
-            <Button
-                android:id="@+id/button_zone_ball"
-                style="@style/TemiSecondaryButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="@string/zone_ball" />
-
-            <Button
-                android:id="@+id/button_zone_toilet"
-                style="@style/TemiSecondaryButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="@string/zone_toilet" />
-
-            <Button
-                android:id="@+id/button_zone_tramp"
-                style="@style/TemiSecondaryButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/zone_tramp" />
-        </LinearLayout>
-    </LinearLayout>
+    <!-- 로켓 발사 메뉴 (기존 layout_menu_panel 대체) -->
+    <include layout="@layout/rocket_menu" />
 </FrameLayout>

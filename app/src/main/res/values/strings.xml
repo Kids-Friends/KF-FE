@@ -4,15 +4,12 @@
     <string name="main_title">Kids_Friend</string>
     <string name="main_subtitle">친구처럼 도와주는 키즈카페 안내 로봇</string>
 
-    <string name="menu_question">질문하기</string>
-    <string name="menu_quiz">퀴즈</string>
-    <string name="menu_approach">인식 후 다가가기</string>
-    <string name="menu_location_guide">위치 안내</string>
-    <string name="menu_reward">리워드</string>
-    <string name="menu_photo">사진 저장</string>
-    <string name="menu_membership">사진 촬영</string>
-    <string name="menu_chat">자유대화</string>
-    <string name="menu_air">미세먼지</string>
+    <string name="menu_play_main">테미랑 놀자 !</string>
+    <string name="play_photo">사진 찍기 놀이</string>
+    <string name="play_quiz">퀴즈 놀이</string>
+    <string name="play_air">미세먼지 농도 맞추기 놀이</string>
+    <string name="play_guide">안내 놀이</string>
+    <string name="play_question">질문 놀이</string>
     <string name="zone_slide">미끄럼틀</string>
     <string name="zone_ball">볼풀</string>
     <string name="zone_toilet">화장실</string>

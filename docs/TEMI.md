@@ -14,10 +14,17 @@
 
 | 항목 | 설정 값 | 설명 |
 |---|---|---|
-| **Kiosk Mode** | `ON` | 사용자가 앱을 종료하거나 다른 시스템 메뉴로 나가는 것을 방지합니다. |
-| **Top Bar** | `HIDDEN` | 화면 상단의 테미 시스템 바를 숨깁니다. |
-| **Wakeup Mode** | `DISABLED` | 테mi의 기본 호출어("Hey temi") 반응을 차단하고, 앱 내 `VoiceInputManager`에서 커스텀 호출어("친구야")를 처리합니다. |
-| **TTS Voice** | `Female (Speed: 1.2, Pitch: 10)` | 아동 친화적인 귀여운 목소리 톤으로 설정합니다. |
+| **Kiosk Mode** | `ON` | 앱 종료·시스템 메뉴 이탈 방지(`requestToBeKioskApp` + `setKioskModeOn(true)`). |
+| **Top Bar** | `HIDDEN` | 화면 상단 테미 시스템 바 숨김(`hideTopBar`). |
+| **Wakeup("Hey Temi")** | `DISABLED` | `toggleWakeup(true)`로 내장 호출어·내장 대화를 차단(인자 `true`=비활성화). 커스텀 호출어("친구야")는 `VoiceInputManager`가 처리. |
+| **Navigation Billboard** | `DISABLED` | `toggleNavigationBillboard(true)` — 이동 시 내장 안내 방송/오버레이 제거(`goTo` 자체는 동작). |
+| **Detection Mode** | `OFF` | `setDetectionModeOn(false)` — 내장 사람감지 인사(기본 음성) 차단. |
+| **Auto Return** | `OFF` | `setAutoReturnOn(false)` — 자동 도킹 복귀(+내장 발화) 방지. |
+| **Alexa** | `MUTED` | `muteAlexa()` — "알렉사" 호출/응답 음성 차단. |
+| **Privacy Mode** | `OFF` | `setPrivacyMode(false)` — 우리 STT용 마이크 ON 유지. |
+| **TTS Voice** | `Female (Speed 1.2, Pitch 10)` | 아동 친화적 귀여운 톤(`setTtsVoice`). 모든 발화는 `TtsManager`로 우선순위 직렬화. |
+
+> **내장 기능 전역 차단 정책** (`MainActivity.disableTemiBuiltins()`): 앱이 켜진 동안 테미 내장 기능을 전역 차단하되 **이동(따라가기/`beWithMe`, `goTo`)만 보존**한다. 목적 = "우리 목소리 1개만" + 의도치 않은 내장 발화 제거. ⚠️ `toggleWakeup`은 펌웨어에 따라 인자 의미가 다를 수 있어 실기기에서 Logcat으로 한 번 검증할 것.
 
 ## 3. AndroidManifest 설정 (Skill 등록)
 
@@ -31,7 +38,7 @@
 ## 5. 센서 이벤트 연동 (KF_HW → KF_BE → FE)
 
 라즈베리파이(KF_HW)의 ToF 카메라가 감지한 이벤트는 KF_BE의 `POST /api/sensor-events`로 올라가고,
-FE는 `GET /api/sensor-events/latest`를 2초마다 폴링해 `RobotActionManager`로 넘긴다.
+FE는 WebSocket `/ws/sensors`를 구독(`SensorWebSocketClient`)해 수신한 이벤트를 `RobotActionManager`로 넘긴다.
 
 | 이벤트 | 로봇 반응 (데모 기본값) |
 |---|---|

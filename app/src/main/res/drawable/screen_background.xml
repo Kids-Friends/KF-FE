@@ -1,8 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <gradient
-        android:angle="270"
-        android:centerColor="#FFFFFFFF"
-        android:endColor="@color/screen_end"
-        android:startColor="@color/screen_start" />
-</shape>
+<!-- 글래스모피즘 배경: 부드러운 멀티 hue 그라데이션 위에 컬러 블롭을 얹어
+     반투명 패널/블러가 색을 머금도록 한다. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 베이스 그라데이션 -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="135"
+                android:startColor="@color/bg_top"
+                android:centerColor="@color/bg_mid"
+                android:endColor="@color/bg_bottom" />
+        </shape>
+    </item>
+    <!-- 좌상단 블루 글로우 -->
+    <item
+        android:top="-200dp"
+        android:left="-180dp"
+        android:right="200dp"
+        android:bottom="260dp">
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="360dp"
+                android:startColor="@color/blob_blue"
+                android:endColor="#003AA0FF" />
+        </shape>
+    </item>
+    <!-- 우하단 퍼플 글로우 -->
+    <item
+        android:top="240dp"
+        android:left="220dp"
+        android:right="-180dp"
+        android:bottom="-200dp">
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="380dp"
+                android:startColor="@color/blob_purple"
+                android:endColor="#008E5CF7" />
+        </shape>
+    </item>
+    <!-- 우상단 핑크 글로우 -->
+    <item
+        android:top="-160dp"
+        android:left="320dp"
+        android:right="-160dp"
+        android:bottom="320dp">
+        <shape android:shape="oval">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="300dp"
+                android:startColor="@color/blob_pink"
+                android:endColor="#00FF7FB0" />
+        </shape>
+    </item>
+</layer-list>

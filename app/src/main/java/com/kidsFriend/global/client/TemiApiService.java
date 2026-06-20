@@ -6,18 +6,16 @@ import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 
+import retrofit2.http.Headers;
+
 import com.kidsFriend.domain.chat.response.ChatAiRequest;
 import com.kidsFriend.domain.chat.response.ChatAiResponse;
-import com.kidsFriend.domain.greeting.request.IntentRequest;
-import com.kidsFriend.domain.greeting.response.IntentResponse;
-
 public interface TemiApiService {
     @POST("api/chat/ai")
+    @Headers("ngrok-skip-browser-warning: true")
     Call<ApiResponse<ChatAiResponse>> askAi(@Body ChatAiRequest request);
 
-    @POST("api/intent")
-    Call<ApiResponse<IntentResponse>> resolveIntent(@Body IntentRequest request);
-
     @GET("api/health")
-    Call<Map<String, String>> health();
+    @Headers("ngrok-skip-browser-warning: true")
+    Call<ApiResponse<Map<String, String>>> health();
 }

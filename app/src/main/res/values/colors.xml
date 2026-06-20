@@ -34,4 +34,27 @@
     <color name="quiz_red">#FFE8503A</color>
     <color name="card_blue_top">#FF3AA0FF</color>
     <color name="card_blue_bottom">#FF2E86E0</color>
+
+    <!-- ===== 글래스모피즘 토큰 ===== -->
+    <!-- BlurView 위에 얹는 반투명 워시(가독성/광택). 블러된 색이 비쳐 보이도록 낮은 알파 -->
+    <color name="glass_tint">#59FFFFFF</color>          <!-- 35% 흰색 -->
+    <color name="glass_tint_strong">#80FFFFFF</color>   <!-- 50% 흰색: 가독성 중요한 패널 -->
+    <!-- faux 글래스(블러 없이 반투명) 채움/테두리 -->
+    <color name="glass_fill">#59FFFFFF</color>          <!-- 35% 흰색 패널 채움 -->
+    <color name="glass_fill_soft">#33FFFFFF</color>     <!-- 20% 흰색 -->
+    <color name="glass_border">#B3FFFFFF</color>        <!-- 70% 흰색: 얇은 광택 테두리 -->
+    <color name="glass_border_soft">#66FFFFFF</color>   <!-- 40% 흰색 -->
+    <color name="glass_gloss">#40FFFFFF</color>         <!-- 상단 광택 그라데이션 시작 -->
+    <color name="glass_gloss_clear">#00FFFFFF</color>   <!-- 광택 끝(투명) -->
+    <!-- 영상/어두운 배경 위 어두운 글래스 칩 -->
+    <color name="glass_dark">#73101828</color>          <!-- 45% 짙은 남색 -->
+    <!-- 리치 배경 그라데이션 + 블러가 부드럽게 섞을 컬러 블롭 -->
+    <color name="bg_top">#FFEAF3FF</color>
+    <color name="bg_mid">#FFF4ECFF</color>
+    <color name="bg_bottom">#FFFFECF4</color>
+    <color name="blob_blue">#4D3AA0FF</color>
+    <color name="blob_pink">#4DFF7FB0</color>
+    <color name="blob_purple">#4D8E5CF7</color>
+    <!-- 메인 CTA용 파란 글래스 워시(블러 위에 얹어 파란 유리 버튼처럼). 흰 텍스트 가독성 확보 -->
+    <color name="glass_tint_blue">#A63AA0FF</color>
 </resources>

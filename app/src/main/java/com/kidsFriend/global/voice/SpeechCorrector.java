@@ -1,7 +1,5 @@
 package com.kidsFriend.global.voice;
 
-import com.kidsFriend.domain.greeting.service.IntentRouter;
-
 /**
  * 온디바이스 음성 보정기.
  *
@@ -9,7 +7,6 @@ import com.kidsFriend.domain.greeting.service.IntentRouter;
  * 표준어로 스냅한다. 자모 유사도가 임계값을 넘고 길이가 비슷한 후보에만 적용해 과도한 치환을 막는다.
  *
  * <p>자유 대화(AI 질문) 원문을 망치지 않도록, 명령/장소 위주의 보수적 사전만 쓴다. 의도 분기는
- * {@link com.kidsFriend.domain.greeting.service.IntentRouter}가 별도 퍼지 매칭으로 처리한다.
  */
 public final class SpeechCorrector {
 
