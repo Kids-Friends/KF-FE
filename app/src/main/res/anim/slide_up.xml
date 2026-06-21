@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 아래에서 위로 부드럽게 떠오름. -->
+<translate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="400"
+    android:fromYDelta="8%p"
+    android:interpolator="@android:interpolator/decelerate_quad"
+    android:toYDelta="0" />

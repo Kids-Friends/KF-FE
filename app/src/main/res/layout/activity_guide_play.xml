@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_guide"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/kid_blue"
+    tools:context=".domain.guide.service.GuidePlayActivity">
+
+    <!-- 키즈카페 지도(배경). 비율 유지를 위해 fitCenter. -->
+    <ImageView
+        android:id="@+id/img_map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="키즈카페 지도"
+        android:scaleType="fitCenter"
+        android:src="@drawable/cafe_map" />
+
+    <!-- 지도 위에 얹는 투명 터치 버튼들 + 현재 위치 마커(코드에서 동적 배치). -->
+    <FrameLayout
+        android:id="@+id/overlay_zones"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- 지도 위에 떠 있는 글래스 안내 칩(뒤의 지도가 흐려져 유리처럼 보인다) -->
+    <eightbitlab.com.blurview.BlurView
+        android:id="@+id/blur_guide_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/glass_stroke"
+        android:clipToOutline="true"
+        android:elevation="4dp">
+
+        <TextView
+            android:id="@+id/text_guide_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="어디로 갈까? 가고 싶은 곳을 눌러줘!"
+            android:textColor="@android:color/white"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+    </eightbitlab.com.blurview.BlurView>
+
+    <!-- 인트로 영상 (위치안내 진입 시 가장 먼저 1회 재생). 끝나면 숨겨져 지도가 드러난다. -->
+    <FrameLayout
+        android:id="@+id/layout_guide_intro"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:visibility="visible">
+
+        <VideoView
+            android:id="@+id/video_guide_intro"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:scaleX="1.1"
+            android:scaleY="1.1" />
+
+
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/btn_guide_back"
+        style="@style/TemiBackButton"
+        android:layout_margin="24dp"
+        android:text="나가기" />
+
+</FrameLayout>
