@@ -222,7 +222,7 @@
     </LinearLayout>
 
     <!-- 0단계: 인트로 영상 (사진촬영 진입 시 가장 먼저 1회 재생) -->
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/layout_step_intro"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -233,11 +233,11 @@
             android:id="@+id/video_intro"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:scaleX="1.1"
-            android:scaleY="1.1" />
+            android:layout_centerInParent="true"
+            android:scaleX="1.2"
+            android:scaleY="1.2" />
 
-    </FrameLayout>
+    </RelativeLayout>
 
     <!-- 나가기 (항상 최상단) -->
     <Button

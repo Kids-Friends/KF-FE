@@ -45,7 +45,7 @@
     </eightbitlab.com.blurview.BlurView>
 
     <!-- 인트로 영상 (위치안내 진입 시 가장 먼저 1회 재생). 끝나면 숨겨져 지도가 드러난다. -->
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/layout_guide_intro"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -56,12 +56,11 @@
             android:id="@+id/video_guide_intro"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:scaleX="1.1"
-            android:scaleY="1.1" />
+            android:layout_centerInParent="true"
+            android:scaleX="1.2"
+            android:scaleY="1.2" />
 
-
-    </FrameLayout>
+    </RelativeLayout>
 
     <Button
         android:id="@+id/btn_guide_back"

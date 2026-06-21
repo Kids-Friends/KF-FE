@@ -16,8 +16,8 @@
         android:layout_height="match_parent"
         android:contentDescription="@string/app_name"
         android:scaleType="fitCenter"
-        android:scaleX="1.15"
-        android:scaleY="1.15"
+        android:scaleX="1.2"
+        android:scaleY="1.2"
         android:src="@drawable/face_peaceful" />
 
     <ImageButton
