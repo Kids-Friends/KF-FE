@@ -1,5 +1,6 @@
 package com.kidsFriend.domain.dust.service;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -54,6 +55,7 @@ public class DustVideoActivity extends AppCompatActivity {
             @Override
             public void onPlaybackStateChanged(int playbackState) {
                 if (playbackState == Player.STATE_ENDED) {
+                    startActivity(new Intent(DustVideoActivity.this, AirQualityResultActivity.class));
                     finish();
                 }
             }
@@ -61,6 +63,7 @@ public class DustVideoActivity extends AppCompatActivity {
             @Override
             public void onPlayerError(androidx.media3.common.PlaybackException error) {
                 Log.w(TAG, "영상 재생 오류: " + error.getMessage());
+                startActivity(new Intent(DustVideoActivity.this, AirQualityResultActivity.class));
                 finish();
             }
         });

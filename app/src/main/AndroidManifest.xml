@@ -61,7 +61,19 @@
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
+            android:name=".domain.dust.service.AirQualityResultActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
+            android:exported="false" />
+        <activity
             android:name=".domain.dust.service.DustVideoActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
+            android:exported="false" />
+        <activity
+            android:name=".domain.fire.service.FireAlertActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"

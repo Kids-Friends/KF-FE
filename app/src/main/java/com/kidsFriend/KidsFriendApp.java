@@ -7,6 +7,9 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.kidsFriend.domain.fire.service.FireAlertActivity;
+import com.kidsFriend.domain.sensor.service.SensorWebSocketClient;
+
 /**
  * 전역 애플리케이션 클래스.
  * 시연 중 발생할 수 있는 모든 Uncaught Exception을 낚아채서 앱이 강제종료(Crash)되는 것을 막고,
@@ -50,6 +53,19 @@ public class KidsFriendApp extends Application {
             // 프로세스 종료 (이 코드는 새 Activity가 뜨면서 기존 망가진 프로세스는 죽이되, OS 에러창은 막음)
             android.os.Process.killProcess(android.os.Process.myPid());
             System.exit(1);
+        });
+
+        // 화재경보(FIRE_ALARM DETECTED) 가 어느 화면에서든 들어오면 전체화면 경고를 띄운다.
+        // (CLEARED 는 FireAlertActivity 가 스스로 닫으므로 여기서는 무시)
+        SensorWebSocketClient.addFireAlarmListener(detected -> {
+            if (!detected) return;
+            try {
+                Intent fireIntent = new Intent(getApplicationContext(), FireAlertActivity.class);
+                fireIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(fireIntent);
+            } catch (Exception e) {
+                Log.e(TAG, "화재 경고 화면 기동 실패", e);
+            }
         });
     }
 }

@@ -15,6 +15,7 @@ import com.robotemi.sdk.TtsRequest;
 
 import com.kidsFriend.R;
 import com.kidsFriend.domain.quiz.response.QuizAnswerResponse;
+import com.kidsFriend.domain.sensor.service.SensorWebSocketClient;
 import com.kidsFriend.global.repository.RepositoryCallback;
 import com.kidsFriend.global.repository.TemiRepository;
 import com.kidsFriend.global.ui.GlassBlur;
@@ -87,6 +88,29 @@ public class QuizActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "Temi activity metadata is not available.", e);
         }
+
+        // 비전 카메라(KF_AD WonderMV)가 보낸 O/X 정답을 구독한다(터치와 동일 경로로 즉시 제출).
+        SensorWebSocketClient.setQuizAnswerListener(this::onVisionAnswer);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        SensorWebSocketClient.setQuizAnswerListener(null);
+    }
+
+    /**
+     * 손/팔 제스처를 비전이 O/X 로 인식해 보낸 정답.
+     * 문제 풀이 중(정답/오답 팝업이 떠 있지 않을 때)만 받아 터치와 동일하게 제출한다.
+     * (메인 스레드에서 호출됨)
+     */
+    private void onVisionAnswer(String answer) {
+        if (isFinishing() || isDestroyed()) return;
+        if (correctLayout.getVisibility() == View.VISIBLE
+                || wrongLayout.getVisibility() == View.VISIBLE) {
+            return; // 이미 채점 결과 표시 중 → 무시
+        }
+        submitAnswer(answer);
     }
 
     private void loadQuiz() {
