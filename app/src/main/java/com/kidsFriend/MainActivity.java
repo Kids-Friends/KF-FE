@@ -30,6 +30,7 @@ import com.robotemi.sdk.listeners.OnRobotReadyListener;
 import com.kidsFriend.domain.chat.response.QuestionResponse;
 import com.kidsFriend.global.repository.RepositoryCallback;
 import com.kidsFriend.global.repository.TemiRepository;
+import com.kidsFriend.global.ui.FullscreenHelper;
 import com.kidsFriend.global.ui.GlassBlur;
 import com.kidsFriend.global.ui.KidAnimator;
 import com.kidsFriend.global.ui.MotionConstants;
@@ -57,6 +58,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        FullscreenHelper.setFullscreen(this);
+
         setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 

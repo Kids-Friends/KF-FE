@@ -9,16 +9,19 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.media3.common.MediaItem;
+import androidx.media3.common.Player;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.ui.PlayerView;
 
 import com.kidsFriend.R;
+import com.kidsFriend.global.ui.FullscreenHelper;
 import com.kidsFriend.global.ui.GlassBlur;
 import com.robotemi.sdk.Robot;
 import com.robotemi.sdk.TtsRequest;
@@ -30,9 +33,6 @@ import com.robotemi.sdk.listeners.OnGoToLocationStatusChangedListener;
  * <p>키즈카페 지도(이미지)를 띄우고, 그 <b>위에 보이지 않는 터치 버튼</b>을 각 존 위치에 얹는다.
  * 아이가 가고 싶은 존을 누르면 테미가 음성 안내와 함께 {@code goTo}로 그곳까지 이동한다.
  * 현재 위치는 지도 위에 마커(📍)로 표시하고, 안내가 끝나면 마커를 목적지로 옮긴다.</p>
- *
- * <p>존의 위치는 지도 이미지(1672×941) 기준 <b>비율(0~1) 사각형</b>으로 정의한다. 이미지가
- * fitCenter로 레터박스되며 표시되므로, 실제 그려진 사각형을 계산해 그 안에 버튼을 배치한다.</p>
  */
 public class GuidePlayActivity extends AppCompatActivity
         implements OnGoToLocationStatusChangedListener {
@@ -68,21 +68,24 @@ public class GuidePlayActivity extends AppCompatActivity
     private FrameLayout overlay;
     private TextView marker;
     private View layoutIntro;
-    private VideoView videoIntro;
+    private PlayerView playerView;
+    private ExoPlayer player;
     private boolean introFinished = false;
     private Zone currentZone = Zone.DESK; // 시작 위치 = 입구/안내데스크
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        FullscreenHelper.setFullscreen(this);
+        
         setContentView(R.layout.activity_guide_play);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         robot = Robot.getInstance();
         imgMap = findViewById(R.id.img_map);
         overlay = findViewById(R.id.overlay_zones);
         layoutIntro = findViewById(R.id.layout_guide_intro);
-        videoIntro = findViewById(R.id.video_guide_intro);
+        playerView = findViewById(R.id.player_view_guide_intro);
         findViewById(R.id.btn_guide_back).setOnClickListener(v -> finish());
 
         // 안내 칩에 글래스 블러 적용(뒤의 지도가 흐려진다)
@@ -98,17 +101,29 @@ public class GuidePlayActivity extends AppCompatActivity
     /** 진입 인트로 영상 1회 재생. 끝나거나 '건너뛰기'를 누르면 지도가 드러난다. */
     private void startIntro() {
         layoutIntro.setVisibility(View.VISIBLE);
+        
+        player = new ExoPlayer.Builder(this).build();
+        playerView.setPlayer(player);
+
         Uri uri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.map_intro);
-        videoIntro.setVideoURI(uri);
-        videoIntro.setOnPreparedListener(mp -> {
-            mp.setLooping(false);
-            videoIntro.start();
-        });
-        videoIntro.setOnCompletionListener(mp -> finishIntro());
-        videoIntro.setOnErrorListener((mp, what, extra) -> {
-            Log.w(TAG, "인트로 영상 오류 what=" + what + " extra=" + extra);
-            finishIntro();
-            return true;
+        MediaItem mediaItem = MediaItem.fromUri(uri);
+        player.setMediaItem(mediaItem);
+        player.prepare();
+        player.setPlayWhenReady(true);
+
+        player.addListener(new Player.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int playbackState) {
+                if (playbackState == Player.STATE_ENDED) {
+                    finishIntro();
+                }
+            }
+
+            @Override
+            public void onPlayerError(androidx.media3.common.PlaybackException error) {
+                Log.w(TAG, "인트로 영상 오류: " + error.getMessage());
+                finishIntro();
+            }
         });
     }
 
@@ -116,20 +131,37 @@ public class GuidePlayActivity extends AppCompatActivity
     private void finishIntro() {
         if (introFinished) return;
         introFinished = true;
-        if (videoIntro != null) videoIntro.stopPlayback();
+        releasePlayer();
         layoutIntro.setVisibility(View.GONE);
+    }
+
+    private void releasePlayer() {
+        if (player != null) {
+            player.release();
+            player = null;
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (videoIntro != null) videoIntro.pause();
+        if (player != null) {
+            player.pause();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (player != null && !introFinished) {
+            player.play();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (videoIntro != null) videoIntro.stopPlayback();
+        releasePlayer();
     }
 
     @Override

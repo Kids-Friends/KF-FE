@@ -50,6 +50,12 @@ dependencies {
     // 글래스모피즘 실시간 블러: API 31+ RenderEffect(GPU), 그 이하 RenderScript 자동 선택
     implementation 'com.github.Dimezis:BlurView:version-2.0.6'
 
+    // Media3 (ExoPlayer) - 비디오 전체화면 재생 (Center Crop) 용
+    def media3_version = "1.1.1"
+    implementation "androidx.media3:media3-exoplayer:${media3_version}"
+    implementation "androidx.media3:media3-ui:${media3_version}"
+    implementation "androidx.media3:media3-common:${media3_version}"
+
     // CameraX core library using the camera2 implementation
     def camerax_version = "1.2.3"
     implementation "androidx.camera:camera-core:${camerax_version}"
