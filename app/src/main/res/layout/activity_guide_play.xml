@@ -15,6 +15,8 @@
         android:layout_height="match_parent"
         android:contentDescription="키즈카페 지도"
         android:scaleType="fitCenter"
+        android:scaleX="1.15"
+        android:scaleY="1.15"
         android:src="@drawable/cafe_map" />
 
     <!-- 지도 위에 얹는 투명 터치 버튼들 + 현재 위치 마커(코드에서 동적 배치). -->
