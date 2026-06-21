@@ -59,10 +59,10 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
         handler.postDelayed(() -> {
             statusMessageText.setText("벨이 울리는 중...");
             handler.postDelayed(() -> {
-                statusMessageText.setText("곧 연결될 거야!");
+                statusMessageText.setText("곧 연결돼요!");
                 handler.postDelayed(() -> {
                     updateState(CallState.SPEAKING);
-                    String intro = "안녕! 나 " + character.getName() + "야! 무슨 일이야?";
+                    String intro = "안녕! 나 " + character.getName() + "야! 무슨 일이니?";
                     speak(intro);
                 }, 1000);
             }, 1000);
@@ -99,20 +99,20 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
                 break;
             case LISTENING:
                 statusIconText.setText("🎤");
-                statusMessageText.setText("나에게 말해 줘");
+                statusMessageText.setText("내가 말하는 중");
                 stopPulseAnimation();
                 startMicAnimation();
                 robot.askQuestion(""); // 사용자 입력을 기다림
                 break;
             case THINKING:
                 statusIconText.setText("🤔");
-                statusMessageText.setText(character.getName() + " 친구가 생각 중");
+                statusMessageText.setText(character.getName() + "이 생각하는 중");
                 stopPulseAnimation();
                 stopMicAnimation();
                 break;
             case SPEAKING:
                 statusIconText.setText("🗣");
-                statusMessageText.setText(character.getName() + " 친구가 말하는 중");
+                statusMessageText.setText(character.getName() + " 말하는 중");
                 stopMicAnimation();
                 startPulseAnimation();
                 break;
@@ -171,15 +171,7 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
         String bye = "오늘 이야기 즐거웠어! 다음에 또 전화해줘, 안녕!";
         subtitleText.setText(bye);
         robot.speak(TtsRequest.create(bye, false));
-
-        // 3초 후 초기 화면(MainActivity)으로 전환
-        handler.postDelayed(() -> {
-            android.content.Intent intent = new android.content.Intent(this, com.kidsFriend.MainActivity.class);
-            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP | android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-            finish();
-            overridePendingTransition(0, R.anim.slide_up); // 자연스럽게 사라지는 애니메이션 (또는 slide_down 추천)
-        }, 3000);
+        handler.postDelayed(this::finish, 3000);
     }
 
     @Override

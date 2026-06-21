@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import com.robotemi.sdk.Robot;
@@ -53,7 +54,7 @@ public class QuizActivity extends AppCompatActivity {
         GlassBlur.apply(this, wrongLayout, rootQuiz, 20f, R.color.glass_tint_strong);
         // 질문 카드: 뒤의 컬러 배경을 흐림
         GlassBlur.apply(this, findViewById(R.id.blur_quiz_question), rootQuiz, 18f, R.color.glass_tint_strong);
-        Button backButton = findViewById(R.id.button_back);
+        View backButton = findViewById(R.id.button_back);
         Button correctNextButton = findViewById(R.id.button_correct_next);
         Button correctStopButton = findViewById(R.id.button_correct_stop);
         Button wrongRetryButton = findViewById(R.id.button_wrong_retry);
