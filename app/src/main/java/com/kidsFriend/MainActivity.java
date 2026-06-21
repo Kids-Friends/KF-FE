@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.kidsFriend.domain.call.ui.FriendSelectionActivity;
 import com.kidsFriend.domain.greeting.service.IntentRouter;
 import com.kidsFriend.domain.dust.service.DustVideoActivity;
 import com.kidsFriend.domain.guide.service.GuidePlayActivity;
@@ -160,17 +161,12 @@ public class MainActivity extends AppCompatActivity
             }, MotionConstants.COLLAPSE_DURATION + 100);
         });
 
-        // 뽀로로 AI 대화 버튼
+        // 뽀로로 AI 대화 버튼 -> 친구에게 전화하기
         findViewById(R.id.btn_menu_ai_chat).setOnClickListener(v -> {
             rocketMenuManager.closeMenu(v);
             v.postDelayed(() -> {
-                speakAndShow("응, 듣고 있어! 무엇이든 물어봐.");
-                // "다 말했어 !" 버튼이 포함된 패널 노출
-                findViewById(R.id.layout_action_buttons).setVisibility(View.VISIBLE);
-                // 테미가 사용자 쪽으로 몸을 돌리게 합니다
-                robot.wakeup();
-                // 뽀로로 표정을 신난 표정으로 바꿉니다
-                faceImage.setImageResource(R.drawable.face_excited);
+                startActivity(new Intent(this, FriendSelectionActivity.class));
+                overridePendingTransition(R.anim.combined_enter, 0);
             }, MotionConstants.COLLAPSE_DURATION + 100);
         });
 

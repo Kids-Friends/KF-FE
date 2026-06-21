@@ -49,6 +49,18 @@
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
+            android:name=".domain.call.ui.FriendSelectionActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
+            android:exported="false" />
+        <activity
+            android:name=".domain.call.ui.VoiceCallActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
+            android:exported="false" />
+        <activity
             android:name=".domain.dust.service.DustVideoActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
