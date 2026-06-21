@@ -235,7 +235,7 @@ public class PhotoPlayActivity extends AppCompatActivity {
         textProgress.setText("예쁘게 포즈를 취해봐!");
         textCountdown.setVisibility(View.VISIBLE);
 
-        countDownTimer = new CountDownTimer(4000, 1000) {
+        countDownTimer = new CountDownTimer(6000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 int seconds = (int) (millisUntilFinished / 1000);

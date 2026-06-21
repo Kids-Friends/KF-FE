@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import com.kidsFriend.R;
 import com.kidsFriend.domain.call.model.CallState;
 import com.kidsFriend.domain.call.model.CharacterProfile;
@@ -85,6 +86,11 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
 
     private void updateState(CallState state) {
         currentState = state;
+        // 기본 색상으로 초기화
+        int defaultTextColor = ContextCompat.getColor(this, R.color.text_primary);
+        statusIconText.setTextColor(defaultTextColor);
+        statusMessageText.setTextColor(defaultTextColor);
+
         switch (state) {
             case CALLING:
                 statusIconText.setText("📞");
@@ -106,7 +112,7 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
                 break;
             case SPEAKING:
                 statusIconText.setText("🗣");
-                statusMessageText.setText(character.getName() + "이 말하는 중");
+                statusMessageText.setText(character.getName() + " 말하는 중");
                 stopMicAnimation();
                 startPulseAnimation();
                 break;
@@ -165,7 +171,15 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
         String bye = "오늘 이야기 즐거웠어! 다음에 또 전화해줘, 안녕!";
         subtitleText.setText(bye);
         robot.speak(TtsRequest.create(bye, false));
-        handler.postDelayed(this::finish, 3000);
+
+        // 3초 후 초기 화면(MainActivity)으로 전환
+        handler.postDelayed(() -> {
+            android.content.Intent intent = new android.content.Intent(this, com.kidsFriend.MainActivity.class);
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP | android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            finish();
+            overridePendingTransition(0, R.anim.slide_up); // 자연스럽게 사라지는 애니메이션 (또는 slide_down 추천)
+        }, 3000);
     }
 
     @Override
@@ -173,23 +187,33 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
         if (asrResult.isEmpty()) return;
         
         handler.post(() -> {
-            updateState(CallState.THINKING);
-            subtitleText.setText("...");
-            
-            // 캐릭터 특성을 고려한 프롬프트 구성 (필요시)
-            repository.askVoiceQuestion(asrResult, asrResult, new RepositoryCallback<QuestionResponse>() {
-                @Override
-                public void onSuccess(QuestionResponse data) {
-                    updateState(CallState.SPEAKING);
-                    speak(data.answer);
-                }
+            // 인식이 되고 있는 동안 초록색으로 표시
+            if (currentState == CallState.LISTENING) {
+                statusIconText.setTextColor(ContextCompat.getColor(this, R.color.kid_green));
+                statusMessageText.setTextColor(ContextCompat.getColor(this, R.color.kid_green));
+                subtitleText.setText(asrResult);
+            }
 
-                @Override
-                public void onError(String message) {
-                    updateState(CallState.SPEAKING);
-                    speak("미안해, 다시 한 번 말해줄래?");
-                }
-            });
+            // 약간의 딜레이 후 THINKING 상태로 전환 (사용자가 말을 끝냈을 때)
+            handler.removeCallbacksAndMessages(null);
+            handler.postDelayed(() -> {
+                updateState(CallState.THINKING);
+                subtitleText.setText("...");
+                
+                repository.askVoiceQuestion(asrResult, asrResult, new RepositoryCallback<QuestionResponse>() {
+                    @Override
+                    public void onSuccess(QuestionResponse data) {
+                        updateState(CallState.SPEAKING);
+                        speak(data.answer);
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        updateState(CallState.SPEAKING);
+                        speak("미안해, 다시 한 번 말해줄래?");
+                    }
+                });
+            }, 1000); // 1초 정도 인식이 멈추면 전송
         });
     }
 

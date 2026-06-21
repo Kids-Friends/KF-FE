@@ -57,7 +57,7 @@ public class AppConfig {
             normalized = "http://" + normalized;
         }
 
-        // ngrok URL인 경우 포트 8081을 붙이지 않도록 예외 처리
+        // ngrok URL인 경우 포트 8080을 붙이지 않도록 예외 처리
         if (normalized.contains("ngrok-free.dev") || normalized.contains("ngrok.io")) {
             if (!normalized.endsWith("/")) {
                 normalized += "/";
@@ -65,9 +65,9 @@ public class AppConfig {
             return normalized;
         }
 
-        // 일반 IP 주소인 경우에만 포트 8081을 자동으로 붙임
+        // 일반 IP 주소인 경우에만 포트 8080을 자동으로 붙임
         if (!normalized.matches("^https?://[^/]+:\\d+/?$")) {
-            normalized = normalized.replaceAll("/+$", "") + ":8081/";
+            normalized = normalized.replaceAll("/+$", "") + ":8080/";
         }
         
         if (!normalized.endsWith("/")) {

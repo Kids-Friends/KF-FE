@@ -106,13 +106,13 @@ Returns a simple status map for connectivity checks.
 1. On the Spring Boot server PC, run `ipconfig` (Windows) or `ifconfig` (Mac/Linux).
 2. Find the WiFi IPv4 address, for example `192.168.1.100`.
 3. Open the Temi app and tap `서버 설정`.
-4. Enter `192.168.1.100` or `http://192.168.1.100:8081/`.
+4. Enter `192.168.1.100` or `http://192.168.1.100:8080/`.
 5. Tap `저장`.
 
 The app saves the base URL in SharedPreferences and calls `RetrofitClient.resetInstance()`. All future API calls use the new URL without rebuilding the APK.
 
 ```powershell
-curl -X POST http://<YOUR_SERVER_IP>:8081/api/chat/ai `
+curl -X POST http://<YOUR_SERVER_IP>:8080/api/chat/ai `
   -H "Content-Type: application/json" `
   -d "{\"message\":\"화장실은 어디에 있어요?\"}"
 ```
