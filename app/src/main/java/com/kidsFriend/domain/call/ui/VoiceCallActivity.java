@@ -59,10 +59,10 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
         handler.postDelayed(() -> {
             statusMessageText.setText("벨이 울리는 중...");
             handler.postDelayed(() -> {
-                statusMessageText.setText("곧 연결돼요!");
+                statusMessageText.setText("곧 연결될 거야!");
                 handler.postDelayed(() -> {
                     updateState(CallState.SPEAKING);
-                    String intro = "안녕! 나 " + character.getName() + "야! 무슨 일이니?";
+                    String intro = "안녕! 나 " + character.getName() + "야! 무슨 일이야?";
                     speak(intro);
                 }, 1000);
             }, 1000);
@@ -99,20 +99,20 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
                 break;
             case LISTENING:
                 statusIconText.setText("🎤");
-                statusMessageText.setText("내가 말하는 중");
+                statusMessageText.setText("나에게 말해 줘");
                 stopPulseAnimation();
                 startMicAnimation();
                 robot.askQuestion(""); // 사용자 입력을 기다림
                 break;
             case THINKING:
                 statusIconText.setText("🤔");
-                statusMessageText.setText(character.getName() + "이 생각하는 중");
+                statusMessageText.setText(character.getName() + " 친구가 생각 중");
                 stopPulseAnimation();
                 stopMicAnimation();
                 break;
             case SPEAKING:
                 statusIconText.setText("🗣");
-                statusMessageText.setText(character.getName() + " 말하는 중");
+                statusMessageText.setText(character.getName() + " 친구가 말하는 중");
                 stopMicAnimation();
                 startPulseAnimation();
                 break;

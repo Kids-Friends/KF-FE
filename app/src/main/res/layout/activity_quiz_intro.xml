@@ -19,4 +19,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <ImageButton
+        android:id="@+id/btn_quiz_intro_back"
+        style="@style/TemiIconButton"
+        android:layout_margin="28dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:contentDescription="종료"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -19,11 +19,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
+    <ImageButton
         android:id="@+id/btn_dust_back"
-        style="@style/TemiBackButton"
-        android:layout_margin="24dp"
-        android:text="나가기"
+        style="@style/TemiIconButton"
+        android:layout_margin="28dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:contentDescription="종료"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

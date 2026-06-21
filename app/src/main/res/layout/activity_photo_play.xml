@@ -244,11 +244,12 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- 나가기 (항상 최상단) -->
-    <Button
+    <ImageButton
         android:id="@+id/btn_photo_back"
-        style="@style/TemiBackButton"
-        android:layout_margin="24dp"
-        android:text="나가기" />
+        style="@style/TemiIconButton"
+        android:layout_margin="28dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:contentDescription="종료" />
 
     <!-- 촬영 순간 흰 플래시 오버레이(평소 숨김, 최상단) -->
     <View

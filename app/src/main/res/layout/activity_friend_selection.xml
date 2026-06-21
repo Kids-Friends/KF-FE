@@ -36,7 +36,8 @@
         android:id="@+id/btn_back"
         style="@style/TemiIconButton"
         android:layout_margin="28dp"
-        android:src="@android:drawable/ic_menu_revert"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:contentDescription="종료"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

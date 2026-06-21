@@ -40,6 +40,7 @@ public class QuizIntroActivity extends AppCompatActivity {
         setContentView(R.layout.activity_quiz_intro);
 
         playerView = findViewById(R.id.player_view_quiz);
+        findViewById(R.id.btn_quiz_intro_back).setOnClickListener(v -> finish());
         initializePlayer();
     }
 

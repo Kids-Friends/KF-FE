@@ -25,27 +25,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- 지도 위에 떠 있는 글래스 안내 칩(뒤의 지도가 흐려져 유리처럼 보인다) -->
-    <eightbitlab.com.blurview.BlurView
-        android:id="@+id/blur_guide_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|center_horizontal"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/glass_stroke"
-        android:clipToOutline="true"
-        android:elevation="4dp">
-
-        <TextView
-            android:id="@+id/text_guide_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:text="어디로 갈까? 가고 싶은 곳을 눌러줘!"
-            android:textColor="@android:color/white"
-            android:textSize="26sp"
-            android:textStyle="bold" />
-    </eightbitlab.com.blurview.BlurView>
 
     <!-- 인트로 영상 (위치안내 진입 시 가장 먼저 1회 재생). 끝나면 숨겨져 지도가 드러난다. -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -68,10 +47,11 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <Button
+    <ImageButton
         android:id="@+id/btn_guide_back"
-        style="@style/TemiBackButton"
-        android:layout_margin="24dp"
-        android:text="나가기" />
+        style="@style/TemiIconButton"
+        android:layout_margin="28dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:contentDescription="종료" />
 
 </FrameLayout>

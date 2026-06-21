@@ -1,7 +1,9 @@
 package com.kidsFriend.domain.guide.service;
 
+import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.RectF;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -9,6 +11,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.ScaleAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -39,24 +44,28 @@ public class GuidePlayActivity extends AppCompatActivity
 
     private static final String TAG = "GuidePlayActivity";
 
-    /** 지도상의 각 존: 표시/안내 이름 + 지도 비율 사각형(left,top,right,bottom in 0~1). */
+    /** 지도상의 각 존: 표시/안내 이름 + 지도 비율 사각형(left,top,right,bottom in 0~1) + 이미지 리소스 + 상세 설명. */
     private enum Zone {
-        BALLPOOL("볼풀장", 0.03f, 0.04f, 0.25f, 0.42f),
-        JUNGLE("정글짐", 0.27f, 0.05f, 0.49f, 0.42f),
-        TODDLER("유아놀이존", 0.51f, 0.04f, 0.71f, 0.42f),
-        ROLEPLAY("역할놀이존", 0.73f, 0.03f, 0.97f, 0.40f),
-        READING("독서존", 0.80f, 0.44f, 0.97f, 0.65f),
-        TOILET("화장실", 0.80f, 0.67f, 0.97f, 0.90f),
-        CAFE("카페존", 0.50f, 0.52f, 0.76f, 0.90f),
-        DESK("입구/안내데스크", 0.27f, 0.62f, 0.47f, 0.90f),
-        SHOE("신발장", 0.03f, 0.56f, 0.18f, 0.78f);
+        BALLPOOL("볼풀장", 0.03f, 0.04f, 0.25f, 0.42f, R.raw.map_1, "볼풀장이야! 알록달록 공 속에서 신나게 헤엄쳐봐!"),
+        JUNGLE("정글짐", 0.27f, 0.05f, 0.49f, 0.42f, R.raw.map_2, "정글짐이야! 미로 같은 이곳을 탐험하며 정상을 정복해봐!"),
+        TODDLER("유아놀이존", 0.51f, 0.04f, 0.71f, 0.42f, R.raw.map_3, "유아놀이존이야! 어린 동생들도 안전하고 재미있게 놀 수 있는 곳이야."),
+        ROLEPLAY("역할놀이존", 0.73f, 0.03f, 0.97f, 0.40f, R.raw.map_4, "역할놀이존이야! 오늘은 요리사가 되어볼까, 아니면 의사 선생님이 되어볼까?"),
+        READING("독서존", 0.80f, 0.44f, 0.97f, 0.65f, R.raw.map_5, "독서존이야! 재미있는 책들이 정말 많아. 함께 읽어볼래?"),
+        TOILET("화장실", 0.80f, 0.67f, 0.97f, 0.90f, R.raw.map_6, "화장실이야! 손을 깨끗이 씻고 깨끗하게 사용하자."),
+        CAFE("카페존", 0.50f, 0.52f, 0.76f, 0.90f, R.raw.map_7, "카페존이야! 엄마 아빠가 맛있는 간식을 드시며 쉴 수 있는 곳이야."),
+        DESK("입구/안내데스크", 0.27f, 0.62f, 0.47f, 0.90f, R.raw.map_8, "안내데스크야! 도움이 필요할 때 선생님께 말씀드리면 돼."),
+        SHOE("신발장", 0.03f, 0.56f, 0.18f, 0.78f, R.raw.map_9, "신발장이야! 신발을 예쁘게 정리하고 신나게 놀 준비를 하자!");
 
         final String label;
         final float l, t, r, b;
+        final int imageRes;
+        final String description;
 
-        Zone(String label, float l, float t, float r, float b) {
+        Zone(String label, float l, float t, float r, float b, int imageRes, String description) {
             this.label = label;
             this.l = l; this.t = t; this.r = r; this.b = b;
+            this.imageRes = imageRes;
+            this.description = description;
         }
 
         float cx() { return (l + r) / 2f; }
@@ -88,9 +97,6 @@ public class GuidePlayActivity extends AppCompatActivity
         playerView = findViewById(R.id.player_view_guide_intro);
         findViewById(R.id.btn_guide_back).setOnClickListener(v -> finish());
 
-        // 안내 칩에 글래스 블러 적용(뒤의 지도가 흐려진다)
-        GlassBlur.apply(this, findViewById(R.id.blur_guide_title),
-                findViewById(R.id.root_guide), 16f, R.color.glass_dark);
 
         // 지도가 실제로 그려진 뒤(크기 확정) 오버레이를 배치한다(인트로 뒤에서 미리 준비).
         imgMap.post(this::buildOverlay);
@@ -245,19 +251,50 @@ public class GuidePlayActivity extends AppCompatActivity
     }
 
     private void onZoneSelected(Zone zone) {
-        if (zone == currentZone) {
-            speak("여긴 지금 우리가 있는 곳이야!");
-            return;
+        // 영역 선택 애니메이션 (살짝 확대)
+        View hotspot = null;
+        int index = 0;
+        for (Zone z : Zone.values()) {
+            if (z == zone) {
+                hotspot = overlay.getChildAt(index);
+                break;
+            }
+            index++;
         }
-        speak(zone.label + "(으)로 안내할게! 나를 따라와!");
-        try {
-            robot.goTo(zone.label); // 테미에 저장된 위치명과 일치해야 실제 주행
-        } catch (Exception e) {
-            Log.w(TAG, "goTo 실패: " + e.getMessage());
+
+        if (hotspot != null) {
+            ScaleAnimation anim = new ScaleAnimation(1.0f, 1.05f, 1.0f, 1.05f,
+                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+            anim.setDuration(150);
+            anim.setRepeatCount(1);
+            anim.setRepeatMode(Animation.REVERSE);
+            anim.setAnimationListener(new Animation.AnimationListener() {
+                @Override public void onAnimationStart(Animation animation) {}
+                @Override public void onAnimationEnd(Animation animation) {
+                    showZoneInfoDialog(zone);
+                }
+                @Override public void onAnimationRepeat(Animation animation) {}
+            });
+            hotspot.startAnimation(anim);
+        } else {
+            showZoneInfoDialog(zone);
         }
-        currentZone = zone;
-        RectF map = computeFitCenterRect();
-        if (map != null) moveMarkerTo(zone, map);
+    }
+
+    private void showZoneInfoDialog(Zone zone) {
+        speak(zone.description);
+        
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_zone_info);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().setLayout(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+
+        ImageView imgInfo = dialog.findViewById(R.id.img_zone_info);
+        imgInfo.setImageResource(zone.imageRes);
+
+        dialog.findViewById(R.id.btn_close_dialog).setOnClickListener(v -> dialog.dismiss());
+        dialog.show();
     }
 
     @Override
