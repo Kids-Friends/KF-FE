@@ -281,7 +281,9 @@ public class MainActivity extends AppCompatActivity
         faceImage.setImageResource(R.drawable.face_joy);
         
         // 테미가 말을 하고 다시 사용자 질문을 기다리게 합니다 (연속 대화 느낌)
-        robot.askQuestion(text);
+        // 거대한 검은 자막창을 끄기 위해 TtsRequest.create(text, false) 사용
+        robot.speak(TtsRequest.create(text, false));
+        robot.askQuestion(""); // 자막 없이 귀만 열기
         
         // 7초 후에 답변 텍스트를 자동으로 숨김
         statusText.postDelayed(() -> {
