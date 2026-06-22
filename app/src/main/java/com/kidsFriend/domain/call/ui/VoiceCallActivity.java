@@ -156,14 +156,14 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
     private void speak(String text) {
         subtitleText.setText(text);
         robot.speak(TtsRequest.create(text, false));
-        
+
         // 텍스트 길이에 비례하여 리스닝 상태로 전환 (약간의 여유 시간 포함)
         handler.removeCallbacksAndMessages(null);
         handler.postDelayed(() -> {
             if (currentState == CallState.SPEAKING) {
                 updateState(CallState.LISTENING);
             }
-        }, text.length() * 250L + 1000); 
+        }, text.length() * 250L + 1000);
     }
 
     private void endCall() {
@@ -177,7 +177,7 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
     @Override
     public void onAsrResult(@NonNull String asrResult) {
         if (asrResult.isEmpty()) return;
-        
+
         handler.post(() -> {
             // 인식이 되고 있는 동안 초록색으로 표시
             if (currentState == CallState.LISTENING) {
@@ -191,7 +191,7 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
             handler.postDelayed(() -> {
                 updateState(CallState.THINKING);
                 subtitleText.setText("...");
-                
+
                 repository.askVoiceQuestion(asrResult, asrResult, new RepositoryCallback<QuestionResponse>() {
                     @Override
                     public void onSuccess(QuestionResponse data) {
