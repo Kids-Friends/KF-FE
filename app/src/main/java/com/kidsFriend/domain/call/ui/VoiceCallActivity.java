@@ -153,33 +153,17 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
         pulseView.setVisibility(View.GONE);
     }
 
-    // 기존
-//    private void speak(String text) {
-//        subtitleText.setText(text);
-//        robot.speak(TtsRequest.create(text, false));
-//
-//        // 텍스트 길이에 비례하여 리스닝 상태로 전환 (약간의 여유 시간 포함)
-//        handler.removeCallbacksAndMessages(null);
-//        handler.postDelayed(() -> {
-//            if (currentState == CallState.SPEAKING) {
-//                updateState(CallState.LISTENING);
-//            }
-//        }, text.length() * 250L + 1000);
-//    }
-
     private void speak(String text) {
         subtitleText.setText(text);
-
-        // 1. 목소리만 나오게 함 (두 번째 인자 false가 검은 자막을 숨깁니다)
-        TtsRequest ttsRequest = TtsRequest.create(text, false);
-        robot.speak(ttsRequest);
-
-        // 2. 테미가 듣기 모드로 전환되게 함 (빈 문자열을 넘기면 자막 없이 귀만 열립니다)
-        // speak 다음에 바로 호출하면 됩니다.
-        robot.askQuestion("");
-
-        // UI 상태 업데이트 (말하는 중)
-        updateState(CallState.SPEAKING);
+        robot.speak(TtsRequest.create(text, false));
+        
+        // 텍스트 길이에 비례하여 리스닝 상태로 전환 (약간의 여유 시간 포함)
+        handler.removeCallbacksAndMessages(null);
+        handler.postDelayed(() -> {
+            if (currentState == CallState.SPEAKING) {
+                updateState(CallState.LISTENING);
+            }
+        }, text.length() * 250L + 1000); 
     }
 
     private void endCall() {
@@ -190,64 +174,38 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
         handler.postDelayed(this::finish, 3000);
     }
 
-//    @Override
-//    public void onAsrResult(@NonNull String asrResult) {
-//        if (asrResult.isEmpty()) return;
-//
-//        handler.post(() -> {
-//            // 인식이 되고 있는 동안 초록색으로 표시
-//            if (currentState == CallState.LISTENING) {
-//                statusIconText.setTextColor(ContextCompat.getColor(this, R.color.kid_green));
-//                statusMessageText.setTextColor(ContextCompat.getColor(this, R.color.kid_green));
-//                subtitleText.setText(asrResult);
-//            }
-//
-//            // 약간의 딜레이 후 THINKING 상태로 전환 (사용자가 말을 끝냈을 때)
-//            handler.removeCallbacksAndMessages(null);
-//            handler.postDelayed(() -> {
-//                updateState(CallState.THINKING);
-//                subtitleText.setText("...");
-//
-//                repository.askVoiceQuestion(asrResult, asrResult, new RepositoryCallback<QuestionResponse>() {
-//                    @Override
-//                    public void onSuccess(QuestionResponse data) {
-//                        updateState(CallState.SPEAKING);
-//                        speak(data.answer);
-//                    }
-//
-//                    @Override
-//                    public void onError(String message) {
-//                        updateState(CallState.SPEAKING);
-//                        speak("미안해, 다시 한 번 말해줄래?");
-//                    }
-//                });
-//            }, 1000); // 1초 정도 인식이 멈추면 전송
-//        });
-//    }
-
-
     @Override
     public void onAsrResult(@NonNull String asrResult) {
         if (asrResult.isEmpty()) return;
+        
+        handler.post(() -> {
+            // 인식이 되고 있는 동안 초록색으로 표시
+            if (currentState == CallState.LISTENING) {
+                statusIconText.setTextColor(ContextCompat.getColor(this, R.color.kid_green));
+                statusMessageText.setTextColor(ContextCompat.getColor(this, R.color.kid_green));
+                subtitleText.setText(asrResult);
+            }
 
-        runOnUiThread(() -> {
-            // 사용자가 말한 내용을 자막으로 표시
-            subtitleText.setText(asrResult);
-            updateState(CallState.THINKING); // "생각 중..." 상태로 변경
+            // 약간의 딜레이 후 THINKING 상태로 전환 (사용자가 말을 끝냈을 때)
+            handler.removeCallbacksAndMessages(null);
+            handler.postDelayed(() -> {
+                updateState(CallState.THINKING);
+                subtitleText.setText("...");
+                
+                repository.askVoiceQuestion(asrResult, asrResult, new RepositoryCallback<QuestionResponse>() {
+                    @Override
+                    public void onSuccess(QuestionResponse data) {
+                        updateState(CallState.SPEAKING);
+                        speak(data.answer);
+                    }
 
-            // AI 서버에 질문 전달 (캐릭터 정보를 포함하여 전달하는 것이 좋음)
-            repository.askVoiceQuestion(asrResult, character.getId(), new RepositoryCallback<QuestionResponse>() {
-                @Override
-                public void onSuccess(QuestionResponse data) {
-                    // AI의 답변을 다시 캐릭터 목소리로 말하며 대화 이어가기
-                    speak(data.answer);
-                }
-
-                @Override
-                public void onError(String message) {
-                    speak("미안해, 잘 못 알아들었어. 다시 말해줄래?");
-                }
-            });
+                    @Override
+                    public void onError(String message) {
+                        updateState(CallState.SPEAKING);
+                        speak("미안해, 다시 한 번 말해줄래?");
+                    }
+                });
+            }, 1000); // 1초 정도 인식이 멈추면 전송
         });
     }
 
