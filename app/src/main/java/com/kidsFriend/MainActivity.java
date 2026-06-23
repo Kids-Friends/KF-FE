@@ -18,6 +18,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.kidsFriend.domain.call.ui.FriendSelectionActivity;
+import com.kidsFriend.domain.objectgame.service.ObjectGameActivity;
 import com.kidsFriend.domain.greeting.service.IntentRouter;
 import com.kidsFriend.domain.dust.service.DustVideoActivity;
 import com.kidsFriend.domain.guide.service.GuidePlayActivity;
@@ -161,11 +162,20 @@ public class MainActivity extends AppCompatActivity
             }, MotionConstants.COLLAPSE_DURATION + 100);
         });
 
-        // 뽀로로 AI 대화 버튼 -> 친구에게 전화하기
+        // 친구들과 카톡하기 -> 친구 선택 화면 (음성 통화 대신 텍스트 채팅)
         findViewById(R.id.btn_menu_ai_chat).setOnClickListener(v -> {
             rocketMenuManager.closeMenu(v);
             v.postDelayed(() -> {
                 startActivity(new Intent(this, FriendSelectionActivity.class));
+                overridePendingTransition(R.anim.combined_enter, 0);
+            }, MotionConstants.COLLAPSE_DURATION + 100);
+        });
+
+        // 물건 맞추기 놀이 (비전 카메라 — 파이썬 직접 연결)
+        findViewById(R.id.btn_menu_object_game).setOnClickListener(v -> {
+            rocketMenuManager.closeMenu(v);
+            v.postDelayed(() -> {
+                startActivity(new Intent(this, ObjectGameActivity.class));
                 overridePendingTransition(R.anim.combined_enter, 0);
             }, MotionConstants.COLLAPSE_DURATION + 100);
         });

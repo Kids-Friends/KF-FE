@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_object_game"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/screen_background">
+
+    <!-- 본문 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="28dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/button_obj_back"
+                style="@style/TemiIconButton"
+                android:layout_alignParentStart="true"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:contentDescription="종료" />
+
+            <TextView
+                android:id="@+id/text_obj_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textColor="@color/text_primary"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:text="점수: 0점" />
+
+            <Button
+                android:id="@+id/button_obj_settings"
+                style="@style/TemiSecondaryButton"
+                android:layout_width="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="연결 설정" />
+        </RelativeLayout>
+
+        <!-- 제시 물체 카드 -->
+        <eightbitlab.com.blurview.BlurView
+            android:id="@+id/blur_obj_target"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_weight="1"
+            android:background="@drawable/glass_stroke"
+            android:clipToOutline="true"
+            android:elevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <TextView
+                    android:id="@+id/text_obj_target_emoji"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="140sp"
+                    android:text="🍎" />
+
+                <TextView
+                    android:id="@+id/text_obj_target"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:textColor="@color/text_primary"
+                    android:textSize="44sp"
+                    android:textStyle="bold"
+                    android:text="사과를 보여줘!" />
+            </LinearLayout>
+        </eightbitlab.com.blurview.BlurView>
+
+        <!-- 상태 표시(연결/안내) -->
+        <TextView
+            android:id="@+id/text_obj_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/status_background"
+            android:paddingHorizontal="28dp"
+            android:paddingVertical="12dp"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp"
+            android:text="카메라에 보여줘!" />
+
+        <Button
+            android:id="@+id/button_obj_skip"
+            style="@style/TemiSecondaryButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:text="넘어가줘" />
+    </LinearLayout>
+
+    <!-- 정답(O) 팝업 -->
+    <eightbitlab.com.blurview.BlurView
+        android:id="@+id/layout_obj_correct"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="40dp">
+
+            <TextView
+                android:id="@+id/text_obj_correct_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/kid_blue"
+                android:textSize="140sp"
+                android:textStyle="bold"
+                android:text="⭕" />
+
+            <TextView
+                android:id="@+id/text_obj_correct_sub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:textColor="@color/text_primary"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                android:text="정답이야! 잘했어!" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/button_obj_correct_next"
+                    style="@style/TemiPrimaryButton"
+                    android:layout_width="220dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="다음 물건" />
+
+                <Button
+                    android:id="@+id/button_obj_correct_stop"
+                    style="@style/TemiSecondaryButton"
+                    android:layout_width="220dp"
+                    android:layout_marginStart="12dp"
+                    android:text="그만할래" />
+            </LinearLayout>
+        </LinearLayout>
+    </eightbitlab.com.blurview.BlurView>
+
+    <!-- 오답(X) 팝업 -->
+    <eightbitlab.com.blurview.BlurView
+        android:id="@+id/layout_obj_wrong"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="40dp">
+
+            <TextView
+                android:id="@+id/text_obj_wrong_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/quiz_red"
+                android:textSize="140sp"
+                android:textStyle="bold"
+                android:text="❌" />
+
+            <TextView
+                android:id="@+id/text_obj_wrong_sub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="24sp"
+                android:text="다시 한 번 보여줄래?" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/button_obj_wrong_retry"
+                    style="@style/TemiSecondaryButton"
+                    android:layout_width="220dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="다시 할래" />
+
+                <Button
+                    android:id="@+id/button_obj_wrong_next"
+                    style="@style/TemiPrimaryButton"
+                    android:layout_width="220dp"
+                    android:layout_marginStart="12dp"
+                    android:text="다음 물건" />
+            </LinearLayout>
+        </LinearLayout>
+    </eightbitlab.com.blurview.BlurView>
+
+    <!-- 엔딩(미션 완료) 팝업 -->
+    <eightbitlab.com.blurview.BlurView
+        android:id="@+id/layout_obj_ending"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="40dp">
+
+            <TextView
+                android:id="@+id/text_obj_ending_emoji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="140sp"
+                android:text="🏆" />
+
+            <TextView
+                android:id="@+id/text_obj_ending_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/kid_blue"
+                android:textSize="44sp"
+                android:textStyle="bold"
+                android:text="미션 완료!" />
+
+            <TextView
+                android:id="@+id/text_obj_ending_sub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:textColor="@color/text_primary"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:text="오늘의 분리수거 영웅!" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/button_obj_ending_continue"
+                    style="@style/TemiPrimaryButton"
+                    android:layout_width="220dp"
+                    android:layout_marginEnd="12dp"
+                    android:text="계속하기" />
+
+                <Button
+                    android:id="@+id/button_obj_ending_stop"
+                    style="@style/TemiSecondaryButton"
+                    android:layout_width="220dp"
+                    android:layout_marginStart="12dp"
+                    android:text="그만하기" />
+            </LinearLayout>
+        </LinearLayout>
+    </eightbitlab.com.blurview.BlurView>
+
+    <!-- 인트로 영상 레이어 -->
+    <FrameLayout
+        android:id="@+id/layout_obj_intro"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:visibility="gone">
+
+        <VideoView
+            android:id="@+id/video_obj_intro"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+    </FrameLayout>
+</FrameLayout>

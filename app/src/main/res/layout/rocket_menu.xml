@@ -10,17 +10,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- 친구에게 전화하기 버튼 (중앙) -->
+        <!-- 친구들과 카톡하기 버튼 (중앙) -->
         <Button
             android:id="@+id/btn_menu_ai_chat"
             style="@style/TemiMenuButton"
             android:layout_width="180dp"
             android:layout_height="180dp"
-            android:drawableTop="@android:drawable/ic_menu_call"
+            android:drawableTop="@android:drawable/ic_dialog_email"
             android:drawablePadding="12dp"
             android:drawableTint="@color/kid_blue"
             android:gravity="center"
-            android:text="친구들에게\n전화하기"
+            android:text="친구들과\n카톡하기"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -84,6 +84,21 @@
             android:drawableTint="@color/kid_blue"
             android:gravity="center"
             android:text="카페 안내"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/btn_menu_object_game"
+            style="@style/TemiMenuButton"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:drawableTop="@android:drawable/ic_menu_search"
+            android:drawablePadding="12dp"
+            android:drawableTint="@color/kid_blue"
+            android:gravity="center"
+            android:text="물건 맞추기\n놀이"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

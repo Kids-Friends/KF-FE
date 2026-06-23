@@ -23,7 +23,7 @@ public class FriendSelectionActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         
         CharacterAdapter adapter = new CharacterAdapter(CharacterRepository.getCharacters(), character -> {
-            Intent intent = new Intent(this, VoiceCallActivity.class);
+            Intent intent = new Intent(this, ChatActivity.class);
             intent.putExtra("character", character);
             startActivity(intent);
             overridePendingTransition(R.anim.combined_enter, 0);
