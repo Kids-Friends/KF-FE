@@ -46,16 +46,16 @@ public class GuidePlayActivity extends AppCompatActivity
 
     /** 지도상의 각 존: 표시/안내 이름 + 지도 비율 사각형(left,top,right,bottom in 0~1) + 이미지 리소스 + 상세 설명. */
     /** 지도상의 각 존: 표시/안내 이름 + 테미 맵 위치명 + 지도 비율 사각형 + 이미지 리소스 + 상세 설명. */
-    private enum Zone {
-        BALLPOOL("볼풀장", "ballpool", 0.03f, 0.04f, 0.25f, 0.42f, R.raw.map_1, "볼풀장이야! 알록달록 공 속에서 신나게 헤엄쳐봐!"),
-        JUNGLE("정글짐", "jungle gym", 0.27f, 0.05f, 0.49f, 0.42f, R.raw.map_2, "정글짐이야! 미로 같은 이곳을 탐험하며 정상을 정복해봐!"),
-        TODDLER("유아놀이존", "toddler zone", 0.51f, 0.04f, 0.71f, 0.42f, R.raw.map_3, "유아놀이존이야! 어린 동생들도 안전하고 재미있게 놀 수 있는 곳이야."),
-        ROLEPLAY("역할놀이존", "roleplay zone", 0.73f, 0.03f, 0.97f, 0.40f, R.raw.map_4, "역할놀이존이야! 오늘은 요리사가 되어볼까, 아니면 의사 선생님이 되어볼까?"),
-        READING("독서존", "library", 0.80f, 0.44f, 0.97f, 0.65f, R.raw.map_5, "독서존이야! 재미있는 책들이 정말 많아. 함께 읽어볼래?"),
-        TOILET("화장실", "toilet", 0.80f, 0.67f, 0.97f, 0.90f, R.raw.map_6, "화장실이야! 손을 깨끗이 씻고 깨끗하게 사용하자."),
-        CAFE("카페존", "cafe", 0.50f, 0.52f, 0.76f, 0.90f, R.raw.map_7, "카페존이야! 엄마 아빠가 맛있는 간식을 드시며 쉴 수 있는 곳이야."),
-        DESK("입구/안내데스크", "home base", 0.27f, 0.62f, 0.47f, 0.90f, R.raw.map_8, "안내데스크야! 도움이 필요할 때 선생님께 말씀드리면 돼."),
-        SHOE("신발장", "shoebox", 0.03f, 0.56f, 0.18f, 0.78f, R.raw.map_9, "신발장이야! 신발을 예쁘게 정리하고 신나게 놀 준비를 하자!");
+        private enum Zone {
+            BALLPOOL("볼풀장", "ballpool", 0.03f, 0.04f, 0.25f, 0.42f, R.raw.map_1, "볼풀장이야! 알록달록 공 속에서 신나게 헤엄쳐봐!"),
+            JUNGLE("정글짐", "jungle gym", 0.27f, 0.05f, 0.49f, 0.42f, R.raw.map_2, "정글짐이야! 미로 같은 이곳을 탐험하며 정상을 정복해봐!"),
+            TODDLER("유아놀이존", "toddler zone", 0.51f, 0.04f, 0.71f, 0.42f, R.raw.map_3, "유아놀이존이야! 어린 동생들도 안전하고 재미있게 놀 수 있는 곳이야."),
+            ROLEPLAY("역할놀이존", "roleplay zone", 0.73f, 0.03f, 0.97f, 0.40f, R.raw.map_4, "역할놀이존이야! 오늘은 요리사가 되어볼까, 아니면 의사 선생님이 되어볼까?"),
+            READING("독서존", "library", 0.80f, 0.44f, 0.97f, 0.65f, R.raw.map_5, "독서존이야! 재미있는 책들이 정말 많아. 함께 읽어볼래?"),
+            TOILET("화장실", "toilet", 0.80f, 0.67f, 0.97f, 0.90f, R.raw.map_6, "화장실이야! 손을 깨끗이 씻고 깨끗하게 사용하자."),
+            CAFE("카페존", "cafe", 0.50f, 0.52f, 0.76f, 0.90f, R.raw.map_7, "카페존이야! 엄마 아빠가 맛있는 간식을 드시며 쉴 수 있는 곳이야."),
+            DESK("입    구/안내데스크", "home base", 0.27f, 0.62f, 0.47f, 0.90f, R.raw.map_8, "안내데스크야! 도움이 필요할 때 선생님께 말씀드리면 돼."),
+            SHOE("신발장", "shoebox", 0.03f, 0.56f, 0.18f, 0.78f, R.raw.map_9, "신발장이야! 신발을 예쁘게 정리하고 신나게 놀 준비를 하자!");
 
         final String label;
         final String temiLocation; // ★ 추가: 테미 앱 맵에 등록한 영어/한글 위치 이름과 정확히 같아야 함

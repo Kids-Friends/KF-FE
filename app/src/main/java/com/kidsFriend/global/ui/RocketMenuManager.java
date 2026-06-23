@@ -27,6 +27,7 @@ public class RocketMenuManager {
         buttons.add(rootMenu.findViewById(R.id.btn_menu_game));
         buttons.add(rootMenu.findViewById(R.id.btn_menu_music));
         buttons.add(rootMenu.findViewById(R.id.btn_menu_dance));
+        buttons.add(rootMenu.findViewById(R.id.btn_menu_object_game));
 
         this.aiChatButton = rootMenu.findViewById(R.id.btn_menu_ai_chat);
 
@@ -58,18 +59,19 @@ public class RocketMenuManager {
         rootMenu.setAlpha(0f);
         rootMenu.animate().alpha(1f).setDuration(200).start();
 
-        // Rocket Launch Positions (Angles: 225, 315, 45, 135, and 0 for center)
-        float[] angles = {225f, 315f, 45f, 135f};
+        // 바깥 버튼은 원 둘레에 균등 분배(개수 무관), aiChat은 중앙(0,0).
+        int outerCount = buttons.size();
         List<View> allButtons = new ArrayList<>(buttons);
         if (aiChatButton != null) allButtons.add(aiChatButton);
 
         for (int i = 0; i < allButtons.size(); i++) {
             View btn = allButtons.get(i);
             float tx = 0, ty = 0;
-            
-            // Only outer buttons (first 4) move to radius
-            if (i < 4) {
-                double rad = Math.toRadians(angles[i]);
+
+            // 바깥 버튼(중앙 aiChat 제외)만 반지름만큼 균등 배치
+            if (i < outerCount) {
+                double angle = 225.0 + (360.0 / outerCount) * i;
+                double rad = Math.toRadians(angle);
                 tx = (float) (radius * Math.cos(rad));
                 ty = (float) (radius * Math.sin(rad));
             }

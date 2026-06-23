@@ -2,6 +2,16 @@ plugins {
     id 'com.android.application'
 }
 
+// 환경별 연결 주소는 프로젝트 루트의 .env(=.gitignore 처리)에서 읽어 BuildConfig로 주입한다.
+// .env 가 없으면 아래 fallback 기본값을 사용해 빌드가 깨지지 않게 한다.
+def envProps = new Properties()
+def envFile = rootProject.file('.env')
+if (envFile.exists()) {
+    envFile.withInputStream { envProps.load(it) }
+}
+def apiBaseUrl = envProps.getProperty('API_BASE_URL', 'https://avengeful-shaunte-revolvingly.ngrok-free.dev/')
+def visionWsUrl = envProps.getProperty('VISION_WS_URL', 'ws://10.26.137.108:8765')
+
 android {
     namespace 'com.kidsFriend'
     compileSdkVersion 33
@@ -15,7 +25,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField "String", "API_BASE_URL", "\"https://avengeful-shaunte-revolvingly.ngrok-free.dev/\""
+        buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
+        buildConfigField "String", "VISION_WS_URL", "\"${visionWsUrl}\""
     }
 
     buildTypes {

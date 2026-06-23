@@ -3,6 +3,7 @@ package com.kidsFriend.domain.call.ui;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
@@ -23,6 +24,8 @@ import com.robotemi.sdk.TtsRequest;
 import com.robotemi.sdk.listeners.OnRobotReadyListener;
 
 public class VoiceCallActivity extends AppCompatActivity implements OnRobotReadyListener, Robot.AsrListener, Robot.TtsListener {
+    private static final String TAG = "VoiceCallActivity";
+
     private Robot robot;
     private TemiRepository repository;
     private CharacterProfile character;
@@ -238,14 +241,27 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
 
     @Override
     public void onAsrResult(@NonNull String asrResult) {
-        if (asrResult.isEmpty()) return;
+        Log.d(TAG, "onAsrResult=\"" + asrResult + "\" state=" + currentState);
 
         runOnUiThread(() -> {
+            // 듣는 중일 때만 처리한다 (말하는 중/생각 중에 들어온 콜백은 무시).
+            if (currentState != CallState.LISTENING) return;
+
+            // 빈 결과 = 무응답/타임아웃. 마이크가 닫혔으므로 잠깐 쉬고 다시 귀를 연다.
+            // (즉시 재호출하면 CPU 100% ANR 위험 — KNOWN_RISKS #29)
+            if (asrResult.isEmpty()) {
+                handler.postDelayed(() -> {
+                    if (currentState == CallState.LISTENING) robot.askQuestion("");
+                }, 600);
+                return;
+            }
+
             // 사용자가 말한 내용을 자막으로 표시
             subtitleText.setText(asrResult);
             updateState(CallState.THINKING); // "생각 중..." 상태로 변경
+            subtitleText.setText(asrResult); // updateState가 색만 초기화하므로 자막 텍스트는 유지
 
-            // AI 서버에 질문 전달 (캐릭터 정보를 포함하여 전달하는 것이 좋음)
+            // AI 서버에 질문 전달
             repository.askVoiceQuestion(asrResult, character.getId(), new RepositoryCallback<QuestionResponse>() {
                 @Override
                 public void onSuccess(QuestionResponse data) {
@@ -282,7 +298,10 @@ public class VoiceCallActivity extends AppCompatActivity implements OnRobotReady
     public void onRobotReady(boolean isReady) {
         if (isReady) {
             robot.hideTopBar();
-            robot.wakeup();
+            // 내장 호출어/대화(검은 풀스크린 오버레이) 차단. wakeup()은 호출하지 않는다.
+            // wakeup()을 부르면 테미가 네이티브 청취 모드로 들어가 robot.speak()의 TTS가 억제됨(=무음).
+            robot.toggleWakeup(true);
+            robot.setDetectionModeOn(false);
         }
     }
 }

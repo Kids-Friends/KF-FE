@@ -49,6 +49,12 @@
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
             android:exported="false" />
         <activity
+            android:name=".domain.call.ui.CallIntroActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
+            android:exported="false" />
+        <activity
             android:name=".domain.call.ui.FriendSelectionActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
@@ -56,6 +62,12 @@
             android:exported="false" />
         <activity
             android:name=".domain.call.ui.VoiceCallActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
+            android:exported="false" />
+        <activity
+            android:name=".domain.call.ui.ChatActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
@@ -74,6 +86,12 @@
             android:exported="false" />
         <activity
             android:name=".domain.fire.service.FireAlertActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
+            android:exported="false" />
+        <activity
+            android:name=".domain.objectgame.service.ObjectGameActivity"
             android:launchMode="singleTop"
             android:screenOrientation="landscape"
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|uiMode"
